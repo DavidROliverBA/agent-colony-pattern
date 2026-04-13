@@ -5,6 +5,20 @@ All notable changes to the Agent Colony Pattern are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.2] — 2026-04-13
+
+### Added
+- **`knowledge-base/references/dark-code.md`** — captures Nate B Jones's 2026 framing of *dark code* (code that was never understood by anyone at any point in its lifecycle), its two structural breaks (runtime tool selection; velocity outpacing comprehension), the Amazon Kiro / retail outage incident record as public preview, and Jones's three prescribed layers (spec-driven development, context engineering, comprehension gates). The file maps each of Jones's layers onto Agent Colony mechanisms — Agent Mirror, Colony Memory, Equilibrium System, Coexistence Boundary — and records where the pattern extends beyond his framing (lifecycle identity across technology generations, population dynamics, mutual coexistence).
+
+### Changed
+- **`manifesto.md`** — new paragraph in "What Is an Agent Colony?" introducing dark code as the contemporary name for the failure mode the pattern exists to prevent, with the Amazon Kiro incident as public preview and the core reframing: *discipline that lives only in human habit erodes under velocity pressure; discipline that lives in the architecture erodes more slowly*. Links to the full reference in the knowledge base.
+- **`thesis.md`** — new paragraph in §1 "The Problem" citing Jones (2026) as corroborating practitioner evidence for the comprehension gap claim, with the explicit argument that Jones's three layers are necessary but insufficient at the population level and that the Agent Colony raises each layer from per-module to per-agent-and-per-generation, per-colony-lifetime, and population-dynamics scope respectively.
+- **`knowledge-base/references/README.md`** — adds dark-code.md to the structure listing.
+
+### Why
+
+The manifesto and thesis both argue *historically* — every shift in distributed systems has faced the same question. That framing is correct but abstract; a reviewer from an engineering org under AI adoption pressure reads it as a philosophical observation rather than as a description of their present liability. Jones's *Dark Code* gives the same argument a contemporary name, a documented incident catalogue, and a regulatory deadline (the EU AI Act enforcement date in August 2026). Adding it to the knowledge base is not decoration — it changes the answer to *"what happens if we do not build this?"* from a hypothetical to a case study. It also strengthens the lesson *acknowledgment-is-not-mitigation* by showing that Jones independently reached the same conclusion ("observability is retrospective; guardrails are reactive; adding layers makes it worse") from the practitioner side.
+
 ## [1.2.1] — 2026-04-13
 
 ### Added

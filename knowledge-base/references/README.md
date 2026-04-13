@@ -6,6 +6,7 @@ External work the pattern engages with. Prior art, related standards, academic p
 
 - **[prior-art.md](prior-art.md)** — historical and academic work that the pattern draws on or distinguishes itself from. Includes MAPE-K, FIPA, KQML, MOISE+, OperA, Jason, Constitutional AI, stigmergy, holonics, Agentic Hives.
 - **[standards-watch.md](standards-watch.md)** — active standards efforts to track. Includes A2A, MCP, AGNTCY / OASF, NIST Agent Standards Initiative, AGENTS.md under Linux Foundation AAIF governance, IEEE P3119, ISO/IEC 42001 family.
+- **[dark-code.md](dark-code.md)** — Nate B Jones's 2026 framing of *dark code* (code nobody at any point in its lifecycle ever understood), its two structural breaks, the Amazon Kiro incident as public preview, and the mapping of Jones's three prescribed layers onto the Agent Colony's Agent Mirror, Colony Memory, and Coexistence Boundary.
 
 ## Why this exists separately from the thesis literature review
 
