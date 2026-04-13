@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Colony — Equilibrium Playground</title>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #1a1a2e;
+      --bg-panel:   #16213e;
+      --bg-card:    #0f3460;
+      --accent:     #4cc9f0;
+      --accent2:    #7209b7;
+      --text:       #e0e0e0;
+      --text-muted: #8892a4;
+      --healthy:    #2a6049;
+      --watch:      #e8a838;
+      --merger:     #cc3333;
+      --good:       #4caf50;
+      --border:     #2a3a5c;
+      --cell-diag:  #2a2a3e;
+      --sidebar-w:  280px;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* Layout */
+    header {
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    header h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    main {
+      display: flex;
+      height: calc(100vh - 57px);
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    #controls {
+      width: var(--sidebar-w);
+      min-width: var(--sidebar-w);
+      background: var(--bg-panel);
+      border-right: 1px solid var(--border);
+      padding: 20px 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .control-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .section-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 4px;
+    }
+
+    .slider-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .slider-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+    }
+
+    .slider-label span:last-child {
+      font-weight: 700;
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+      min-width: 36px;
+      text-align: right;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 4px;
+      -webkit-appearance: none;
+      background: var(--border);
+      border-radius: 2px;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: 2px solid var(--bg-panel);
+    }
+
+    /* Status badge */
+    #status-badge {
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    #status-badge .state-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      opacity: 0.75;
+    }
+
+    #status-badge .state-name {
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+
+    #status-badge .state-desc {
+      font-size: 0.72rem;
+      font-weight: 400;
+      opacity: 0.85;
+      margin-top: 2px;
+    }
+
+    .state-equilibrium  { background: #1a3a2a; color: #5ad89a; border: 1px solid #2a6049; }
+    .state-consolidation { background: #3a2a0a; color: var(--watch); border: 1px solid #5a3a0a; }
+    .state-fragmentation { background: #3a1010; color: #f08080; border: 1px solid #6a2020; }
+
+    /* Buttons */
+    .btn {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg-card);
+      color: var(--text);
+      font-size: 0.8rem;
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.15s, border-color 0.15s;
+      font-family: inherit;
+    }
+
+    .btn:hover { background: #1a4470; border-color: var(--accent); }
+
+    .btn-danger {
+      background: #2a1515;
+      border-color: #5a2525;
+      color: #f08080;
+    }
+
+    .btn-danger:hover { background: #3a1a1a; border-color: var(--merger); }
+
+    .btn-accent {
+      background: #1a2a4a;
+      border-color: var(--accent2);
+      color: #c97fff;
+    }
+
+    .btn-accent:hover { background: #2a1a4a; border-color: #a040ff; }
+
+    select {
+      width: 100%;
+      padding: 7px 10px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 0.8rem;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    select:focus { outline: 1px solid var(--accent); }
+
+    /* Stats panel */
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .stat-row span:last-child { color: var(--text); font-weight: 600; }
+
+    /* Main visualisation */
+    #visualisation {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .viz-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    /* Matrix */
+    #matrix-container {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      overflow-x: auto;
+    }
+
+    #matrix-svg { display: block; }
+
+    .cell-value {
+      font-size: 10px;
+      font-weight: 600;
+      text-anchor: middle;
+      dominant-baseline: central;
+      pointer-events: none;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    .axis-label {
+      font-size: 11px;
+      fill: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    /* Indices */
+    #indices-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .index-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .index-name {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    .index-value {
+      font-size: 2rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+
+    .index-desc {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .gauge-track {
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .gauge-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.4s ease, background 0.4s ease;
+    }
+
+    /* Pair table */
+    #pairs-container {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    .pairs-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+    }
+
+    .pairs-table th {
+      text-align: left;
+      padding: 6px 10px;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .pairs-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid #1e2a3e;
+    }
+
+    .pairs-table tr:last-child td { border-bottom: none; }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.68rem;
+      font-weight: 700;
+    }
+
+    .pill-healthy  { background: #1a3a2a; color: #5ad89a; }
+    .pill-watch    { background: #3a2a0a; color: var(--watch); }
+    .pill-merger   { background: #3a1010; color: #f08080; }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      font-size: 0.72rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 700px) {
+      main { flex-direction: column; height: auto; overflow: visible; }
+      #controls { width: 100%; min-width: unset; border-right: none; border-bottom: 1px solid var(--border); }
+      #visualisation { padding: 16px; }
+      #indices-container { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Agent Colony — Equilibrium Playground</h1>
+  <p>Explore how the Equilibrium System governs colony health</p>
+</header>
+
+<main>
+  <aside id="controls">
+
+    <div id="status-badge" class="state-equilibrium">
+      <span class="state-label">Colony State</span>
+      <span class="state-name" id="state-name">EQUILIBRIUM</span>
+      <span class="state-desc" id="state-desc">Colony is healthy and well-differentiated.</span>
+    </div>
+
+    <div class="control-section">
+      <div class="section-title">Thresholds</div>
+      <div class="slider-group">
+        <div class="slider-label">
+          <span>Watch threshold</span>
+          <span id="watch-val">0.15</span>
+        </div>
+        <input type="range" id="watch-slider" min="0.05" max="0.30" step="0.01" value="0.15">
+      </div>
+      <div class="slider-group">
+        <div class="slider-label">
+          <span>Merger threshold</span>
+          <span id="merger-val">0.40</span>
+        </div>
+        <input type="range" id="merger-slider" min="0.20" max="0.60" step="0.01" value="0.40">
+      </div>
+    </div>
+
+    <div class="control-section">
+      <div class="section-title">Colony Actions</div>
+      <button class="btn" id="btn-add">+ Add Agent</button>
+      <select id="remove-select"></select>
+      <button class="btn btn-danger" id="btn-remove">Remove Selected Agent</button>
+      <button class="btn btn-accent" id="btn-inject">&#9889; Inject Workload</button>
+    </div>
+
+    <div class="control-section">
+      <div class="section-title">Colony Stats</div>
+      <div class="stat-row"><span>Agents</span><span id="stat-agents">5</span></div>
+      <div class="stat-row"><span>Added</span><span id="stat-added">5</span></div>
+      <div class="stat-row"><span>Retired</span><span id="stat-retired">0</span></div>
+      <div class="stat-row"><span>Flagged pairs</span><span id="stat-flagged">0</span></div>
+      <div class="stat-row"><span>Merger candidates</span><span id="stat-mergers">0</span></div>
+    </div>
+
+  </aside>
+
+  <section id="visualisation">
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-swatch" style="background:#2a4858"></div>
+        <span>Healthy (0 to watch threshold)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch" style="background:#e8a838"></div>
+        <span>Watch zone</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch" style="background:#cc3333"></div>
+        <span>Merger candidate</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch" style="background:#2a2a3e;border:1px solid #3a3a5e"></div>
+        <span>Self (N/A)</span>
+      </div>
+    </div>
+
+    <div id="matrix-container">
+      <div class="viz-title">Capability Overlap Matrix</div>
+      <svg id="matrix-svg"></svg>
+    </div>
+
+    <div id="indices-container">
+      <div class="index-card">
+        <div class="index-name">Overlap Index</div>
+        <div class="index-value" id="idx-overlap-val" style="color:#5ad89a">0.00</div>
+        <div class="gauge-track"><div class="gauge-fill" id="idx-overlap-gauge"></div></div>
+        <div class="index-desc">Average overlap among flagged pairs (above watch threshold). High means consolidation pressure.</div>
+      </div>
+      <div class="index-card">
+        <div class="index-name">Concentration Index</div>
+        <div class="index-value" id="idx-conc-val" style="color:#5ad89a">0.00</div>
+        <div class="gauge-track"><div class="gauge-fill" id="idx-conc-gauge"></div></div>
+        <div class="index-desc">Capability concentration proxy. High means one or few agents dominate.</div>
+      </div>
+      <div class="index-card">
+        <div class="index-name">Vitality Index</div>
+        <div class="index-value" id="idx-vitality-val" style="color:#5ad89a">5.0</div>
+        <div class="gauge-track"><div class="gauge-fill" id="idx-vitality-gauge"></div></div>
+        <div class="index-desc">Ratio of agents added to agents retired. Below 0.5 means fragmentation risk.</div>
+      </div>
+    </div>
+
+    <div id="pairs-container">
+      <div class="viz-title">All Pairs</div>
+      <table class="pairs-table">
+        <thead>
+          <tr>
+            <th>Agent A</th>
+            <th>Agent B</th>
+            <th>Overlap</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="pairs-tbody"></tbody>
+      </table>
+    </div>
+
+  </section>
+</main>
+
+<script>
+// ──────────────────────────────────────────────────────────────────────────
+// Colony data — sourced from hello-colony/colony-snapshot.yaml
+//
+// Overlap values from colony-snapshot.yaml overlap_matrix section:
+//   registry-agent    <-> equilibrium-agent:    0.08
+//   registry-agent    <-> sentinel-agent:        0.10
+//   registry-agent    <-> chronicler-agent:      0.12
+//   registry-agent    <-> domain-agent-finance:  0.03
+//   equilibrium-agent <-> sentinel-agent:        0.04
+//   equilibrium-agent <-> chronicler-agent:      0.06
+//   equilibrium-agent <-> domain-agent-finance:  0.24  (watch status)
+//   sentinel-agent    <-> chronicler-agent:      0.05
+//   sentinel-agent    <-> domain-agent-finance:  0.06
+//   chronicler-agent  <-> domain-agent-finance:  0.04
+// ──────────────────────────────────────────────────────────────────────────
+
+var SHORT_NAMES = {
+  'registry-agent':       'Registry',
+  'equilibrium-agent':    'Equilibrium',
+  'sentinel-agent':       'Sentinel',
+  'chronicler-agent':     'Chronicler',
+  'domain-agent-finance': 'Finance'
+};
+
+var INITIAL_PAIRS = [
+  ['registry-agent',    'equilibrium-agent',    0.08],
+  ['registry-agent',    'sentinel-agent',        0.10],
+  ['registry-agent',    'chronicler-agent',      0.12],
+  ['registry-agent',    'domain-agent-finance',  0.03],
+  ['equilibrium-agent', 'sentinel-agent',        0.04],
+  ['equilibrium-agent', 'chronicler-agent',      0.06],
+  ['equilibrium-agent', 'domain-agent-finance',  0.24],
+  ['sentinel-agent',    'chronicler-agent',      0.05],
+  ['sentinel-agent',    'domain-agent-finance',  0.06],
+  ['chronicler-agent',  'domain-agent-finance',  0.04]
+];
+
+// ── State ──────────────────────────────────────────────────────────────────
+
+var agents = [
+  'registry-agent',
+  'equilibrium-agent',
+  'sentinel-agent',
+  'chronicler-agent',
+  'domain-agent-finance'
+];
+
+var shortNames = Object.assign({}, SHORT_NAMES);
+
+function pairKey(a, b) {
+  var sorted = [a, b].sort();
+  return sorted[0] + '|||' + sorted[1];
+}
+
+var overlapMap = {};
+INITIAL_PAIRS.forEach(function(row) {
+  overlapMap[pairKey(row[0], row[1])] = row[2];
+});
+
+var addedCount   = 5;
+var retiredCount = 0;
+var domainCounter = 1;
+var maxAgentsSeen = 5;
+var watchThreshold  = 0.15;
+var mergerThreshold = 0.40;
+
+// ── Colour helpers ─────────────────────────────────────────────────────────
+
+function cellColor(value, watch, merger) {
+  if (value <= 0) return '#2a4858';
+  if (value < watch) {
+    var t = value / watch;
+    return d3.interpolateRgb('#2a4858', '#1a6040')(t);
+  }
+  if (value < merger) {
+    var t2 = (value - watch) / (merger - watch);
+    return d3.interpolateRgb('#1a6040', '#e8a838')(t2);
+  }
+  var t3 = Math.min((value - merger) / (1 - merger), 1);
+  return d3.interpolateRgb('#e8a838', '#cc3333')(t3);
+}
+
+function textColorForBg(bg) {
+  var c = d3.color(bg);
+  if (!c) return '#ffffff';
+  var lum = 0.2126 * (c.r / 255) + 0.7152 * (c.g / 255) + 0.0722 * (c.b / 255);
+  return lum > 0.45 ? '#1a1a2e' : '#e0e0e0';
+}
+
+function gaugeColor(v, lowGood) {
+  if (lowGood) {
+    if (v < 0.2) return '#4caf50';
+    if (v < 0.4) return '#e8a838';
+    return '#cc3333';
+  }
+  if (v > 0.6) return '#4caf50';
+  if (v > 0.3) return '#e8a838';
+  return '#cc3333';
+}
+
+// ── Index calculations ─────────────────────────────────────────────────────
+
+function calcIndices() {
+  var all = [];
+  var i, j, v;
+  for (i = 0; i < agents.length; i++) {
+    for (j = i + 1; j < agents.length; j++) {
+      v = overlapMap[pairKey(agents[i], agents[j])];
+      all.push(v !== undefined ? v : 0);
+    }
+  }
+
+  var flagged = all.filter(function(x) { return x >= watchThreshold; });
+  var overlapIndex = flagged.length > 0
+    ? flagged.reduce(function(s, x) { return s + x; }, 0) / flagged.length
+    : 0;
+
+  var concIndex = Math.max(0, 1 - (agents.length / maxAgentsSeen));
+
+  var vitalityRaw     = addedCount / Math.max(retiredCount, 1);
+  var vitalityDisplay = Math.min(vitalityRaw, 9.99);
+
+  return {
+    overlapIndex:   overlapIndex,
+    concIndex:      concIndex,
+    vitalityRaw:    vitalityRaw,
+    vitalityDisplay: vitalityDisplay,
+    flaggedCount:   flagged.length
+  };
+}
+
+function colonyState(idx) {
+  if (idx.vitalityRaw < 0.5 || idx.concIndex > 0.7) return 'fragmentation';
+  if (idx.flaggedCount > 0 || idx.overlapIndex >= watchThreshold) return 'consolidation';
+  return 'equilibrium';
+}
+
+function countMergers() {
+  var c = 0, i, j, v;
+  for (i = 0; i < agents.length; i++) {
+    for (j = i + 1; j < agents.length; j++) {
+      v = overlapMap[pairKey(agents[i], agents[j])];
+      if (v !== undefined && v >= mergerThreshold) c++;
+    }
+  }
+  return c;
+}
+
+// ── Index gauges update ────────────────────────────────────────────────────
+
+function updateIndices() {
+  var idx = calcIndices();
+
+  // Overlap index
+  var ov = Math.min(idx.overlapIndex, 1);
+  var ovEl = document.getElementById('idx-overlap-val');
+  ovEl.textContent = ov.toFixed(2);
+  ovEl.style.color = gaugeColor(ov, true);
+  var ovG = document.getElementById('idx-overlap-gauge');
+  ovG.style.width = Math.round(ov * 100) + '%';
+  ovG.style.background = gaugeColor(ov, true);
+
+  // Concentration index
+  var ci = Math.min(idx.concIndex, 1);
+  var ciEl = document.getElementById('idx-conc-val');
+  ciEl.textContent = ci.toFixed(2);
+  ciEl.style.color = gaugeColor(ci, true);
+  var ciG = document.getElementById('idx-conc-gauge');
+  ciG.style.width = Math.round(ci * 100) + '%';
+  ciG.style.background = gaugeColor(ci, true);
+
+  // Vitality index
+  var vNorm = Math.min(idx.vitalityRaw / 2, 1);
+  var vitColor = (idx.vitalityRaw >= 0.5 && idx.vitalityRaw <= 2.0)
+    ? '#4caf50'
+    : (idx.vitalityRaw > 2.0 ? '#e8a838' : '#cc3333');
+  var vitDisplay = idx.vitalityDisplay >= 5 ? '5.0+' : idx.vitalityDisplay.toFixed(1);
+  var vitEl = document.getElementById('idx-vitality-val');
+  vitEl.textContent = vitDisplay;
+  vitEl.style.color = vitColor;
+  var vitG = document.getElementById('idx-vitality-gauge');
+  vitG.style.width = Math.round(vNorm * 100) + '%';
+  vitG.style.background = vitColor;
+
+  // Colony state badge
+  var state = colonyState(idx);
+  var badge     = document.getElementById('status-badge');
+  var stateName = document.getElementById('state-name');
+  var stateDesc = document.getElementById('state-desc');
+  badge.className = '';
+
+  if (state === 'equilibrium') {
+    badge.classList.add('state-equilibrium');
+    stateName.textContent = 'EQUILIBRIUM';
+    stateDesc.textContent = 'Colony is healthy and well-differentiated.';
+  } else if (state === 'consolidation') {
+    badge.classList.add('state-consolidation');
+    stateName.textContent = 'CONSOLIDATION RISK';
+    stateDesc.textContent = idx.flaggedCount + ' pair(s) in watch zone. Equilibrium Agent review recommended.';
+  } else {
+    badge.classList.add('state-fragmentation');
+    stateName.textContent = 'FRAGMENTATION RISK';
+    stateDesc.textContent = idx.vitalityRaw < 0.5
+      ? 'Vitality Index ' + idx.vitalityDisplay.toFixed(1) + ' — agents retiring faster than joining.'
+      : 'Concentration Index ' + idx.concIndex.toFixed(2) + ' — capability dangerously concentrated.';
+  }
+
+  // Sidebar stats
+  document.getElementById('stat-agents').textContent   = agents.length;
+  document.getElementById('stat-added').textContent    = addedCount;
+  document.getElementById('stat-retired').textContent  = retiredCount;
+  document.getElementById('stat-flagged').textContent  = idx.flaggedCount;
+  document.getElementById('stat-mergers').textContent  = countMergers();
+}
+
+// ── Matrix rendering ───────────────────────────────────────────────────────
+
+var CELL_SIZE = 68;
+var LABEL_PAD = 90;
+var MARGIN = { top: LABEL_PAD, left: LABEL_PAD, right: 20, bottom: 20 };
+
+function renderMatrix() {
+  var n = agents.length;
+  var w = MARGIN.left + n * CELL_SIZE + MARGIN.right;
+  var h = MARGIN.top + n * CELL_SIZE + MARGIN.bottom;
+  var i, j, x, y, v, bg, fg, strokeColor;
+
+  var svg = d3.select('#matrix-svg')
+    .attr('width',  w)
+    .attr('height', h);
+
+  svg.selectAll('*').remove();
+
+  var g = svg.append('g')
+    .attr('transform', 'translate(' + MARGIN.left + ',' + MARGIN.top + ')');
+
+  var names = agents.map(function(a) { return shortNames[a] || a; });
+
+  // Column labels (rotated)
+  g.selectAll('.col-label')
+    .data(names)
+    .join('text')
+    .attr('class', 'axis-label col-label')
+    .attr('x', function(_, idx) { return idx * CELL_SIZE + CELL_SIZE / 2; })
+    .attr('y', -8)
+    .attr('text-anchor', 'end')
+    .attr('transform', function(_, idx) {
+      var cx = idx * CELL_SIZE + CELL_SIZE / 2;
+      return 'rotate(-45,' + cx + ',-8)';
+    })
+    .text(function(d) { return d; });
+
+  // Row labels
+  g.selectAll('.row-label')
+    .data(names)
+    .join('text')
+    .attr('class', 'axis-label row-label')
+    .attr('x', -10)
+    .attr('y', function(_, idx) { return idx * CELL_SIZE + CELL_SIZE / 2; })
+    .attr('text-anchor', 'end')
+    .attr('dominant-baseline', 'central')
+    .text(function(d) { return d; });
+
+  // Cells
+  for (i = 0; i < n; i++) {
+    for (j = 0; j < n; j++) {
+      x = j * CELL_SIZE;
+      y = i * CELL_SIZE;
+
+      if (i === j) {
+        g.append('rect')
+          .attr('x', x + 1).attr('y', y + 1)
+          .attr('width',  CELL_SIZE - 2)
+          .attr('height', CELL_SIZE - 2)
+          .attr('rx', 3)
+          .attr('fill',   '#2a2a3e')
+          .attr('stroke', '#3a3a5e')
+          .attr('stroke-width', 1);
+
+        g.append('text')
+          .attr('class', 'cell-value')
+          .attr('x', x + CELL_SIZE / 2)
+          .attr('y', y + CELL_SIZE / 2)
+          .attr('fill', '#4a4a6e')
+          .text('\u2014');
+      } else {
+        v = overlapMap[pairKey(agents[i], agents[j])];
+        v = (v !== undefined) ? v : 0;
+
+        bg = cellColor(v, watchThreshold, mergerThreshold);
+        fg = textColorForBg(bg);
+
+        strokeColor = '#2a3a5c';
+        if (v >= mergerThreshold)  strokeColor = '#cc3333';
+        else if (v >= watchThreshold) strokeColor = '#e8a838';
+
+        g.append('rect')
+          .attr('x', x + 1).attr('y', y + 1)
+          .attr('width',  CELL_SIZE - 2)
+          .attr('height', CELL_SIZE - 2)
+          .attr('rx', 3)
+          .attr('fill',   bg)
+          .attr('stroke', strokeColor)
+          .attr('stroke-width', v >= watchThreshold ? 1.5 : 0.5);
+
+        g.append('text')
+          .attr('class', 'cell-value')
+          .attr('x', x + CELL_SIZE / 2)
+          .attr('y', y + CELL_SIZE / 2)
+          .attr('fill', fg)
+          .text(v.toFixed(2));
+      }
+    }
+  }
+}
+
+// ── Pairs table (built with DOM methods — no innerHTML) ────────────────────
+
+function renderPairsTable() {
+  var tbody = document.getElementById('pairs-tbody');
+
+  // Clear existing rows safely
+  while (tbody.firstChild) {
+    tbody.removeChild(tbody.firstChild);
+  }
+
+  var rows = [];
+  var i, j, v;
+  for (i = 0; i < agents.length; i++) {
+    for (j = i + 1; j < agents.length; j++) {
+      v = overlapMap[pairKey(agents[i], agents[j])];
+      rows.push({ a: agents[i], b: agents[j], v: (v !== undefined ? v : 0) });
+    }
+  }
+
+  rows.sort(function(x, y) { return y.v - x.v; });
+
+  rows.forEach(function(row) {
+    var statusClass, statusLabel;
+    if (row.v >= mergerThreshold) {
+      statusClass = 'pill pill-merger';
+      statusLabel = 'Merger candidate';
+    } else if (row.v >= watchThreshold) {
+      statusClass = 'pill pill-watch';
+      statusLabel = 'Watch zone';
+    } else {
+      statusClass = 'pill pill-healthy';
+      statusLabel = 'Healthy';
+    }
+
+    var tr   = document.createElement('tr');
+    var tdA  = document.createElement('td');
+    var tdB  = document.createElement('td');
+    var tdV  = document.createElement('td');
+    var tdS  = document.createElement('td');
+    var pill = document.createElement('span');
+
+    tdA.textContent = shortNames[row.a] || row.a;
+    tdB.textContent = shortNames[row.b] || row.b;
+    tdV.textContent = row.v.toFixed(2);
+    tdV.style.fontVariantNumeric = 'tabular-nums';
+    tdV.style.fontWeight = '700';
+    pill.className = statusClass;
+    pill.textContent = statusLabel;
+    tdS.appendChild(pill);
+
+    tr.appendChild(tdA);
+    tr.appendChild(tdB);
+    tr.appendChild(tdV);
+    tr.appendChild(tdS);
+    tbody.appendChild(tr);
+  });
+}
+
+// ── Remove agent dropdown ──────────────────────────────────────────────────
+
+function updateRemoveDropdown() {
+  var sel = document.getElementById('remove-select');
+  while (sel.firstChild) sel.removeChild(sel.firstChild);
+  agents.forEach(function(a) {
+    var opt = document.createElement('option');
+    opt.value = a;
+    opt.textContent = shortNames[a] || a;
+    sel.appendChild(opt);
+  });
+}
+
+// ── Full render cycle ──────────────────────────────────────────────────────
+
+function render() {
+  renderMatrix();
+  updateIndices();
+  renderPairsTable();
+  updateRemoveDropdown();
+}
+
+// ── Control handlers ───────────────────────────────────────────────────────
+
+document.getElementById('watch-slider').addEventListener('input', function(e) {
+  watchThreshold = parseFloat(e.target.value);
+  if (watchThreshold >= mergerThreshold) {
+    mergerThreshold = Math.min(watchThreshold + 0.05, 0.60);
+    document.getElementById('merger-slider').value = mergerThreshold;
+    document.getElementById('merger-val').textContent = mergerThreshold.toFixed(2);
+  }
+  document.getElementById('watch-val').textContent = watchThreshold.toFixed(2);
+  render();
+});
+
+document.getElementById('merger-slider').addEventListener('input', function(e) {
+  mergerThreshold = parseFloat(e.target.value);
+  if (mergerThreshold <= watchThreshold) {
+    watchThreshold = Math.max(mergerThreshold - 0.05, 0.05);
+    document.getElementById('watch-slider').value = watchThreshold;
+    document.getElementById('watch-val').textContent = watchThreshold.toFixed(2);
+  }
+  document.getElementById('merger-val').textContent = mergerThreshold.toFixed(2);
+  render();
+});
+
+document.getElementById('btn-add').addEventListener('click', function() {
+  domainCounter++;
+  var newName   = 'domain-agent-' + domainCounter;
+  var shortLabel = 'Domain ' + domainCounter;
+  shortNames[newName] = shortLabel;
+
+  agents.forEach(function(existing) {
+    var v = parseFloat((Math.random() * 0.18 + 0.02).toFixed(2));
+    overlapMap[pairKey(newName, existing)] = v;
+  });
+
+  agents.push(newName);
+  addedCount++;
+  if (agents.length > maxAgentsSeen) maxAgentsSeen = agents.length;
+  render();
+});
+
+document.getElementById('btn-remove').addEventListener('click', function() {
+  if (agents.length <= 2) {
+    alert('A colony needs at least 2 agents.');
+    return;
+  }
+  var sel    = document.getElementById('remove-select');
+  var target = sel.value;
+  if (!target) return;
+
+  agents = agents.filter(function(a) { return a !== target; });
+
+  Object.keys(overlapMap).forEach(function(k) {
+    if (k.indexOf(target) !== -1) delete overlapMap[k];
+  });
+
+  retiredCount++;
+  render();
+});
+
+document.getElementById('btn-inject').addEventListener('click', function() {
+  if (agents.length < 2) return;
+
+  var pairs = [];
+  var i, j;
+  for (i = 0; i < agents.length; i++) {
+    for (j = i + 1; j < agents.length; j++) {
+      pairs.push([agents[i], agents[j]]);
+    }
+  }
+
+  // Fisher-Yates shuffle then take 3–5
+  for (i = pairs.length - 1; i > 0; i--) {
+    var r = Math.floor(Math.random() * (i + 1));
+    var tmp = pairs[i]; pairs[i] = pairs[r]; pairs[r] = tmp;
+  }
+
+  var count = Math.min(Math.floor(Math.random() * 3) + 3, pairs.length);
+  pairs.slice(0, count).forEach(function(p) {
+    var k = pairKey(p[0], p[1]);
+    var current  = overlapMap[k] !== undefined ? overlapMap[k] : 0;
+    var increase = parseFloat((Math.random() * 0.10 + 0.05).toFixed(2));
+    overlapMap[k] = Math.min(parseFloat((current + increase).toFixed(2)), 0.95);
+  });
+
+  render();
+});
+
+// ── Bootstrap ──────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>

@@ -159,3 +159,57 @@ relationships:
     - colony-core-team  # primary consumer of threat reports and advisories
     - registry-agent    # receives security advisories that affect registry operations
     - equilibrium-agent # receives advisories that affect equilibrium analysis integrity
+  critical_path:
+    structural: true
+    dynamic: false
+    structural_justification: "Sentinel is the immune system root. No security co-sign is possible without Sentinel. Sentinel failure leaves the colony defenceless."
+
+comprehension_contract:
+  trust_tier: Bounded
+  pre_registered_policies:
+    - policy_id: security-cosign-p001
+      action_class: patch_application_cosign
+      blast_radius: Colony-wide
+      reviewed_date: "2026-04-13"
+      freshness: current
+    - policy_id: threat-escalation-p001
+      action_class: threat_escalation
+      blast_radius: Boundary-crossing
+      reviewed_date: "2026-04-13"
+      freshness: current
+  audit_rate: 0.10
+  blast_radius_ceiling: Boundary-crossing
+  classifier_version: "1.0"
+
+nfrs:
+  inherited:
+    - id: colony-event-logging
+      source: constitutional_memory
+      version: "2026-04-13"
+  specific:
+    availability_target: "99.99%"
+    latency_p99_ms: 50
+    max_throughput_rps: 500
+    data_classification:
+      - internal
+      - restricted
+      - confidential
+    compliance: []
+
+valuation:
+  self:
+    nfr_compliance_rate: 1.0
+    last_evaluated: "2026-04-13"
+    evaluation_schedule_met: true
+  peer:
+    score: null
+    interaction_count: 0
+    calibration_status: under-calibrated
+  audit:
+    disagreement_rate: null
+    sample_count: 0
+    last_audit: null
+  human:
+    last_sign_off: "2026-04-13"
+    sign_off_count: 1
+    outstanding_challenges: 0

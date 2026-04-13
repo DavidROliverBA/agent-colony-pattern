@@ -104,3 +104,33 @@ done
 - **Lifecycle Agent is not included.** The specification describes a Lifecycle Agent as part of L1 governance. It is intentionally absent here to keep the example minimal. The `colony-snapshot.yaml` overlap matrix includes one cross-reference to a `lifecycle-agent` to demonstrate how cross-colony references work in a real deployment.
 
 - **The overlap score between `equilibrium-agent` and `domain-agent-finance` (0.24, watch zone) is real, not a mistake.** It reflects a genuine pattern: domain agents that self-monitor tend to accrete equilibrium-adjacent capabilities. The example preserves this signal rather than smoothing it away.
+
+## New in v1.3.0: Comprehension Contract fields
+
+All six agent definitions have been extended with four new sections that implement the Comprehension Contract (§7 of the forthcoming v1.3.0 specification).
+
+### `comprehension_contract:`
+
+Declares the agent's trust tier (`Observing`, `Sandboxed`, `Bounded`, `Self-Directed`), its audit rate (fraction of completed actions subject to retrospective review), its blast radius ceiling (the highest blast radius the agent is permitted to act within), and any pre-registered policies that bypass per-action review.
+
+In this colony: all L1/L2 governance agents are `Bounded` (audit_rate: 10%). The finance domain agent is `Observing` (audit_rate: 100% — every action is audited until it earns enough interaction history to calibrate).
+
+### `nfrs:`
+
+Non-functional requirements in two parts: inherited (colony-wide NFRs from Constitutional Memory, such as event logging and GDPR data residency) and specific (agent's commitments to its consumers — availability target, latency SLO, max throughput, data classification).
+
+### `valuation:`
+
+Multi-perspective valuation across four dimensions: self (NFR compliance rate), peer (score from other agents based on interaction outcomes), audit (retrospective disagreement rate), and human (explicit sign-offs and outstanding challenges). No single dimension is authoritative — all four are required.
+
+The finance agent starts with all peer and audit dimensions as `null` (no interaction history yet). The v1.1 registry agent has three interactions recorded (calibrating).
+
+### `critical_path:` (inside `relationships:`)
+
+Whether this agent is on the colony's structural critical path. All four L1/L2 agents are structurally critical — the colony cannot operate without them. The finance domain agent is not (structural: false). Dynamic critical path status is broadcast by the Equilibrium Agent during active objectives.
+
+### Graduation checklists
+
+The `graduation-checklists/` directory contains the formal record of pending agent version increments. The finance agent has an active checklist for its v1.0 → v1.1 path, which will suppress the self-monitoring capabilities that caused an overlap score of 0.24 with the equilibrium-agent (watch zone).
+
+See [graduation-checklists/README.md](graduation-checklists/README.md) for how checklists work.

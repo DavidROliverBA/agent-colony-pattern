@@ -5,6 +5,26 @@ All notable changes to the Agent Colony Pattern are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] — 2026-04-13
+
+### Added
+- **`schemas/agent-mirror-v0.2.0.json`** — updated Agent Mirror schema adding four new optional sections: `comprehension_contract` (trust tier, pre-registered policies, audit rate, blast radius ceiling, classifier version), `nfrs` (inherited colony NFRs plus agent-specific commitments), `valuation` (self / peer / audit / human multi-perspective scoring), and `critical_path` inside the `relationships` object (structural and dynamic critical path flags). Previous `agent-mirror-v0.1.json` kept intact — both versions coexist.
+- **`examples/hello-colony/graduation-checklists/finance-agent-v1.0-to-v1.1.yaml`** — the first graduation checklist. Records the finance domain agent's path from v1.0 to v1.1 (suppressing accreted self-monitoring capabilities that caused an overlap score of 0.24 with equilibrium-agent). Three evidence requirements, two approval requirements, three external actions — each pre-classified with blast radius and review regime.
+- **`examples/hello-colony/graduation-checklists/README.md`** — explains what graduation checklists are, who maintains them (Registry Agent), and what each field means.
+- **`examples/hello-colony-runtime/`** — Level 1 demonstration: a deterministic Python simulation that loads the hello-colony YAML files, validates them against the v0.2.0 schema, and simulates four colony events (bootstrap, equilibrium check, security patch co-sign, graduation query). No LLM calls, no external services. Run with `python runtime.py` after `pip install -r requirements.txt`.
+- **`examples/equilibrium-playground/`** — Level 1 demonstration: a self-contained HTML visualisation of the Equilibrium System. D3.js overlap matrix heatmap colour-coded by threshold zones. Threshold sliders, add/remove agent controls, inject-workload button, three live index gauges (Overlap, Concentration, Vitality). No build step — open `index.html` in any browser.
+
+### Changed
+- **All 6 hello-colony agent YAML files** — extended with `comprehension_contract:`, `nfrs:`, and `valuation:` top-level sections, and `critical_path:` inside `relationships:`. Values reflect each agent's real position in the colony: Sentinel has two pre-registered policies (cosign + threat escalation); finance domain agent is Observing tier with 100% audit rate; v1.1 registry agent shows three peer interactions (calibrating).
+- **`examples/hello-colony/colony-snapshot.yaml`** — new `comprehension_contract_overview:` section added at the bottom, capturing trust tier distribution, structural critical path agents, and a pointer to the active finance graduation checklist.
+- **`examples/hello-colony/README.md`** — new section "New in v1.3.0: Comprehension Contract fields" added, explaining each new Mirror section.
+- **`examples/README.md`** — new file (or updated) listing all three example directories with usage instructions.
+- **`schemas/README.md`** — updated to document v0.2.0 alongside v0.1.
+
+### Why
+
+The pattern was previously articulated but not demonstrated. The Comprehension Contract (§7 of the forthcoming v1.3.0 specification) introduces the most significant new mechanism since v1.0: every action produces a pre-action comprehension artefact matched to the agent's trust tier and blast radius. The hello-colony examples now show what an agent's Mirror looks like when it carries this information. The live runtime shows the event logic running — schema validation, equilibrium flagging, security co-sign verification, graduation query — as deterministic code rather than description. The equilibrium playground makes the three indices interactive so the pattern's dynamics are visceral rather than abstract. The pattern now demonstrates what it describes.
+
 ## [1.2.2] — 2026-04-13
 
 ### Added

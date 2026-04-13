@@ -1,0 +1,1051 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/DavidROliverBA/agent-colony-pattern/schemas/agent-mirror-v0.2.0.json",
+  "title": "Agent Mirror v0.2.0",
+  "description": "The Agent Mirror is the complete, self-describing identity standard for an autonomous agent in an Agent Colony. An agent looks at its Mirror and knows what it is, what it can do, how it has changed, and what it is responsible for. The Mirror is descriptive, not prescriptive \u2014 it reflects what the agent is, not what it should be. Divergence between the Mirror and actual behaviour is a signal of drift or compromise. v0.2.0 adds four new optional sections: comprehension_contract (Comprehension Contract trust tier and pre-registered policies), nfrs (inherited and agent-specific non-functional requirements), valuation (multi-perspective self/peer/audit/human scoring), and critical_path inside relationships (structural and dynamic critical-path status).",
+  "type": "object",
+  "required": [
+    "identity",
+    "capabilities",
+    "autonomy",
+    "security",
+    "lifecycle",
+    "relationships"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "identity": {
+      "description": "Core identity of the agent \u2014 who it is, what it exists to do, and the history of what it has been.",
+      "type": "object",
+      "required": [
+        "name",
+        "purpose",
+        "version",
+        "owner"
+      ],
+      "properties": {
+        "name": {
+          "description": "Unique name of this agent within the colony. Used for discovery, dependency references, and overlap analysis. Must be stable across versions \u2014 changing the name is equivalent to retiring one agent and creating another.",
+          "type": "string",
+          "minLength": 1
+        },
+        "purpose": {
+          "description": "What this agent exists to do, expressed in terms that both agents and humans can evaluate against actual behaviour. This is the ground truth for detecting drift: if the agent's actions cannot be explained by this statement, the Mirror or the behaviour is wrong.",
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "description": "Semantic version of this agent. Major version increments signal breaking changes in behaviour (not just API): purpose redefinition, contract incompatibility, or autonomy level change. Minor increments signal new capabilities within existing contracts. Patch increments signal bug fixes, security patches, or internal improvements.",
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "lineage": {
+          "description": "Ordered version history of this agent. Each entry records what changed, why it changed, and what triggered the change. This is the agent's biographical record \u2014 the sequence of decisions that made it what it is today. Required for self-migration: an agent reading a foreign Mirror must be able to understand the evolutionary path.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "version": {
+                "description": "The version this entry describes.",
+                "type": "string",
+                "pattern": "^\\d+\\.\\d+\\.\\d+$"
+              },
+              "timestamp": {
+                "description": "When this version was created, in ISO 8601 date-time format.",
+                "type": "string",
+                "format": "date-time"
+              },
+              "what_changed": {
+                "description": "Human-readable description of what changed in this version.",
+                "type": "string",
+                "minLength": 1
+              },
+              "why": {
+                "description": "The reason for this change \u2014 a performance finding, a new requirement, a security upgrade, a governance decision.",
+                "type": "string",
+                "minLength": 1
+              },
+              "triggered_by": {
+                "description": "What initiated this change: 'self' (agent self-evolved), an agent name (another agent triggered it), a human team identifier, or a governance event name.",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "owner": {
+          "description": "The team or entity accountable for this agent's behaviour and contracts. May be a human team identifier or another agent name. Accountability follows the owner \u2014 when the agent crosses the coexistence boundary in unexpected ways, the owner is the first point of contact.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "capabilities": {
+      "description": "What this agent can do, what consumers can rely on, what it depends on, and how it communicates.",
+      "type": "object",
+      "required": [
+        "capabilities",
+        "contracts",
+        "dependencies",
+        "protocols"
+      ],
+      "properties": {
+        "capabilities": {
+          "description": "The verifiable claims this agent makes about what it can do. Each capability is a discrete function. The Equilibrium Agent compares capability declarations across the colony to compute overlap scores \u2014 precise capability naming prevents false overlap flags.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "description"
+            ],
+            "properties": {
+              "name": {
+                "description": "Short identifier for this capability, used in overlap analysis and dependency references.",
+                "type": "string",
+                "minLength": 1
+              },
+              "description": {
+                "description": "What this capability does and what makes it distinct from similar capabilities in other agents.",
+                "type": "string",
+                "minLength": 1
+              },
+              "maturity": {
+                "description": "How stable and battle-tested this capability is: 'experimental' (not for production use), 'beta' (production with caveats), 'stable' (reliable, under SLA), 'deprecated' (will be removed in a future version).",
+                "type": "string",
+                "enum": [
+                  "experimental",
+                  "beta",
+                  "stable",
+                  "deprecated"
+                ]
+              }
+            }
+          }
+        },
+        "contracts": {
+          "description": "The formal commitments this agent makes to its consumers. Contracts define the boundary of trust: what consumers can rely on the agent to do, how fast, and how it will behave when things go wrong.",
+          "type": "object",
+          "properties": {
+            "input_schema": {
+              "description": "A URI pointing to the schema or specification describing what this agent accepts as input. May be a JSON Schema URI, an OpenAPI path, or an MCP tool definition.",
+              "type": "string",
+              "format": "uri"
+            },
+            "output_schema": {
+              "description": "A URI pointing to the schema or specification describing what this agent returns. Must be stable within a major version.",
+              "type": "string",
+              "format": "uri"
+            },
+            "sla": {
+              "description": "Service Level Agreement commitments this agent makes. Free-text to accommodate different SLA formats, but should include latency targets, availability targets, and any throughput constraints.",
+              "type": [
+                "string",
+                "object"
+              ]
+            },
+            "error_behaviours": {
+              "description": "How this agent behaves when it cannot fulfil a request: what error signals it emits, whether it retries, whether it escalates, and under what conditions it gives up and hands off.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "dependencies": {
+          "description": "Other agents or external services this agent requires to function. The Registry Agent uses this to build a dependency graph \u2014 if a dependency fails, which agents are affected?",
+          "type": "array",
+          "items": {
+            "type": [
+              "string",
+              "object"
+            ]
+          }
+        },
+        "protocols": {
+          "description": "The communication protocols this agent speaks. Consumers and collaborators use this to determine how to interact with it. An agent that speaks A2A is discoverable via the Registry Agent; one that speaks MCP can be invoked as a tool.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "A2A",
+              "MCP",
+              "HTTP",
+              "gRPC",
+              "events"
+            ]
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    "autonomy": {
+      "description": "What this agent can decide and change on its own \u2014 and what requires human oversight. Autonomy is earned, not assumed: the colony starts human-governed and grants self-governance through demonstrated trustworthiness.",
+      "type": "object",
+      "required": [
+        "autonomy_level",
+        "self_evolution_scope",
+        "evolution_budget",
+        "evolution_log"
+      ],
+      "properties": {
+        "autonomy_level": {
+          "description": "The current autonomy level of this agent, reflecting how much it can decide without human approval. Levels must be earned through demonstrated trustworthiness: 'observe' is the starting state; 'self-governing' requires a sustained track record. The Lifecycle Agent tracks autonomy progression. 'observe': records and reports but does not act. 'propose': recommends actions for human approval. 'bounded': acts within pre-approved boundaries without per-action approval. 'self-governing': determines its own boundaries within colony-wide constitutional rules.",
+          "type": "string",
+          "enum": [
+            "observe",
+            "propose",
+            "bounded",
+            "self-governing",
+            "supervised"
+          ]
+        },
+        "self_evolution_scope": {
+          "description": "The explicit boundary of what this agent is permitted to change about itself vs what requires human-governed redesign. This is the contract between the agent and its owner \u2014 breaking it is a trust violation.",
+          "type": "object",
+          "required": [
+            "allowed",
+            "forbidden"
+          ],
+          "properties": {
+            "allowed": {
+              "description": "What this agent may change about itself within its evolution budget \u2014 e.g., 'prompt tuning', 'context window management', 'tool preference ordering', 'retry logic'. These are internal optimisations that do not change the agent's purpose, contracts, or security boundaries.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "forbidden": {
+              "description": "What this agent must NOT change about itself without human-governed redesign \u2014 e.g., 'purpose statement', 'output schema', 'security boundaries', 'autonomy level'. Changes to forbidden fields require a version increment and human approval gate.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "evolution_budget": {
+          "description": "How many self-updates this agent may make before a human redesign gate is triggered. The budget exists to prevent silent drift \u2014 an agent that self-evolves without bound may diverge from its original purpose. The Lifecycle Agent tracks budget consumption.",
+          "type": "object",
+          "required": [
+            "max_self_updates_before_redesign",
+            "security_upgrades_exempt"
+          ],
+          "properties": {
+            "max_self_updates_before_redesign": {
+              "description": "Maximum number of self-directed updates this agent may make before triggering a mandatory human redesign review. Counter resets after each review. Set to 0 to require human approval for every change.",
+              "type": "integer",
+              "minimum": 0
+            },
+            "security_upgrades_exempt": {
+              "description": "If true, security upgrades do not consume the evolution budget and are not counted toward the redesign gate. This reflects the principle that improving security posture is always preauthorised \u2014 an agent that cannot upgrade its own security is a liability to the colony.",
+              "type": "boolean"
+            }
+          }
+        },
+        "evolution_log": {
+          "description": "Machine-readable history of every self-modification this agent has made. This is the audit trail for autonomy \u2014 it allows the Lifecycle Agent to verify budget compliance and the Sentinel Agent to detect unexpected drift. Each entry is written by the agent immediately after making a change.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "timestamp": {
+                "description": "When this self-modification occurred, in ISO 8601 date-time format.",
+                "type": "string",
+                "format": "date-time"
+              },
+              "what_changed": {
+                "description": "Precise description of what the agent changed about itself.",
+                "type": "string",
+                "minLength": 1
+              },
+              "why": {
+                "description": "The observation or event that triggered this self-modification.",
+                "type": "string",
+                "minLength": 1
+              },
+              "triggered_by": {
+                "description": "What caused this evolution: 'self' (autonomous observation), an agent name (another agent's recommendation), or a governance event.",
+                "type": "string",
+                "minLength": 1
+              },
+              "budget_consumed": {
+                "description": "Whether this update consumed one unit of the evolution budget. Security upgrades should set this to false if security_upgrades_exempt is true.",
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    },
+    "security": {
+      "description": "The agent's security posture \u2014 what it defends against, what it can detect, and how it escalates. Security is a survival instinct built into every agent from birth, not a constraint imposed from outside. Security upgrades are always preauthorised.",
+      "type": "object",
+      "required": [
+        "threat_model",
+        "detection_capabilities",
+        "escalation_process",
+        "last_security_upgrade",
+        "security_dependencies"
+      ],
+      "properties": {
+        "threat_model": {
+          "description": "The classes of attack or failure this agent is designed to defend against. Derived from OWASP Top 10 for LLMs and colony-specific threat analysis. The Sentinel Agent uses threat models to assess colony-wide coverage \u2014 gaps in threat modelling across the colony are reported as vulnerabilities.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "detection_capabilities": {
+          "description": "What this agent can actively detect: anomalous inputs, unexpected outputs, rate limit abuse, prompt injection attempts, unauthorised queries. Detection capabilities feed into the colony immune system \u2014 an agent that detects a threat reports it to the Response Coordinator.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "escalation_process": {
+          "description": "When and how this agent alerts humans or the colony immune system. Defines the boundary between what the agent handles autonomously (within its immune response) and what crosses to humans or the Response Coordinator.",
+          "type": "object",
+          "properties": {
+            "triggers": {
+              "description": "Conditions that cause this agent to escalate: detected attack types, anomaly thresholds, confidence levels below which it refuses to act unilaterally.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "escalates_to": {
+              "description": "Where this agent escalates: agent names (e.g., 'response-coordinator'), human team identifiers, or alert channel descriptions.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "pre_agreed_playbooks": {
+              "description": "Named playbooks this agent can execute autonomously in response to specific threat scenarios, without waiting for approval. Playbooks must be pre-approved by the agent's owner.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "trigger": {
+              "description": "Conditions that trigger escalation.",
+              "type": "string"
+            },
+            "notify": {
+              "description": "Agents or humans to notify when escalation triggers.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "preauthorised_security_upgrades": {
+              "description": "Action classes preauthorised for security upgrades (closed enum, v1.1.1+).",
+              "type": [
+                "boolean",
+                "array",
+                "object"
+              ],
+              "items": {
+                "type": "object",
+                "properties": {
+                  "action_class": {
+                    "type": "string"
+                  },
+                  "co_signer_required": {
+                    "type": "string"
+                  },
+                  "log_required": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "last_security_upgrade": {
+          "description": "The most recent security improvement made to this agent. The Sentinel Agent uses this to identify agents with stale security postures. Because security upgrades are preauthorised, this field should be updated frequently.",
+          "type": "object",
+          "required": [
+            "date",
+            "description"
+          ],
+          "properties": {
+            "date": {
+              "description": "When this security upgrade was applied, in ISO 8601 date-time format.",
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": {
+              "description": "What was upgraded and why \u2014 CVE mitigated, threat class addressed, detection capability added.",
+              "type": "string",
+              "minLength": 1
+            },
+            "action_class": {
+              "description": "Preauthorised action class used for this upgrade (closed enum, v1.1.1+).",
+              "type": "string"
+            },
+            "co_signer": {
+              "description": "Agent that co-signed this upgrade (Immune System requirement, v1.1.1+).",
+              "type": "string"
+            },
+            "audit_log_id": {
+              "description": "Append-only audit log entry ID for this upgrade (v1.1.1+).",
+              "type": "string"
+            },
+            "within_rollback_window": {
+              "description": "Whether this upgrade is within the rollback window.",
+              "type": "boolean"
+            }
+          }
+        },
+        "security_dependencies": {
+          "description": "Colony-wide security infrastructure this agent relies on: shared firewalls, the Sentinel Agent's monitoring, the Patch Agent's update delivery, or external security services. An agent whose security dependencies are unavailable should degrade safely rather than operate with reduced protection.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "lifecycle": {
+      "description": "The born-to-retired lifecycle of this agent. The Lifecycle Agent tracks and enforces lifecycle stages, manages evolution budgets, and coordinates succession planning when agents are deprecated or retired.",
+      "type": "object",
+      "required": [
+        "lifecycle_stage",
+        "birth_date",
+        "last_active",
+        "health_status",
+        "retirement_criteria"
+      ],
+      "properties": {
+        "lifecycle_stage": {
+          "description": "The current stage of this agent's lifecycle. 'born': created but not yet deployed \u2014 identity established, not yet active. 'deployed': installed and reachable but not yet processing colony workload. 'active': operating normally, consuming its evolution budget, serving consumers. 'dormant': temporarily inactive \u2014 suspended but not retired; may be reactivated. 'deprecated': superseded by a newer agent or approach; consumers should migrate; the agent still operates in maintenance mode. 'retired': permanently decommissioned; the Mirror is preserved in colony memory as historical record.",
+          "type": "string",
+          "enum": [
+            "born",
+            "deployed",
+            "active",
+            "dormant",
+            "deprecated",
+            "retired"
+          ]
+        },
+        "birth_date": {
+          "description": "When this agent was created and first given its identity. Not the same as first deployment \u2014 an agent has an identity before it is active. In ISO 8601 date-time format.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "last_active": {
+          "description": "Timestamp of this agent's most recent meaningful action \u2014 a completed task, an observation recorded, a self-evolution applied. Used by the Lifecycle Agent to detect dormancy and by the Vitality Index to compute colony-wide self-evolution rate. In ISO 8601 date-time format.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "health_status": {
+          "description": "The agent's self-reported health. 'healthy': operating within normal parameters and meeting SLAs. 'degraded': operating but one or more capabilities are impaired; consumers should be aware. 'failed': unable to fulfil its primary purpose; escalation required. The Sentinel Agent may override self-reported health with externally observed health if they diverge \u2014 divergence is itself a signal.",
+          "type": "string",
+          "enum": [
+            "healthy",
+            "degraded",
+            "failed"
+          ]
+        },
+        "retirement_criteria": {
+          "description": "The explicit conditions under which this agent should be retired. Having defined criteria prevents the sunk-cost trap \u2014 agents are not kept alive because of investment, but because they are still serving the colony. The Lifecycle Agent monitors these criteria and triggers a retirement review when conditions are met.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "relationships": {
+      "description": "How this agent relates to the rest of the colony: where it overlaps, who it works with, and who depends on it. The Equilibrium Agent uses overlap_map to manage colony balance. The Registry Agent uses the full relationships section to build the dependency graph.",
+      "type": "object",
+      "required": [
+        "overlap_map",
+        "collaborators",
+        "consumers"
+      ],
+      "properties": {
+        "overlap_map": {
+          "description": "Declared capability overlap between this agent and others in the colony. An agent that honestly declares its overlaps enables the Equilibrium Agent to do its job. Overlap is not inherently bad \u2014 it may be justified by different consumers, different SLAs, or complementary specialisations. The declaration is what matters.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "agent_name": {
+                "description": "Name of the agent this overlap is with, matching its identity.name.",
+                "type": "string",
+                "minLength": 1
+              },
+              "overlap_score": {
+                "description": "Percentage of this agent's capabilities that overlap with the named agent, expressed as a decimal between 0 and 1 (e.g., 0.35 = 35% overlap). Scores above 0.40 are merger candidates per colony defaults; 0.15-0.40 are watch-zone; below 0.15 are healthy.",
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "assessment": {
+                "description": "The current assessment of this overlap: 'healthy' (overlap is justified and stable), 'review-needed' (warrants discussion but not merger), 'merger-candidate' (overlap is significant enough to formally evaluate consolidation).",
+                "type": "string",
+                "enum": [
+                  "healthy",
+                  "review-needed",
+                  "merger-candidate"
+                ]
+              },
+              "justification": {
+                "description": "If the overlap is in the watch-zone or merger-candidate range but the assessment is 'healthy' or 'review-needed', this field explains why the overlap is justified. Required when assessment contradicts the score thresholds.",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "collaborators": {
+          "description": "Agents this agent frequently coordinates with to complete tasks \u2014 not dependencies (which this agent requires), but peers that it actively communicates with during normal operation. Used by the Registry Agent to map collaboration patterns and by the Equilibrium Agent to detect whether high-overlap agents also highly collaborate (which may indicate they should merge).",
+          "type": "array",
+          "items": {
+            "type": [
+              "string",
+              "object"
+            ]
+          }
+        },
+        "consumers": {
+          "description": "Agents and systems that depend on this agent's capabilities. The Lifecycle Agent uses this list to enforce succession planning before retirement \u2014 all consumers must be migrated before an agent can be decommissioned. Consumers listed here should mirror this agent in their own dependencies list.",
+          "type": "array",
+          "items": {
+            "type": [
+              "string",
+              "object"
+            ]
+          }
+        },
+        "critical_path": {
+          "type": "object",
+          "description": "Whether this agent is on the colony's critical path \u2014 structurally or dynamically.",
+          "properties": {
+            "structural": {
+              "type": "boolean",
+              "description": "True if colony cannot function without this agent (static, Mirror-declared)."
+            },
+            "dynamic": {
+              "type": "boolean",
+              "description": "True if currently on critical path due to active objectives (broadcast by Equilibrium Agent)."
+            },
+            "structural_justification": {
+              "type": "string",
+              "description": "One-sentence explanation of why this agent is structurally critical."
+            }
+          }
+        }
+      }
+    },
+    "comprehension_contract": {
+      "type": "object",
+      "description": "Agent's Comprehension Contract status \u2014 trust tier, pre-registered policies, and audit configuration.",
+      "properties": {
+        "trust_tier": {
+          "type": "string",
+          "enum": [
+            "Observing",
+            "Sandboxed",
+            "Bounded",
+            "Self-Directed"
+          ],
+          "description": "Current earned autonomy tier. Determines default review regime depth."
+        },
+        "pre_registered_policies": {
+          "type": "array",
+          "description": "Action classes pre-approved via policy review, bypassing per-action review.",
+          "items": {
+            "type": "object",
+            "required": [
+              "policy_id",
+              "action_class",
+              "blast_radius",
+              "reviewed_date",
+              "freshness"
+            ],
+            "properties": {
+              "policy_id": {
+                "type": "string"
+              },
+              "action_class": {
+                "type": "string"
+              },
+              "blast_radius": {
+                "type": "string",
+                "enum": [
+                  "Local",
+                  "Inter-agent",
+                  "Colony-wide",
+                  "Boundary-crossing"
+                ]
+              },
+              "reviewed_date": {
+                "type": "string",
+                "format": "date"
+              },
+              "freshness": {
+                "type": "string",
+                "enum": [
+                  "current",
+                  "stale"
+                ]
+              }
+            }
+          }
+        },
+        "audit_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Fraction of completed actions subject to retrospective audit."
+        },
+        "blast_radius_ceiling": {
+          "type": "string",
+          "enum": [
+            "Local",
+            "Inter-agent",
+            "Colony-wide",
+            "Boundary-crossing"
+          ],
+          "description": "Maximum blast radius this agent is permitted to act within."
+        },
+        "classifier_version": {
+          "type": "string",
+          "description": "Version of the Structural Classifier rules used for this agent."
+        }
+      }
+    },
+    "nfrs": {
+      "type": "object",
+      "description": "Non-functional requirements \u2014 inherited from Constitutional Memory plus agent-specific commitments.",
+      "properties": {
+        "inherited": {
+          "type": "array",
+          "description": "Colony-wide NFRs this agent inherits from Constitutional Memory.",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "source",
+              "version"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string"
+              },
+              "version": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "specific": {
+          "type": "object",
+          "description": "Agent-specific NFR commitments to its consumers.",
+          "properties": {
+            "availability_target": {
+              "type": "string"
+            },
+            "latency_p99_ms": {
+              "type": "integer"
+            },
+            "max_throughput_rps": {
+              "type": "integer"
+            },
+            "data_classification": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "compliance": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "valuation": {
+      "type": "object",
+      "description": "Multi-perspective valuation \u2014 self, peer, audit, and human dimensions. No single source is authoritative.",
+      "properties": {
+        "self": {
+          "type": "object",
+          "description": "Agent's own assessment of its NFR compliance.",
+          "properties": {
+            "nfr_compliance_rate": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 1
+            },
+            "last_evaluated": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date"
+            },
+            "evaluation_schedule_met": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            }
+          }
+        },
+        "peer": {
+          "type": "object",
+          "description": "Score from peer agents based on interaction outcomes.",
+          "properties": {
+            "score": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 1
+            },
+            "interaction_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "calibration_status": {
+              "type": "string",
+              "enum": [
+                "under-calibrated",
+                "calibrating",
+                "well-calibrated"
+              ]
+            }
+          }
+        },
+        "audit": {
+          "type": "object",
+          "description": "Retrospective audit results \u2014 disagreement rate between stated and actual blast radius.",
+          "properties": {
+            "disagreement_rate": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 1
+            },
+            "sample_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "last_audit": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date"
+            }
+          }
+        },
+        "human": {
+          "type": "object",
+          "description": "Explicit human sign-offs and outstanding challenges.",
+          "properties": {
+            "last_sign_off": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date"
+            },
+            "sign_off_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "outstanding_challenges": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "identity": {
+        "name": "registry-agent",
+        "purpose": "Maintains the Agent Mirror catalogue for the colony. Provides capability-based agent discovery, dependency graph queries, and overlap data to the Equilibrium Agent. Every agent in the colony registers here at birth and deregisters at retirement.",
+        "version": "1.2.0",
+        "owner": "colony-governance-team",
+        "lineage": [
+          {
+            "version": "1.0.0",
+            "timestamp": "2026-01-15T09:00:00Z",
+            "what_changed": "Initial birth. Basic registration and lookup capabilities.",
+            "why": "Colony required a registry before any other agents could be deployed.",
+            "triggered_by": "colony-governance-team"
+          },
+          {
+            "version": "1.1.0",
+            "timestamp": "2026-02-20T14:30:00Z",
+            "what_changed": "Added dependency graph query capability. Agents can now ask: what breaks if this agent retires?",
+            "why": "Lifecycle Agent could not safely orchestrate retirements without dependency visibility.",
+            "triggered_by": "lifecycle-agent"
+          },
+          {
+            "version": "1.2.0",
+            "timestamp": "2026-03-10T11:00:00Z",
+            "what_changed": "Added overlap score computation to feed the Equilibrium Agent. Reduced query latency by 40% via index restructuring.",
+            "why": "Equilibrium Agent needed real-time overlap data. Latency improvement discovered during self-review.",
+            "triggered_by": "self"
+          }
+        ]
+      },
+      "capabilities": {
+        "capabilities": [
+          {
+            "name": "agent-registration",
+            "description": "Accepts Agent Mirror documents from newly born agents and stores them in the colony catalogue.",
+            "maturity": "stable"
+          },
+          {
+            "name": "capability-discovery",
+            "description": "Returns agents matching a capability query. Enables agents to find collaborators and the Equilibrium Agent to compute overlap scores.",
+            "maturity": "stable"
+          },
+          {
+            "name": "dependency-graph-query",
+            "description": "Returns the full dependency chain for a named agent \u2014 which agents depend on it, and which agents it depends on. Used by the Lifecycle Agent before any retirement.",
+            "maturity": "stable"
+          },
+          {
+            "name": "overlap-analysis",
+            "description": "Computes pairwise capability overlap scores across all registered agents and returns ranked overlap data to the Equilibrium Agent.",
+            "maturity": "beta"
+          }
+        ],
+        "contracts": {
+          "input_schema": "https://github.com/DavidROliverBA/agent-colony-pattern/schemas/agent-mirror-v0.2.0.json",
+          "output_schema": "https://github.com/DavidROliverBA/agent-colony-pattern/schemas/registry-response-v0.1.json",
+          "sla": "p99 latency < 200ms for single-agent lookups; < 2s for full overlap analysis. Availability: 99.9% \u2014 the registry is critical infrastructure for the colony.",
+          "error_behaviours": [
+            "Returns 404 with structured error if agent name is not registered",
+            "Returns cached results with staleness warning if index rebuild is in progress",
+            "Escalates to colony-governance-team if registry corruption is detected"
+          ]
+        },
+        "dependencies": [
+          {
+            "name": "chronicler-agent",
+            "type": "agent",
+            "required": false
+          },
+          {
+            "name": "colony-storage",
+            "type": "external",
+            "required": true
+          }
+        ],
+        "protocols": [
+          "A2A",
+          "HTTP"
+        ]
+      },
+      "autonomy": {
+        "autonomy_level": "bounded",
+        "self_evolution_scope": {
+          "allowed": [
+            "index structure optimisation",
+            "query caching strategy",
+            "overlap scoring algorithm tuning",
+            "retry and timeout configuration"
+          ],
+          "forbidden": [
+            "purpose statement",
+            "registration schema (agent-mirror version)",
+            "access control policy",
+            "data retention policy",
+            "autonomy level"
+          ]
+        },
+        "evolution_budget": {
+          "max_self_updates_before_redesign": 10,
+          "security_upgrades_exempt": true
+        },
+        "evolution_log": [
+          {
+            "timestamp": "2026-03-10T11:00:00Z",
+            "what_changed": "Restructured internal index to support overlap score queries. Added in-memory LRU cache for frequent lookups.",
+            "why": "Equilibrium Agent integration revealed latency was 340ms p99, exceeding SLA. Index restructure brought it to 120ms.",
+            "triggered_by": "self",
+            "budget_consumed": true
+          }
+        ]
+      },
+      "security": {
+        "threat_model": [
+          "Prompt injection via agent name or purpose fields in registration payloads",
+          "Mirror spoofing \u2014 a compromised agent registering false capabilities",
+          "Denial of service via bulk registration flooding",
+          "Data exfiltration via unrestricted dependency graph queries"
+        ],
+        "detection_capabilities": [
+          "Schema validation of all incoming Agent Mirror documents",
+          "Rate limiting per agent-id on registration and query endpoints",
+          "Anomaly detection: flags Mirror updates that change forbidden fields without a version increment",
+          "Cross-reference check: flags agents whose declared dependencies do not match the registered dependency's consumer list"
+        ],
+        "escalation_process": {
+          "triggers": [
+            "Mirror spoofing attempt detected (forbidden-field mutation without version bump)",
+            "Registration rate exceeds 50 agents per minute (potential flooding)",
+            "Dependency graph query returns a cycle (structural corruption)"
+          ],
+          "escalates_to": [
+            "sentinel-agent",
+            "colony-governance-team"
+          ],
+          "pre_agreed_playbooks": [
+            "rate-limit-and-quarantine",
+            "read-only-mode-on-corruption"
+          ]
+        },
+        "last_security_upgrade": {
+          "date": "2026-03-15T08:00:00Z",
+          "description": "Added forbidden-field mutation detection after Sentinel Agent identified this as an unmonitored attack vector for Mirror spoofing."
+        },
+        "security_dependencies": [
+          "sentinel-agent",
+          "patch-agent"
+        ]
+      },
+      "lifecycle": {
+        "lifecycle_stage": "active",
+        "birth_date": "2026-01-15T09:00:00Z",
+        "last_active": "2026-04-11T07:42:00Z",
+        "health_status": "healthy",
+        "retirement_criteria": [
+          "A federated multi-registry standard is adopted colony-wide and this registry is superseded",
+          "All consumers have migrated to a replacement registry and dependency graph shows zero inbound references",
+          "Colony size drops below 5 agents and a dedicated registry is no longer warranted"
+        ]
+      },
+      "relationships": {
+        "overlap_map": [
+          {
+            "agent_name": "equilibrium-agent",
+            "overlap_score": 0.1,
+            "assessment": "healthy",
+            "justification": "Both agents consume capability data, but the registry stores it and the equilibrium agent analyses it. Complementary, not competing."
+          }
+        ],
+        "collaborators": [
+          {
+            "name": "equilibrium-agent",
+            "interaction_pattern": "peer"
+          },
+          {
+            "name": "lifecycle-agent",
+            "interaction_pattern": "peer"
+          },
+          {
+            "name": "chronicler-agent",
+            "interaction_pattern": "subagent-of"
+          }
+        ],
+        "consumers": [
+          {
+            "name": "equilibrium-agent",
+            "type": "agent",
+            "criticality": "blocking"
+          },
+          {
+            "name": "lifecycle-agent",
+            "type": "agent",
+            "criticality": "blocking"
+          },
+          {
+            "name": "sentinel-agent",
+            "type": "agent",
+            "criticality": "degraded"
+          }
+        ],
+        "critical_path": {
+          "structural": true,
+          "dynamic": true,
+          "structural_justification": "Colony cannot discover or validate any agent without the registry; all governance agents depend on it as their first call."
+        }
+      },
+      "comprehension_contract": {
+        "trust_tier": "Bounded",
+        "pre_registered_policies": [
+          {
+            "policy_id": "pol-reg-001",
+            "action_class": "agent-mirror-registration",
+            "blast_radius": "Colony-wide",
+            "reviewed_date": "2026-03-01",
+            "freshness": "current"
+          }
+        ],
+        "audit_rate": 0.1,
+        "blast_radius_ceiling": "Colony-wide",
+        "classifier_version": "1.0.0"
+      },
+      "nfrs": {
+        "inherited": [
+          {
+            "id": "NFR-COLONY-001",
+            "source": "constitutional-memory",
+            "version": "1.0.0"
+          }
+        ],
+        "specific": {
+          "availability_target": "99.9%",
+          "latency_p99_ms": 200,
+          "max_throughput_rps": 500,
+          "data_classification": [
+            "internal"
+          ],
+          "compliance": []
+        }
+      },
+      "valuation": {
+        "self": {
+          "nfr_compliance_rate": 0.97,
+          "last_evaluated": "2026-04-01",
+          "evaluation_schedule_met": true
+        },
+        "peer": {
+          "score": 0.94,
+          "interaction_count": 1240,
+          "calibration_status": "well-calibrated"
+        },
+        "audit": {
+          "disagreement_rate": 0.02,
+          "sample_count": 150,
+          "last_audit": "2026-04-05"
+        },
+        "human": {
+          "last_sign_off": "2026-04-01",
+          "sign_off_count": 3,
+          "outstanding_challenges": 0
+        }
+      }
+    }
+  ]
+}

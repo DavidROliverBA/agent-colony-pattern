@@ -152,3 +152,50 @@ relationships:
     - sentinel-agent
   consumers:
     - finance-team  # primary human consumer
+  critical_path:
+    structural: false
+    dynamic: false
+    structural_justification: "L3 domain agent. Not structurally critical — colony operates without it. May become dynamically critical during financial reporting periods."
+
+comprehension_contract:
+  trust_tier: Observing
+  pre_registered_policies: []
+  audit_rate: 1.0
+  blast_radius_ceiling: Inter-agent
+  classifier_version: "1.0"
+
+nfrs:
+  inherited:
+    - id: colony-event-logging
+      source: constitutional_memory
+      version: "2026-04-13"
+    - id: colony-gdpr-data-residency
+      source: constitutional_memory
+      version: "2026-04-13"
+  specific:
+    availability_target: "99.5%"
+    latency_p99_ms: 200
+    max_throughput_rps: 500
+    data_classification:
+      - internal
+      - restricted
+    compliance:
+      - GDPR
+
+valuation:
+  self:
+    nfr_compliance_rate: 0.97
+    last_evaluated: "2026-04-13"
+    evaluation_schedule_met: true
+  peer:
+    score: null
+    interaction_count: 0
+    calibration_status: under-calibrated
+  audit:
+    disagreement_rate: null
+    sample_count: 0
+    last_audit: null
+  human:
+    last_sign_off: "2026-04-13"
+    sign_off_count: 1
+    outstanding_challenges: 0

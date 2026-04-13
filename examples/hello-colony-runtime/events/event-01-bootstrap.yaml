@@ -1,0 +1,18 @@
+event_id: "EVT-001"
+type: bootstrap
+description: >
+  Colony bootstrap: all agents register with the Registry Agent.
+  Each agent's Agent Mirror is validated against the schema and
+  loaded into the registry. The Registry builds the dependency graph
+  from the relationships sections.
+expected_output: >
+  One REGISTRY line per agent showing trust_tier and critical_path.structural.
+  Agents that fail schema validation are flagged and quarantined.
+agents_involved:
+  - registry-agent
+  - equilibrium-agent
+  - sentinel-agent
+  - chronicler-agent
+  - domain-agent-finance
+blast_radius: Colony-wide
+review_regime: "Constitutional (bootstrap is a structural action)"

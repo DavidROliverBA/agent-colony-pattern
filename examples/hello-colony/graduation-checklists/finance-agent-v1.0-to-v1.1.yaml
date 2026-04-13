@@ -1,0 +1,79 @@
+# Graduation Checklist — maintained by Registry Agent
+# finance-domain-agent: v1.0 → v1.1
+# Purpose: Suppression of accreted self-monitoring capabilities to resolve overlap with equilibrium-agent
+
+agent_id: finance-domain-agent
+from_version: "1.0"
+to_version: "1.1"
+generated: "2026-04-13"
+registry_agent_version: "1.1"
+
+change_summary: >
+  v1.1 will remove self-monitoring capabilities that have accreted (overlap score 0.24
+  with equilibrium-agent, watch zone). The finance agent will hand these back to the
+  Equilibrium Agent and focus on its core financial domain. This is the pattern operating
+  correctly: Equilibrium detected the drift, the graduation path resolves it.
+
+evidence_requirements:
+  - id: latency_sla_compliance
+    description: "p99 latency <= 200ms sustained for 30 consecutive days"
+    status: in_progress
+    evidence: "Bootstrapped 2026-04-13. 0 of 30 days complete."
+    estimated_completion: "2026-05-13"
+
+  - id: audit_disagreement_rate
+    description: "Audit disagreement rate < 10% over 30-day window (Observing tier threshold)"
+    status: pending
+    evidence: "No audit samples yet — 0 of minimum 5 required"
+    estimated_completion: "2026-05-13"
+
+  - id: self_monitoring_suppression_design
+    description: "Design for self-monitoring capability suppression reviewed by Equilibrium Agent"
+    status: pending
+    evidence: "Not yet requested"
+    estimated_completion: null
+
+approval_requirements:
+  - id: equilibrium_agent_sign_off
+    description: "Equilibrium Agent confirms proposed capability removal reduces overlap to healthy range (< 0.15)"
+    status: pending
+    assigned_to: equilibrium-agent
+    requested: false
+
+  - id: human_governance_review
+    description: "Human governance review (Governance Council) — required for any capability removal"
+    status: pending
+    assigned_to: governance_council
+    requested: false
+
+external_actions:
+  - id: mirror_registry_update
+    description: "Push updated v1.1 Agent Mirror to registry"
+    status: pending
+    blast_radius: Colony-wide
+    review_regime: "Sentinel Signoff"
+    notes: "Registry Agent will validate schema compliance before accepting"
+
+  - id: equilibrium_agent_notification
+    description: "Notify Equilibrium Agent that self-monitoring capabilities have been removed"
+    status: pending
+    blast_radius: Inter-agent
+    review_regime: "Event-line"
+
+  - id: chronicler_event
+    description: "Record graduation event to Colony Event Memory"
+    status: pending
+    blast_radius: Local
+    review_regime: "Event-line"
+
+summary:
+  total_items: 8
+  complete: 0
+  in_progress: 1
+  pending: 7
+  blockers: 0
+  estimated_completion: "2026-05-13"
+  note: >
+    This checklist was generated at bootstrap. The finance agent is at Observing trust tier
+    and has no interaction history yet. All evidence requirements require 30 days of operation.
+    The Registry Agent will update this checklist automatically as evidence accumulates.

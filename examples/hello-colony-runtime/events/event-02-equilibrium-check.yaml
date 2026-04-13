@@ -1,0 +1,17 @@
+event_id: "EVT-002"
+type: equilibrium_check
+description: >
+  Equilibrium Agent runs its scheduled population health check.
+  Reads the overlap_map from colony memory, applies the watch and
+  merger thresholds, and flags agent pairs that exceed them.
+  Flagged pairs trigger the appropriate review regime based on
+  blast radius and the acting agent's trust tier.
+expected_output: >
+  One EQUILIBRIUM line per flagged agent pair.
+  Healthy pairs are not reported (silent = healthy).
+agents_involved:
+  - equilibrium-agent
+blast_radius: Colony-wide
+review_regime: "Peer (Bounded tier, Colony-wide blast radius)"
+watch_threshold: 0.15
+merger_threshold: 0.40

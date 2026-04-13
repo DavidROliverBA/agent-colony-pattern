@@ -153,3 +153,45 @@ relationships:
     - registry-agent         # all registry operations are recorded here
     - domain-agent-finance   # records domain events for audit trail
     - colony-core-team       # primary human consumer of audit trail and timeline queries
+  critical_path:
+    structural: true
+    dynamic: false
+    structural_justification: "Chronicler has no dependencies (terminal node). All colony memory depends on Chronicler writing. Without it, Event Memory stops and the colony goes blind."
+
+comprehension_contract:
+  trust_tier: Bounded
+  pre_registered_policies: []
+  audit_rate: 0.10
+  blast_radius_ceiling: Colony-wide
+  classifier_version: "1.0"
+
+nfrs:
+  inherited:
+    - id: colony-event-logging
+      source: constitutional_memory
+      version: "2026-04-13"
+  specific:
+    availability_target: "99.9%"
+    latency_p99_ms: 150
+    max_throughput_rps: 2000
+    data_classification:
+      - internal
+    compliance: []
+
+valuation:
+  self:
+    nfr_compliance_rate: 1.0
+    last_evaluated: "2026-04-13"
+    evaluation_schedule_met: true
+  peer:
+    score: null
+    interaction_count: 0
+    calibration_status: under-calibrated
+  audit:
+    disagreement_rate: null
+    sample_count: 0
+    last_audit: null
+  human:
+    last_sign_off: "2026-04-13"
+    sign_off_count: 1
+    outstanding_challenges: 0

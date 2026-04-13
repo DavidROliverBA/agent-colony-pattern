@@ -180,3 +180,50 @@ relationships:
     - equilibrium-agent
     - sentinel-agent
     - domain-agent-finance
+  critical_path:
+    structural: true
+    dynamic: false
+    structural_justification: "Every colony agent depends on Registry for discovery and dependency graphing. Registry failure is Colony-wide."
+
+comprehension_contract:
+  trust_tier: Bounded
+  pre_registered_policies:
+    - policy_id: bulk-register-p001
+      action_class: bulk_register
+      blast_radius: Colony-wide
+      reviewed_date: "2026-04-21"
+      freshness: current
+  audit_rate: 0.10
+  blast_radius_ceiling: Colony-wide
+  classifier_version: "1.0"
+
+nfrs:
+  inherited:
+    - id: colony-event-logging
+      source: constitutional_memory
+      version: "2026-04-13"
+  specific:
+    availability_target: "99.9%"
+    latency_p99_ms: 100
+    max_throughput_rps: 1000
+    data_classification:
+      - internal
+    compliance: []
+
+valuation:
+  self:
+    nfr_compliance_rate: 1.0
+    last_evaluated: "2026-04-13"
+    evaluation_schedule_met: true
+  peer:
+    score: 0.97
+    interaction_count: 3
+    calibration_status: calibrating
+  audit:
+    disagreement_rate: 0.0
+    sample_count: 1
+    last_audit: "2026-04-21"
+  human:
+    last_sign_off: "2026-04-13"
+    sign_off_count: 1
+    outstanding_challenges: 0

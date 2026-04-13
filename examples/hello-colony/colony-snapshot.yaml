@@ -217,3 +217,37 @@ dependency_graph:
     widely consumed agent (3 consumers). Sentinel and Equilibrium form the governance
     spine. Domain Agent Finance is the only L3 agent; as the mesh grows, new domain
     and specialist agents will add edges primarily to Registry and Chronicler."
+
+# ── Comprehension Contract Overview ─────────────────────────────────────────
+comprehension_contract_overview:
+  classifier_version: "1.0"
+  note: >
+    All agents in this colony operate under the Comprehension Contract (v1.3.0).
+    Every action produces a comprehension artefact before execution. The required
+    depth is determined by the agent's trust_tier and the action's blast_radius.
+
+  trust_tier_distribution:
+    Observing:
+      - domain-agent-finance       # audit_rate: 100%, per-action review
+    Sandboxed: []
+    Bounded:
+      - registry-agent             # audit_rate: 10%
+      - equilibrium-agent          # audit_rate: 10%
+      - sentinel-agent             # audit_rate: 10%, blast_radius_ceiling: Boundary-crossing
+      - chronicler-agent           # audit_rate: 10%
+    Self-Directed: []
+
+  structural_critical_path:
+    agents:
+      - registry-agent
+      - equilibrium-agent
+      - sentinel-agent
+      - chronicler-agent
+    note: "All L1/L2 agents are structurally critical. Their blast_radius_ceiling is Colony-wide or Boundary-crossing regardless of action."
+
+  active_graduation_checklists:
+    - agent: domain-agent-finance
+      from: "1.0"
+      to: "1.1"
+      file: graduation-checklists/finance-agent-v1.0-to-v1.1.yaml
+      estimated_completion: "2026-05-13"

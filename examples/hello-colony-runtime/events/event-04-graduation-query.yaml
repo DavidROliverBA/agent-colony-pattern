@@ -1,0 +1,15 @@
+event_id: "EVT-004"
+type: graduation_query
+description: >
+  Finance agent queries its graduation checklist from the Registry Agent.
+  The Registry returns the current checklist for finance-agent v1.0→v1.1,
+  showing evidence requirements, approval requirements, and external actions
+  with their current status.
+expected_output: >
+  Formatted graduation checklist summary showing complete/in_progress/pending counts
+  and estimated completion date.
+agents_involved:
+  - registry-agent
+  - domain-agent-finance
+blast_radius: Local
+review_regime: "Event-line (read-only query)"

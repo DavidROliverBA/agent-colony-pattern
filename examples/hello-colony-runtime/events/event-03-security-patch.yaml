@@ -1,0 +1,15 @@
+event_id: "EVT-003"
+type: security_patch
+description: >
+  Sentinel co-signs a preauthorised security patch for registry-agent.
+  The patch action class (patch_application) is in the Sentinel's
+  preauthorised enum, so no additional peer review is required.
+  The co-sign is recorded in the append-only audit log.
+expected_output: >
+  SENTINEL line confirming preauthorised enum match, co-sign, log ID, and rollback window.
+agents_involved:
+  - sentinel-agent
+  - registry-agent
+blast_radius: Colony-wide
+review_regime: "Preauthorised — Sentinel co-sign only"
+cve: "CVE-2026-0441"

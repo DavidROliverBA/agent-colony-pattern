@@ -6,7 +6,7 @@ The Agent Colony is an architectural pattern for building self-governing ecosyst
 
 > 📖 **New here? Start with the lay-audience article:** [*It takes a village — the Agent Colony definition*](https://medium.com/@davidroliver/it-takes-a-village-the-agent-colony-definition-32b9bd714bb8) on Medium (16 min read). It explains the pattern using the metaphor of a village, with no jargon. The text is also preserved in [`knowledge-base/writings/`](knowledge-base/writings/2026-04-12-it-takes-a-village.md).
 
-Current version: **v1.2.2** · [What's new](CHANGELOG.md) · [Latest release](https://github.com/DavidROliverBA/agent-colony-pattern/releases/latest)
+Current version: **v1.3.0** · [What's new](CHANGELOG.md) · [Latest release](https://github.com/DavidROliverBA/agent-colony-pattern/releases/latest)
 
 ## What's in this repository
 
@@ -16,7 +16,7 @@ Current version: **v1.2.2** · [What's new](CHANGELOG.md) · [Latest release](ht
 | **[Thesis Paper](thesis.md)** | The full academic-lite treatment with literature review against 12 existing standards, formal gap analysis, six diagrams, and scales of application. Cite this for peer review. |
 | **[Specification](specification.md)** | The detailed technical reference. Four-layer architecture, Agent Mirror schema, colony dynamics, maturity model, conformance section with anti-patterns and failure modes. |
 | **[Schema](schemas/)** | `agent-mirror-v0.1.json` — JSON Schema (draft 2020-12) formalising the Agent Mirror identity standard. |
-| **[Examples](examples/)** | `hello-colony` — a worked 5-agent example with pre/post-evolution pair. Plus [`demonstration-options.md`](examples/demonstration-options.md) — a design memo of ten options for building a visual demonstration of the pattern. |
+| **[Examples](examples/)** | `hello-colony` — a worked 5-agent example with pre/post-evolution pair. `hello-colony-runtime` — deterministic Python simulation of four colony events (no LLM calls). `equilibrium-playground` — browser visualisation of the Equilibrium System (no build step). Plus [`demonstration-options.md`](examples/demonstration-options.md) — a design memo of ten options for building a visual demonstration of the pattern. |
 | **[Diagrams](diagrams/)** | Six SVG diagrams (render inline on GitHub) plus the Excalidraw source files. See [`diagrams/README.md`](diagrams/README.md) for the shared colour palette and style conventions. |
 | **[Knowledge Base](knowledge-base/)** | Feedback received (good and bad), lessons extracted, prior art, standards watch. The pattern's own evolution, captured as it happens. |
 
@@ -99,7 +99,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide, including how the pap
 
 If you reference this work, please cite:
 
-> Oliver, D. (2026). *The Agent Colony: A Pattern Language for Self-Governing AI Agent Ecosystems* (v1.2.2). https://github.com/DavidROliverBA/agent-colony-pattern
+> Oliver, D. (2026). *The Agent Colony: A Pattern Language for Self-Governing AI Agent Ecosystems* (v1.3.0). https://github.com/DavidROliverBA/agent-colony-pattern
 
 Machine-readable citation metadata is in [`CITATION.cff`](CITATION.cff).
 
