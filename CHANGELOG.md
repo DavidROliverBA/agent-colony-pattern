@@ -5,6 +5,20 @@ All notable changes to the Agent Colony Pattern are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] — 2026-04-13
+
+### Added
+- **`knowledge-base/writings/`** — new subfolder for things written *about* the pattern. Articles, blog posts, talks. Each entry is preserved verbatim with a link to the canonical published version.
+- **First article: *It takes a village — the Agent Colony definition*** by David R Oliver, published on Medium 2026-04-12. The lay-audience introduction to the pattern, using the metaphor of a village for the six principles, the colony memory layers, and the epistemic discipline. Captured at [`knowledge-base/writings/2026-04-12-it-takes-a-village.md`](knowledge-base/writings/2026-04-12-it-takes-a-village.md). [Read on Medium](https://medium.com/@davidroliver/it-takes-a-village-the-agent-colony-definition-32b9bd714bb8).
+
+### Changed
+- **`README.md`** — surfaces the article in two places: a callout near the top ("New here? Start with the lay-audience article"), and as the first entry in the "Scope and audiences" section, recognising that not every reader is a technical practitioner.
+- **`knowledge-base/README.md`** — structure listing now includes the `writings/` subfolder with a note on how it complements the other three (incoming feedback, outgoing writings, distilled lessons, inherited references).
+
+### Why
+
+The article is the first time the Agent Colony pattern has been written for a non-technical audience. It belongs in the knowledge base alongside the feedback and lessons because it is part of the pattern's evolution — specifically, the moment the pattern moved from "thing the author thinks about" to "thing the author has explained to someone else's family". Preserving it in-repo (not just linking to Medium) means future contributors can trace what was said to whom and when, even if the live URL changes.
+
 ## [1.2.0] — 2026-04-13
 
 ### Added

@@ -4,7 +4,9 @@
 
 The Agent Colony is an architectural pattern for building self-governing ecosystems of autonomous AI agents that persist beyond the projects that create them, evolve across technology generations, and coexist with human organisations through defined boundaries. It is not a framework, a platform, or a product — it is a pattern, like microservices or event-driven architecture, that can be implemented in any technology, on any infrastructure, by any organisation.
 
-Current version: **v1.2.0** · [What's new](CHANGELOG.md) · [Latest release](https://github.com/DavidROliverBA/agent-colony-pattern/releases/latest)
+> 📖 **New here? Start with the lay-audience article:** [*It takes a village — the Agent Colony definition*](https://medium.com/@davidroliver/it-takes-a-village-the-agent-colony-definition-32b9bd714bb8) on Medium (16 min read). It explains the pattern using the metaphor of a village, with no jargon. The text is also preserved in [`knowledge-base/writings/`](knowledge-base/writings/2026-04-12-it-takes-a-village.md).
+
+Current version: **v1.2.1** · [What's new](CHANGELOG.md) · [Latest release](https://github.com/DavidROliverBA/agent-colony-pattern/releases/latest)
 
 ## What's in this repository
 
@@ -20,9 +22,10 @@ Current version: **v1.2.0** · [What's new](CHANGELOG.md) · [Latest release](ht
 
 ## Scope and audiences
 
-This repository has three distinct audiences. Read the document that fits your need:
+This repository has four distinct audiences. Read the document that fits your need:
 
-- **If you want the argument** — read [`manifesto.md`](manifesto.md). 15 minutes. Opinionated, shareable. No engineering detail.
+- **If you are not a technical reader** — read [*It takes a village — the Agent Colony definition*](https://medium.com/@davidroliver/it-takes-a-village-the-agent-colony-definition-32b9bd714bb8) on Medium. 16 minutes. No jargon, uses a village as the running metaphor, written for someone wise about life but not about brackets and code.
+- **If you want the argument** — read [`manifesto.md`](manifesto.md). 15 minutes. Opinionated, shareable, practitioner voice.
 - **If you want the evidence** — read [`thesis.md`](thesis.md). Literature review, gap analysis, diagrams. This is the version to cite.
 - **If you want to build it** — read [`specification.md`](specification.md), then [`schemas/agent-mirror-v0.1.json`](schemas/agent-mirror-v0.1.json), then [`examples/hello-colony/`](examples/hello-colony/). In that order.
 
@@ -96,7 +99,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide, including how the pap
 
 If you reference this work, please cite:
 
-> Oliver, D. (2026). *The Agent Colony: A Pattern Language for Self-Governing AI Agent Ecosystems* (v1.2.0). https://github.com/DavidROliverBA/agent-colony-pattern
+> Oliver, D. (2026). *The Agent Colony: A Pattern Language for Self-Governing AI Agent Ecosystems* (v1.2.1). https://github.com/DavidROliverBA/agent-colony-pattern
 
 Machine-readable citation metadata is in [`CITATION.cff`](CITATION.cff).
 

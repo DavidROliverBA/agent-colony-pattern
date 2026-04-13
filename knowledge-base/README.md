@@ -11,12 +11,14 @@ knowledge-base/
 ├── README.md                    # this file
 ├── feedback/                    # peer review, critique, reader reactions
 ├── lessons/                     # insights extracted from feedback and development
-└── references/                  # external prior art, related standards, academic work
+├── references/                  # external prior art, related standards, academic work
+└── writings/                    # things written about the pattern (articles, talks)
 ```
 
 - **[feedback/](feedback/)** — peer review captured as it arrives. Every round is dated and preserved. Negative feedback is as welcome as positive — it is the kind that changes things.
 - **[lessons/](lessons/)** — insights distilled from the feedback and from building. Each lesson carries an evidence grade and a note on whether it has graduated into a specification rule.
 - **[references/](references/)** — external work the pattern engages with: prior art, related standards, academic papers. The literature review in the thesis is the formal statement; these files are the working notes behind it.
+- **[writings/](writings/)** — articles, blog posts, and talks about the pattern. Each entry is preserved verbatim with a link to the canonical published version. Outgoing communication, complementing the incoming feedback.
 
 Forward-looking design memos about what to build next live in [`../examples/`](../examples/) alongside worked examples. Start with [`../examples/demonstration-options.md`](../examples/demonstration-options.md) for the most recent.
 
