@@ -5,6 +5,12 @@ All notable changes to the Agent Colony Pattern are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.4] — 2026-04-13
+
+### Fixed
+- **Agent Mirror diagram: mirror-symmetric layout and perfectly horizontal arrows.** The diagram previously had the "Self" label with two zig-zag arrows reaching across multiple sections, and the right-side arrows were slightly off-horizontal (10px drift). Rebuilt with strict bilateral symmetry: three labels on the left (Registry Agent → Core Identity, Self → Autonomy, Lifecycle Agent → Lifecycle) and three on the right (Other Agents → Capabilities, Immune System → Security, Governance → Relationships). Every arrow is a single horizontal segment with `y_start == y_end` at the target section's y-centre. Every section now has exactly one external reader.
+- The underlying excalidraw-diagram skill has been updated with explicit Arrow Straightness and Symmetric Layout rules so future diagrams follow the same discipline by default.
+
 ## [1.1.3] — 2026-04-13
 
 ### Fixed
