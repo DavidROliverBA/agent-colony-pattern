@@ -5,6 +5,22 @@ All notable changes to the Agent Colony Pattern are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] — 2026-04-13
+
+### Added
+- **`knowledge-base/`** — new top-level folder capturing the pattern's own evolution. Three subfolders:
+  - **`feedback/`** — peer review captured as it arrives. Four rounds so far, one file per round, each with: key points raised, verdict, what changed in response, and what has not changed and why. Negative feedback kept alongside positive.
+  - **`lessons/`** — insights extracted from feedback and development. Each lesson carries an evidence grade (empirical / corroborated / theoretical / inherited / anecdotal) and a note on whether it has graduated to a specification rule. Four lessons so far: *acknowledgment is not mitigation*, *diagrams must run on rules not taste*, *scale slippage is a feature when stated*, *worked examples must track the spec*.
+  - **`references/`** — prior art (MAPE-K, FIPA, KQML, MOISE+ / OperA / Jason, Constitutional AI, stigmergy, holonics, Agentic Hives) and active standards watch (A2A, MCP, AGNTCY / OASF, NIST Agent Standards Initiative, AGENTS.md, IEEE P3119, ISO/IEC 42001 family). Working notes behind the thesis literature review, including concessions and disagreements the formal prose compresses.
+- **`examples/demonstration-options.md`** — a design memo of ten options for building a visual demonstration of the pattern, organised against four purposes (demonstrate, educate, evaluate, prove). Includes a purpose-fit matrix, three recommended combinations at different ambition levels, and honest trade-offs. This is the first forward-looking design memo captured in the repo.
+
+### Changed
+- **`README.md`** — "What's in this repository" now lists the knowledge base and renames "Example" to "Examples" (to reflect that `examples/` now has more than just hello-colony).
+
+### Why
+
+The manifesto asks for interrogation, not agreement. The repo had no visible mechanism for capturing that interrogation — feedback arrived, was acted on, and disappeared into commit messages. The knowledge base closes that loop. Every substantive critique received in v1.0.0 through v1.1.6 is now a first-class artefact with traceable lineage: feedback → lesson → rule (where the lesson graduated). The pattern's own epistemic principles (evidence grades, mandatory dissent, lessons become rules) are now applied to the pattern's own development. The process the pattern prescribes for colonies is the process that built the pattern itself.
+
 ## [1.1.6] — 2026-04-13
 
 ### Added

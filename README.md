@@ -4,7 +4,7 @@
 
 The Agent Colony is an architectural pattern for building self-governing ecosystems of autonomous AI agents that persist beyond the projects that create them, evolve across technology generations, and coexist with human organisations through defined boundaries. It is not a framework, a platform, or a product — it is a pattern, like microservices or event-driven architecture, that can be implemented in any technology, on any infrastructure, by any organisation.
 
-Current version: **v1.1.6** · [What's new](CHANGELOG.md) · [Latest release](https://github.com/DavidROliverBA/agent-colony-pattern/releases/latest)
+Current version: **v1.2.0** · [What's new](CHANGELOG.md) · [Latest release](https://github.com/DavidROliverBA/agent-colony-pattern/releases/latest)
 
 ## What's in this repository
 
@@ -14,8 +14,9 @@ Current version: **v1.1.6** · [What's new](CHANGELOG.md) · [Latest release](ht
 | **[Thesis Paper](thesis.md)** | The full academic-lite treatment with literature review against 12 existing standards, formal gap analysis, six diagrams, and scales of application. Cite this for peer review. |
 | **[Specification](specification.md)** | The detailed technical reference. Four-layer architecture, Agent Mirror schema, colony dynamics, maturity model, conformance section with anti-patterns and failure modes. |
 | **[Schema](schemas/)** | `agent-mirror-v0.1.json` — JSON Schema (draft 2020-12) formalising the Agent Mirror identity standard. |
-| **[Example](examples/hello-colony/)** | `hello-colony` — a worked 5-agent example with pre/post-evolution pair, cross-referenced overlap declarations, and a concrete demonstration of preauthorised security upgrades. |
-| **[Diagrams](diagrams/)** | Six SVG diagrams (render inline on GitHub) plus the Excalidraw source files. |
+| **[Examples](examples/)** | `hello-colony` — a worked 5-agent example with pre/post-evolution pair. Plus [`demonstration-options.md`](examples/demonstration-options.md) — a design memo of ten options for building a visual demonstration of the pattern. |
+| **[Diagrams](diagrams/)** | Six SVG diagrams (render inline on GitHub) plus the Excalidraw source files. See [`diagrams/README.md`](diagrams/README.md) for the shared colour palette and style conventions. |
+| **[Knowledge Base](knowledge-base/)** | Feedback received (good and bad), lessons extracted, prior art, standards watch. The pattern's own evolution, captured as it happens. |
 
 ## Scope and audiences
 
@@ -95,7 +96,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide, including how the pap
 
 If you reference this work, please cite:
 
-> Oliver, D. (2026). *The Agent Colony: A Pattern Language for Self-Governing AI Agent Ecosystems* (v1.1.6). https://github.com/DavidROliverBA/agent-colony-pattern
+> Oliver, D. (2026). *The Agent Colony: A Pattern Language for Self-Governing AI Agent Ecosystems* (v1.2.0). https://github.com/DavidROliverBA/agent-colony-pattern
 
 Machine-readable citation metadata is in [`CITATION.cff`](CITATION.cff).
 
