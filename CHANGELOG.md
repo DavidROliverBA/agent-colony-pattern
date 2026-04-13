@@ -5,6 +5,22 @@ All notable changes to the Agent Colony Pattern are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.5] — 2026-04-13
+
+### Fixed
+
+- **Agent Mirror diagram: equal-length arrows on both sides.** Previous v1.1.4 had the left arrows at 180px and the right arrows at 40px stubs. Rebuilt with exactly 120px arrows on every side, labels positioned symmetrically around the card midpoint at x=640, `textAlign: right` on left labels and `textAlign: left` on right labels so the text pushes toward the arrow.
+- **Equilibrium diagram: centre-line alignment across all columns.** The three columns (Consolidation / Equilibrium / Fragmentation) now have every element — top label, subtitle, main box, super-agent blob, bottom gauge, gauge heading, gauge description — aligned on the same vertical centre lines at x=240/800/1360. Previously the gauge headings drifted (250/700/1310) and subtitle labels drifted by ±20px.
+- **Colony Memory Reflection Cycle: rebuilt from scratch with proper circular geometry.** Previous diagram had scattered node positions, inconsistent shape sizes, mismatched colours, floating annotations, and ambiguous arrow direction. Rebuilt with six nodes sitting on a geometric circle (radius 320, centre 640,500) at exact 60° angular spacing. All three memory stores are identical rectangles (240×120), all three transitions are identical ellipses (200×100). Arrows are uniform in stroke width and colour. Memory colours now form a progression (light blue → medium blue → dark blue) showing the distillation from events to lessons to constitutional rules. Annotations moved out of the ring — the centre is now a short "Colony Memory / The reflection cycle" heading, and the summary caption sits below the diagram as a figure caption.
+
+### Changed
+
+- Upstream excalidraw-diagram skill updated with three new rule sections:
+  - **Centre-Line Alignment** — elements in a shared column or row must share cx or cy exactly
+  - **Cycle Diagrams** — nodes on a cycle must sit on a geometric circle with equal angular spacing, peer nodes share size and shape, arrow styling is uniform
+  - **Annotations and Floating Text** — every text element must have a clear anchor; long explanations belong in figure captions below the diagram
+- Five new validation table rows catch these defects automatically in future diagrams.
+
 ## [1.1.4] — 2026-04-13
 
 ### Fixed

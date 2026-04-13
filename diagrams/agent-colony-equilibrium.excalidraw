@@ -90,7 +90,16 @@
       "boundElements": null,
       "link": null,
       "locked": false,
-      "points": [[0, 0], [600, 0]]
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          600,
+          0
+        ]
+      ]
     },
     {
       "type": "line",
@@ -115,7 +124,16 @@
       "boundElements": null,
       "link": null,
       "locked": false,
-      "points": [[0, 0], [600, 0]]
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          600,
+          0
+        ]
+      ]
     },
     {
       "type": "ellipse",
@@ -164,7 +182,16 @@
       "boundElements": null,
       "link": null,
       "locked": false,
-      "points": [[0, 0], [0, 40]]
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          40
+        ]
+      ]
     },
     {
       "type": "rectangle",
@@ -189,7 +216,9 @@
       "boundElements": [],
       "link": null,
       "locked": false,
-      "roundness": {"type": 3}
+      "roundness": {
+        "type": 3
+      }
     },
     {
       "type": "text",
@@ -226,7 +255,7 @@
     {
       "type": "text",
       "id": "left_desc",
-      "x": 100,
+      "x": 120.0,
       "y": 166,
       "width": 240,
       "height": 40,
@@ -278,7 +307,16 @@
       "boundElements": null,
       "link": null,
       "locked": false,
-      "points": [[0, 0], [0, 100]],
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          100
+        ]
+      ],
       "startBinding": null,
       "endBinding": null,
       "startArrowhead": null,
@@ -363,12 +401,21 @@
       "boundElements": null,
       "link": null,
       "locked": false,
-      "points": [[0, 0], [260, 0]]
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          260,
+          0
+        ]
+      ]
     },
     {
       "type": "text",
       "id": "left_extreme_label",
-      "x": 80,
+      "x": 100.0,
       "y": 516,
       "width": 280,
       "height": 40,
@@ -400,7 +447,7 @@
     {
       "type": "text",
       "id": "left_threshold_label",
-      "x": 100,
+      "x": 120.0,
       "y": 556,
       "width": 240,
       "height": 20,
@@ -452,7 +499,9 @@
       "boundElements": [],
       "link": null,
       "locked": false,
-      "roundness": {"type": 3}
+      "roundness": {
+        "type": 3
+      }
     },
     {
       "type": "text",
@@ -541,7 +590,16 @@
       "boundElements": null,
       "link": null,
       "locked": false,
-      "points": [[0, 0], [0, 100]],
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          100
+        ]
+      ],
       "startBinding": null,
       "endBinding": null,
       "startArrowhead": null,
@@ -742,7 +800,7 @@
     {
       "type": "text",
       "id": "right_extreme_label",
-      "x": 1240,
+      "x": 1220.0,
       "y": 516,
       "width": 280,
       "height": 40,
@@ -794,7 +852,9 @@
       "boundElements": [],
       "link": null,
       "locked": false,
-      "roundness": {"type": 3}
+      "roundness": {
+        "type": 3
+      }
     },
     {
       "type": "text",
@@ -983,7 +1043,7 @@
     {
       "type": "text",
       "id": "metric_title_overlap",
-      "x": 120,
+      "x": 110.0,
       "y": 640,
       "width": 260,
       "height": 24,
@@ -1015,9 +1075,9 @@
     {
       "type": "rectangle",
       "id": "gauge_overlap",
-      "x": 120,
+      "x": 70.0,
       "y": 668,
-      "width": 260,
+      "width": 340,
       "height": 80,
       "strokeColor": "#1e3a5f",
       "backgroundColor": "#3b82f6",
@@ -1035,12 +1095,14 @@
       "boundElements": [],
       "link": null,
       "locked": false,
-      "roundness": {"type": 3}
+      "roundness": {
+        "type": 3
+      }
     },
     {
       "type": "text",
       "id": "gauge_overlap_text",
-      "x": 130,
+      "x": 120.0,
       "y": 680,
       "width": 240,
       "height": 56,
@@ -1072,7 +1134,7 @@
     {
       "type": "text",
       "id": "metric_title_concentration",
-      "x": 540,
+      "x": 640.0,
       "y": 640,
       "width": 320,
       "height": 24,
@@ -1104,9 +1166,9 @@
     {
       "type": "rectangle",
       "id": "gauge_concentration",
-      "x": 540,
+      "x": 630.0,
       "y": 668,
-      "width": 320,
+      "width": 340,
       "height": 80,
       "strokeColor": "#1e3a5f",
       "backgroundColor": "#3b82f6",
@@ -1124,12 +1186,14 @@
       "boundElements": [],
       "link": null,
       "locked": false,
-      "roundness": {"type": 3}
+      "roundness": {
+        "type": 3
+      }
     },
     {
       "type": "text",
       "id": "gauge_concentration_text",
-      "x": 550,
+      "x": 650.0,
       "y": 688,
       "width": 300,
       "height": 40,
@@ -1161,7 +1225,7 @@
     {
       "type": "text",
       "id": "metric_title_vitality",
-      "x": 1120,
+      "x": 1170.0,
       "y": 640,
       "width": 380,
       "height": 24,
@@ -1193,9 +1257,9 @@
     {
       "type": "rectangle",
       "id": "gauge_vitality",
-      "x": 1120,
+      "x": 1190.0,
       "y": 668,
-      "width": 380,
+      "width": 340,
       "height": 80,
       "strokeColor": "#1e3a5f",
       "backgroundColor": "#3b82f6",
@@ -1213,12 +1277,14 @@
       "boundElements": [],
       "link": null,
       "locked": false,
-      "roundness": {"type": 3}
+      "roundness": {
+        "type": 3
+      }
     },
     {
       "type": "text",
       "id": "gauge_vitality_text",
-      "x": 1130,
+      "x": 1180.0,
       "y": 680,
       "width": 360,
       "height": 56,
@@ -1270,7 +1336,9 @@
       "boundElements": [],
       "link": null,
       "locked": false,
-      "roundness": {"type": 3}
+      "roundness": {
+        "type": 3
+      }
     },
     {
       "type": "text",
@@ -1279,8 +1347,8 @@
       "y": 820,
       "width": 680,
       "height": 48,
-      "text": "Self-evolution pressure — agents drift toward what their consumers want, regardless of colony coherence",
-      "originalText": "Self-evolution pressure — agents drift toward what their consumers want, regardless of colony coherence",
+      "text": "Self-evolution pressure \u2014 agents drift toward what their consumers want, regardless of colony coherence",
+      "originalText": "Self-evolution pressure \u2014 agents drift toward what their consumers want, regardless of colony coherence",
       "fontSize": 13,
       "fontFamily": 3,
       "textAlign": "center",
@@ -1307,7 +1375,7 @@
     {
       "type": "text",
       "id": "self_evolution_title",
-      "x": 440,
+      "x": 440.0,
       "y": 770,
       "width": 720,
       "height": 24,

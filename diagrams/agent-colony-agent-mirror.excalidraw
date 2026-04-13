@@ -510,15 +510,15 @@
     {
       "type": "text",
       "id": "xaji0y6dpbhsahxthv3a3",
-      "x": 20,
+      "x": 40,
       "y": 148,
-      "width": 200,
+      "width": 220,
       "height": 25,
       "text": "Registry Agent",
       "originalText": "Registry Agent",
       "fontSize": 18,
       "fontFamily": 1,
-      "textAlign": "left",
+      "textAlign": "right",
       "verticalAlign": "top",
       "strokeColor": "#1e40af",
       "backgroundColor": "transparent",
@@ -541,7 +541,7 @@
     {
       "type": "text",
       "id": "mf8mdd4v30t9nt3w5uzbi",
-      "x": 20,
+      "x": 40,
       "y": 178,
       "width": 220,
       "height": 40,
@@ -549,7 +549,7 @@
       "originalText": "Reads identity to\ncatalogue the colony",
       "fontSize": 14,
       "fontFamily": 1,
-      "textAlign": "left",
+      "textAlign": "right",
       "verticalAlign": "top",
       "strokeColor": "#64748b",
       "backgroundColor": "transparent",
@@ -572,9 +572,9 @@
     {
       "type": "arrow",
       "id": "45nq4fmyzycwtiqj7yhl1",
-      "x": 220,
+      "x": 280,
       "y": 190,
-      "width": 180,
+      "width": 120,
       "height": 0,
       "points": [
         [
@@ -582,7 +582,7 @@
           0
         ],
         [
-          180,
+          120,
           0
         ]
       ],
@@ -613,15 +613,15 @@
     {
       "type": "text",
       "id": "32oc6uzhr5xff0t0pvn9e",
-      "x": 20,
+      "x": 40,
       "y": 358,
-      "width": 200,
+      "width": 220,
       "height": 25,
       "text": "Self",
       "originalText": "Self",
       "fontSize": 18,
       "fontFamily": 1,
-      "textAlign": "left",
+      "textAlign": "right",
       "verticalAlign": "top",
       "strokeColor": "#6d28d9",
       "backgroundColor": "transparent",
@@ -644,7 +644,7 @@
     {
       "type": "text",
       "id": "14ffyvnvqjt7ye511mkfa",
-      "x": 20,
+      "x": 40,
       "y": 388,
       "width": 220,
       "height": 40,
@@ -652,7 +652,7 @@
       "originalText": "The agent reads this\nto understand itself",
       "fontSize": 14,
       "fontFamily": 1,
-      "textAlign": "left",
+      "textAlign": "right",
       "verticalAlign": "top",
       "strokeColor": "#64748b",
       "backgroundColor": "transparent",
@@ -675,9 +675,9 @@
     {
       "type": "arrow",
       "id": "z81sdw4shnf877vren93i",
-      "x": 220,
+      "x": 280,
       "y": 400,
-      "width": 180,
+      "width": 120,
       "height": 0,
       "points": [
         [
@@ -685,7 +685,7 @@
           0
         ],
         [
-          180,
+          120,
           0
         ]
       ],
@@ -716,15 +716,15 @@
     {
       "type": "text",
       "id": "uc039tex8fsv871yzoyn6",
-      "x": 20,
+      "x": 40,
       "y": 598,
-      "width": 200,
+      "width": 220,
       "height": 25,
       "text": "Lifecycle Agent",
       "originalText": "Lifecycle Agent",
       "fontSize": 18,
       "fontFamily": 1,
-      "textAlign": "left",
+      "textAlign": "right",
       "verticalAlign": "top",
       "strokeColor": "#c2410c",
       "backgroundColor": "transparent",
@@ -747,7 +747,7 @@
     {
       "type": "text",
       "id": "icatvazccblskrt05uiro",
-      "x": 20,
+      "x": 40,
       "y": 628,
       "width": 220,
       "height": 40,
@@ -755,7 +755,7 @@
       "originalText": "Reads this to manage\nretirement decisions",
       "fontSize": 14,
       "fontFamily": 1,
-      "textAlign": "left",
+      "textAlign": "right",
       "verticalAlign": "top",
       "strokeColor": "#64748b",
       "backgroundColor": "transparent",
@@ -778,9 +778,9 @@
     {
       "type": "arrow",
       "id": "xmo5bxxc02dgtfgq5c34d",
-      "x": 220,
+      "x": 280,
       "y": 640,
-      "width": 180,
+      "width": 120,
       "height": 0,
       "points": [
         [
@@ -788,7 +788,7 @@
           0
         ],
         [
-          180,
+          120,
           0
         ]
       ],
@@ -819,9 +819,9 @@
     {
       "type": "text",
       "id": "4874frhocn9j2qp89uzfk",
-      "x": 940,
+      "x": 1020,
       "y": 248,
-      "width": 200,
+      "width": 220,
       "height": 25,
       "text": "Other Agents",
       "originalText": "Other Agents",
@@ -850,7 +850,7 @@
     {
       "type": "text",
       "id": "0clbr7tcs4cc5o7uubcxu",
-      "x": 940,
+      "x": 1020,
       "y": 278,
       "width": 220,
       "height": 40,
@@ -881,9 +881,9 @@
     {
       "type": "arrow",
       "id": "hzioykl1cq99chj755nf4",
-      "x": 920,
+      "x": 1000,
       "y": 290,
-      "width": 40,
+      "width": 120,
       "height": 0,
       "points": [
         [
@@ -891,7 +891,7 @@
           0
         ],
         [
-          -40,
+          -120,
           0
         ]
       ],
@@ -922,9 +922,9 @@
     {
       "type": "text",
       "id": "w9xa3kx7eedtjvzhwjr64",
-      "x": 940,
+      "x": 1020,
       "y": 478,
-      "width": 200,
+      "width": 220,
       "height": 25,
       "text": "Immune System",
       "originalText": "Immune System",
@@ -953,7 +953,7 @@
     {
       "type": "text",
       "id": "pja1wj0tpac56t4ufel62",
-      "x": 940,
+      "x": 1020,
       "y": 508,
       "width": 220,
       "height": 40,
@@ -984,9 +984,9 @@
     {
       "type": "arrow",
       "id": "6hid25owf75935a0l7253",
-      "x": 920,
+      "x": 1000,
       "y": 520,
-      "width": 40,
+      "width": 120,
       "height": 0,
       "points": [
         [
@@ -994,7 +994,7 @@
           0
         ],
         [
-          -40,
+          -120,
           0
         ]
       ],
@@ -1025,9 +1025,9 @@
     {
       "type": "text",
       "id": "2d54i3qk2iagl58kxo9t7",
-      "x": 940,
+      "x": 1020,
       "y": 708,
-      "width": 200,
+      "width": 220,
       "height": 25,
       "text": "Governance",
       "originalText": "Governance",
@@ -1056,7 +1056,7 @@
     {
       "type": "text",
       "id": "8g8jdp0lvsnujza7tz0yn",
-      "x": 940,
+      "x": 1020,
       "y": 738,
       "width": 220,
       "height": 40,
@@ -1087,9 +1087,9 @@
     {
       "type": "arrow",
       "id": "7wxe6sylztgxn0guo4kh2",
-      "x": 920,
+      "x": 1000,
       "y": 750,
-      "width": 40,
+      "width": 120,
       "height": 0,
       "points": [
         [
@@ -1097,7 +1097,7 @@
           0
         ],
         [
-          -40,
+          -120,
           0
         ]
       ],
