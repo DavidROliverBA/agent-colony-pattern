@@ -5,6 +5,16 @@ All notable changes to the Agent Colony Pattern are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.2] — 2026-04-13
+
+### Added
+- **Scale calibration in `examples/hello-colony/`** — `colony-snapshot.yaml` now declares `scale: 5-agent-team` with an explanatory `scale_notes` block tying the example to the specification's Scales of Application table. README opens with a Scale Calibration section making the same point.
+- **Preauthorised security upgrade fields in `registry-agent.v1.1.yaml`** — the security_patch evolution log entry now shows all three v1.1.1 invariants concretely: `preauthorised_action_class: patch_application` (closed enum), `co_signer: sentinel-agent` + `co_sign_verified: true` (Immune System co-sign), `pre_state_hash`, `rollback_window_minutes`, `rollback_deadline`, `append_only_log_id` (append-only audit log). `last_security_upgrade` in the security section is enriched with the same metadata.
+- **Hello-colony README section** walking through the preauthorisation fields and showing how the canonical attack (exfiltration-as-security-upgrade) fails at the enum, the co-sign, and the log.
+
+### Changed
+- **Trust Ledger row** in the Scales of Application table: 5-agent cell changed from "Informal; spreadsheet or markdown table" to "Human memory plus a retro; the team itself is the ledger" — honest about what the ledger actually is at that scale. Mirrored in thesis.
+
 ## [1.1.1] — 2026-04-13
 
 ### Added

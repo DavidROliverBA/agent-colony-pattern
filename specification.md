@@ -76,7 +76,7 @@ The pattern is deliberately scale-adaptive. It applies to a 5-agent team, a 50-a
 | **Equilibrium System** | Human review in a Monday stand-up; overlap judged by eye | MAPE-K loop per colony; Equilibrium Agent executes minor rebalancing autonomously | Cross-colony regime monitoring; inter-colony overlap negotiation |
 | **Colony Memory** | Shared markdown in a wiki; weekly retrospective feeds Lesson Memory | Event store with structured reflection pipeline; Constitutional rules in a tracked repo | Distributed event log; cross-colony lesson sharing with provenance |
 | **Epistemic Discipline** | Informal; rely on team discipline and human dissent in reviews | Formal evidence grades; bias detection checklist; mandatory dissent role in rule promotion PRs | Automated bias scanning; cryptographically signed dissent records |
-| **Trust Ledger** | Informal; spreadsheet or markdown table | Per-agent score with human adjudication; stage transitions approved by an Architecture Board | Federated, cryptographic; cross-organisation trust reputation |
+| **Trust Ledger** | Human memory plus a retro; the team itself is the ledger | Per-agent score with human adjudication; stage transitions approved by an Architecture Board | Federated, cryptographic; cross-organisation trust reputation |
 | **Coexistence Boundary** | Verbal agreements; humans approve every cross-boundary action | Pre-agreed playbooks; Response Coordinator handles routine events | Standardised boundary protocols; cross-colony incident coordination |
 | **Mutual Defence** | Patch agents manually; humans co-sign | Preauthorised enum + Immune System co-sign + audit log (as defined above) | Coordinated defence across colonies; shared threat intelligence |
 

@@ -7,6 +7,29 @@ colony:
     system agent (Sentinel), and one L3 domain agent (Finance). Not a production
     colony — a worked example for learning the pattern."
 
+  # Scale calibration — see specification.md "Scales of application" table
+  scale: 5-agent-team
+  scale_notes: |
+    This example is calibrated to the '5-agent team' row of the specification's
+    Scales of Application table. At this scale, the mechanisms are deliberately
+    lightweight:
+      - Agent Mirrors are YAML files in a git repo; manual curation is the norm
+      - Equilibrium reviews happen in a weekly human-led stand-up
+      - Colony Memory is a shared markdown wiki plus weekly retrospective
+      - Epistemic discipline is informal (team discipline, human dissent in reviews)
+      - Trust Ledger is human memory plus a retro — the team itself is the ledger
+      - Coexistence Boundary is verbal agreement with human approval for every
+        cross-boundary action
+      - Mutual Defence: manual patching with human co-sign, EXCEPT for
+        preauthorised security upgrades which follow the full v1.1.1 contract
+        (see registry-agent.v1.1.yaml for a worked example with co-signer and
+        audit log fields)
+
+    Over-engineering at this scale — e.g. adopting federated cryptographic
+    attestations or automated MAPE-K equilibrium loops — would be a pattern
+    violation, not an improvement. A larger colony (see 50-agent or 5,000-agent
+    rows) would implement the same principles with heavier mechanisms.
+
 agents:
   - file: agents/registry-agent.yaml
     name: registry-agent

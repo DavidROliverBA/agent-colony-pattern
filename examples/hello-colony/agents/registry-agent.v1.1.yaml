@@ -107,6 +107,16 @@ autonomy:
       triggered_by: sentinel-agent
       human_approved: false  # preauthorised — security upgrades are always exempt
       security_upgrade: true
+      # Preauthorisation invariants (specification §1, "Security upgrade preauthorisation")
+      preauthorised_action_class: patch_application  # closed enum: patch_application,
+      # dependency_update, credential_rotation, certificate_renewal, signature_update, self_quarantine
+      co_signer: sentinel-agent  # required: single compromised agent cannot self-authorise
+      co_sign_verified: true
+      pre_state_hash: "sha256:7f4c3b1e9a2d6f8b0c5e4d3a1b9f8e7d6c5b4a3e2d1f0e9d8c7b6a5e4d3c2b1a0"
+      rollback_window_minutes: 60
+      rollback_deadline: 2026-04-21T10:22:00Z
+      rollback_executed: false  # rolled forward cleanly; no rollback triggered
+      append_only_log_id: "reg-2026-04-21-0922-cve-0441"
 
 security:
   threat_model:
@@ -133,6 +143,10 @@ security:
     description: "Patched CVE-2026-0441 — timing-window bypass in signature verification
       logic. Strict decode-then-verify sequencing enforced. Notified colony-core-team
       post-application."
+    action_class: patch_application  # closed enum — see specification §1
+    co_signer: sentinel-agent
+    audit_log_id: "reg-2026-04-21-0922-cve-0441"
+    within_rollback_window: false  # 60-minute window elapsed; change committed
   security_dependencies:
     - sentinel-agent
 

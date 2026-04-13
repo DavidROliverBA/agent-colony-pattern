@@ -5,7 +5,7 @@ type: software
 authors:
   - family-names: Oliver
     given-names: David
-version: "1.1.1"
+version: "1.1.2"
 date-released: 2026-04-13
 url: "https://github.com/DavidROliverBA/agent-colony-pattern"
 license: CC-BY-4.0

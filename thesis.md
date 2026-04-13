@@ -219,7 +219,7 @@ The pattern is scale-adaptive. It applies to a 5-agent team, a 50-agent organisa
 | Equilibrium System | Human review in stand-ups | MAPE-K loop per colony | Cross-colony regime monitoring |
 | Colony Memory | Shared wiki; weekly retrospective | Event store + reflection pipeline | Distributed log; cross-colony lesson sharing |
 | Epistemic Discipline | Informal team discipline | Evidence grades; dissent role in PRs | Automated bias scanning; signed dissent records |
-| Trust Ledger | Spreadsheet or markdown table | Per-agent score, Architecture Board | Federated, cryptographic reputation |
+| Trust Ledger | Human memory plus a retro | Per-agent score, Architecture Board | Federated, cryptographic reputation |
 | Coexistence Boundary | Verbal agreements | Pre-agreed playbooks | Standardised cross-colony protocols |
 | Mutual Defence | Manual patching with human co-sign | Preauthorised enum + Immune System co-sign + audit log | Coordinated defence across colonies |
 
