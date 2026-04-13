@@ -15,7 +15,7 @@ Current version: **v1.3.0** · [What's new](CHANGELOG.md) · [Latest release](ht
 | **[Manifesto](manifesto.md)** | Short, opinionated, shareable. The core argument in 15 minutes. |
 | **[Thesis Paper](thesis.md)** | The full academic-lite treatment with literature review against 12 existing standards, formal gap analysis, six diagrams, and scales of application. Cite this for peer review. |
 | **[Specification](specification.md)** | The detailed technical reference. Four-layer architecture, Agent Mirror schema, colony dynamics, maturity model, conformance section with anti-patterns and failure modes. |
-| **[Schema](schemas/)** | `agent-mirror-v0.1.json` — JSON Schema (draft 2020-12) formalising the Agent Mirror identity standard. |
+| **[Schema](schemas/)** | `agent-mirror-v0.2.0.json` — JSON Schema (draft 2020-12) formalising the Agent Mirror identity standard. v0.2.0 adds Comprehension Contract, NFRs, Valuation, and critical path fields. `agent-mirror-v0.1.json` kept for reference. |
 | **[Examples](examples/)** | `hello-colony` — a worked 5-agent example with pre/post-evolution pair. `hello-colony-runtime` — deterministic Python simulation of four colony events (no LLM calls). `equilibrium-playground` — browser visualisation of the Equilibrium System (no build step). Plus [`demonstration-options.md`](examples/demonstration-options.md) — a design memo of ten options for building a visual demonstration of the pattern. |
 | **[Diagrams](diagrams/)** | Six SVG diagrams (render inline on GitHub) plus the Excalidraw source files. See [`diagrams/README.md`](diagrams/README.md) for the shared colour palette and style conventions. |
 | **[Knowledge Base](knowledge-base/)** | Feedback received (good and bad), lessons extracted, prior art, standards watch. The pattern's own evolution, captured as it happens. |
@@ -27,7 +27,7 @@ This repository has four distinct audiences. Read the document that fits your ne
 - **If you are not a technical reader** — read [*It takes a village — the Agent Colony definition*](https://medium.com/@davidroliver/it-takes-a-village-the-agent-colony-definition-32b9bd714bb8) on Medium. 16 minutes. No jargon, uses a village as the running metaphor, written for someone wise about life but not about brackets and code.
 - **If you want the argument** — read [`manifesto.md`](manifesto.md). 15 minutes. Opinionated, shareable, practitioner voice.
 - **If you want the evidence** — read [`thesis.md`](thesis.md). Literature review, gap analysis, diagrams. This is the version to cite.
-- **If you want to build it** — read [`specification.md`](specification.md), then [`schemas/agent-mirror-v0.1.json`](schemas/agent-mirror-v0.1.json), then [`examples/hello-colony/`](examples/hello-colony/). In that order.
+- **If you want to build it** — read [`specification.md`](specification.md), then [`schemas/agent-mirror-v0.2.0.json`](schemas/agent-mirror-v0.2.0.json), then [`examples/hello-colony/`](examples/hello-colony/). In that order. Run `python examples/hello-colony-runtime/runtime.py` to see the pattern execute as code.
 
 If you only have ten minutes: open `examples/hello-colony/colony-snapshot.yaml` and skim `registry-agent.v1.1.yaml`. The example was made to answer "what does this actually look like on disk?" in one pass.
 
@@ -56,7 +56,7 @@ See the Scales of Application table in [`specification.md`](specification.md) (S
 
 Six problems must be solved for Agent Colonies to work. None are addressed by existing standards:
 
-1. **Agent Identity Standard** — no standard defines the complete, self-describing identity of an autonomous agent (the [Agent Mirror schema](schemas/agent-mirror-v0.1.json) is this repo's proposal)
+1. **Agent Identity Standard** — no standard defines the complete, self-describing identity of an autonomous agent (the [Agent Mirror schema](schemas/agent-mirror-v0.2.0.json) is this repo's proposal)
 2. **Agent Lifecycle Management** — no standard addresses the born-to-retired lifecycle of an autonomous agent
 3. **Collective Memory and Institutional Learning** — no framework addresses colony-level memory that persists across agent generations
 4. **Equilibrium and Population Governance** — no engineering standard addresses the consolidation/fragmentation problem
@@ -69,7 +69,7 @@ See the [thesis paper](thesis.md) for the full analysis and the literature revie
 
 ## Status
 
-**v1.1.2** — Foundation + concrete artefacts. The pattern is conceptually grounded and the specification is backed by a JSON Schema, a worked example with cross-referenced agents, a conformance section (anti-patterns, health signals, named failure modes), and six diagrams that render natively on GitHub. It is still **practically untested** — no reference implementation exists yet.
+**v1.3.0** — Pattern demonstrated, not just described. The hello-colony example now carries the full Comprehension Contract Mirror fields (trust tier, NFRs, valuation, critical path). A deterministic Python runtime runs four colony events against real schema validation. A browser-based Equilibrium Playground makes the three indices interactive. The pattern is still **practically untested at production scale** — no full LLM-backed reference implementation exists yet.
 
 **Roadmap:**
 
@@ -79,8 +79,12 @@ See the [thesis paper](thesis.md) for the full analysis and the literature revie
 | v1.1.0 | ✅ released 2026-04-13 | SVG diagrams, JSON Schema, hello-colony example, conformance section, repo hygiene |
 | v1.1.1 | ✅ released 2026-04-13 | Scales of Application table, strengthened security preauthorisation with three invariants |
 | v1.1.2 | ✅ released 2026-04-13 | Hello-colony reflects the v1.1.1 preauthorisation contract; Trust Ledger framing fixed |
-| v1.2+ | planned | Peer feedback incorporation from public review |
-| v2.0 | planned | First reference implementation; empirical threshold calibration |
+| v1.2.0 | ✅ released 2026-04-13 | Knowledge base — feedback, lessons, prior art, standards watch |
+| v1.2.1 | ✅ released 2026-04-13 | First published article; writings subfolder in knowledge base |
+| v1.2.2 | ✅ released 2026-04-13 | Dark code reference (Jones 2026); IndyDevDan six ideas + §7.14 False Comprehension Artefacts |
+| v1.3.0 | ✅ released 2026-04-13 | Comprehension Contract Mirror fields; schema v0.2.0; graduation checklist; live runtime; equilibrium playground |
+| v1.4+ | planned | Peer feedback incorporation from public review; Comprehension Contract formalised in specification |
+| v2.0 | planned | First LLM-backed reference implementation; empirical threshold calibration |
 | v3.0 | planned | Standards engagement — A2A, AAIF, NIST, AGNTCY |
 
 ## Contributing
