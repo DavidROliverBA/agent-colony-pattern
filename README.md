@@ -4,20 +4,28 @@
 
 The Agent Colony is an architectural pattern for building self-governing ecosystems of autonomous AI agents that persist beyond the projects that create them, evolve across technology generations, and coexist with human organisations through defined boundaries. It is not a framework, a platform, or a product — it is a pattern, like microservices or event-driven architecture, that can be implemented in any technology, on any infrastructure, by any organisation.
 
+Current version: **v1.1.2** · [What's new](CHANGELOG.md) · [Latest release](https://github.com/DavidROliverBA/agent-colony-pattern/releases/latest)
+
 ## What's in this repository
 
-- **[Manifesto](manifesto.md)** — short, opinionated, shareable. Read this first if you want the core argument in 15 minutes.
-- **[Thesis Paper](thesis.md)** — the full academic-lite treatment with literature review against 12 existing standards, formal gap analysis, and 6 diagrams. Read this if you want the rigorous version.
-- **[Specification](specification.md)** — the detailed technical reference for implementers. Covers the four-layer architecture, the Agent Mirror schema, colony dynamics, and the maturity model.
-- **[Diagrams](diagrams/)** — six Excalidraw source files. View at [excalidraw.com](https://excalidraw.com) or in [Obsidian](https://obsidian.md) with the Excalidraw plugin.
+| Document | Purpose |
+|----------|---------|
+| **[Manifesto](manifesto.md)** | Short, opinionated, shareable. The core argument in 15 minutes. |
+| **[Thesis Paper](thesis.md)** | The full academic-lite treatment with literature review against 12 existing standards, formal gap analysis, six diagrams, and scales of application. Cite this for peer review. |
+| **[Specification](specification.md)** | The detailed technical reference. Four-layer architecture, Agent Mirror schema, colony dynamics, maturity model, conformance section with anti-patterns and failure modes. |
+| **[Schema](schemas/)** | `agent-mirror-v0.1.json` — JSON Schema (draft 2020-12) formalising the Agent Mirror identity standard. |
+| **[Example](examples/hello-colony/)** | `hello-colony` — a worked 5-agent example with pre/post-evolution pair, cross-referenced overlap declarations, and a concrete demonstration of preauthorised security upgrades. |
+| **[Diagrams](diagrams/)** | Six SVG diagrams (render inline on GitHub) plus the Excalidraw source files. |
 
 ## Scope and audiences
 
 This repository has three distinct audiences. Read the document that fits your need:
 
 - **If you want the argument** — read [`manifesto.md`](manifesto.md). 15 minutes. Opinionated, shareable. No engineering detail.
-- **If you want the evidence** — read [`thesis.md`](thesis.md). Literature review against 12 existing standards, formal gap analysis, 6 diagrams. This is the version to cite in peer review.
-- **If you want to build it** — read [`specification.md`](specification.md) and the [`schemas/`](schemas/) and [`examples/`](examples/) directories. Contains the Agent Mirror JSON Schema and a worked 5-agent colony example.
+- **If you want the evidence** — read [`thesis.md`](thesis.md). Literature review, gap analysis, diagrams. This is the version to cite.
+- **If you want to build it** — read [`specification.md`](specification.md), then [`schemas/agent-mirror-v0.1.json`](schemas/agent-mirror-v0.1.json), then [`examples/hello-colony/`](examples/hello-colony/). In that order.
+
+If you only have ten minutes: open `examples/hello-colony/colony-snapshot.yaml` and skim `registry-agent.v1.1.yaml`. The example was made to answer "what does this actually look like on disk?" in one pass.
 
 ## The argument in one paragraph
 
@@ -32,41 +40,64 @@ Every paradigm shift in distributed systems has changed the unit of independent 
 5. **Earned autonomy** — self-governance is earned through demonstrated trustworthiness
 6. **Mutual defence** — security is collaborative, not imposed
 
+Principle 6 has a corollary: **security upgrades are preauthorised** — an agent improving its own security does not wait for a governance cycle. v1.1.1 strengthened this with three invariants (closed action enum, Immune System co-sign, append-only audit log with bounded rollback). See the specification for the full contract and `registry-agent.v1.1.yaml` for a worked example showing the fields on disk.
+
+## Scales of application
+
+The pattern is scale-adaptive. A 5-agent team, a 50-agent organisational estate, and a 5,000-agent cross-organisation ecosystem all apply the same principles but realise them with different mechanisms. A small colony running YAML Mirrors in git with weekly human-led equilibrium reviews is not immature relative to a large colony running federated cryptographic attestations — it is **correctly scaled**. Over-engineering a small colony is as much a pattern violation as under-engineering a large one. One exception: security mechanisms do not dial down with scale. The preauthorisation contract is the same at every size.
+
+See the Scales of Application table in [`specification.md`](specification.md) (Section 1) for the full tier comparison.
+
 ## The six gaps
 
 Six problems must be solved for Agent Colonies to work. None are addressed by existing standards:
 
-1. **Agent Identity Standard** — no standard defines the complete, self-describing identity of an autonomous agent
+1. **Agent Identity Standard** — no standard defines the complete, self-describing identity of an autonomous agent (the [Agent Mirror schema](schemas/agent-mirror-v0.1.json) is this repo's proposal)
 2. **Agent Lifecycle Management** — no standard addresses the born-to-retired lifecycle of an autonomous agent
 3. **Collective Memory and Institutional Learning** — no framework addresses colony-level memory that persists across agent generations
 4. **Equilibrium and Population Governance** — no engineering standard addresses the consolidation/fragmentation problem
 5. **Epistemic Framework for Autonomous Systems** — no standard addresses how autonomous systems should validate their own knowledge
 6. **Coexistence Boundary Protocols** — no standard defines the human-agent interface as a mutual boundary rather than a permission system
 
-See the [thesis paper](thesis.md) for the full analysis and the [specification](specification.md) for the proposed Agent Mirror standard that addresses Gap 1.
+Two candidate gaps (agent registry interoperability and agent authentication/authorisation) are discussed in the thesis paper.
+
+See the [thesis paper](thesis.md) for the full analysis and the literature review backing each claim.
 
 ## Status
 
-This is **v1.0** — a foundation, not a conclusion. The pattern is conceptually grounded but practically untested. It needs peer review, challenge, and implementation.
+**v1.1.2** — Foundation + concrete artefacts. The pattern is conceptually grounded and the specification is backed by a JSON Schema, a worked example with cross-referenced agents, a conformance section (anti-patterns, health signals, named failure modes), and six diagrams that render natively on GitHub. It is still **practically untested** — no reference implementation exists yet.
 
-**What's next:**
-- **v1.1** — peer feedback incorporation
-- **v2.0** — first reference implementation and empirical calibration
-- **v3.0** — standards engagement (A2A, AAIF, NIST)
+**Roadmap:**
+
+| Version | Status | Focus |
+|---------|--------|-------|
+| v1.0.0 | ✅ released 2026-04-11 | Manifesto, thesis, specification, 6 Excalidraw diagrams |
+| v1.1.0 | ✅ released 2026-04-13 | SVG diagrams, JSON Schema, hello-colony example, conformance section, repo hygiene |
+| v1.1.1 | ✅ released 2026-04-13 | Scales of Application table, strengthened security preauthorisation with three invariants |
+| v1.1.2 | ✅ released 2026-04-13 | Hello-colony reflects the v1.1.1 preauthorisation contract; Trust Ledger framing fixed |
+| v1.2+ | planned | Peer feedback incorporation from public review |
+| v2.0 | planned | First reference implementation; empirical threshold calibration |
+| v3.0 | planned | Standards engagement — A2A, AAIF, NIST, AGNTCY |
 
 ## Contributing
 
 Contributions, challenges, and reference implementations are welcome. This is published *for* the community, not just *by* an author. The worst outcome is not that the pattern is wrong — it is that the gaps go unnamed and the same mistakes get made again, one more time, with agents.
 
-- **Challenge the argument** — open an issue if you think a principle is wrong, a gap is mis-identified, or the literature review missed something important
-- **Propose refinements** — open a pull request for corrections, clarifications, or extensions
-- **Build a reference implementation** — link your work and it will be added to the implementation roadmap
+Three ways in:
+
+- **Challenge the argument** — open an [issue](https://github.com/DavidROliverBA/agent-colony-pattern/issues/new/choose) using the Challenge template. Cite the section, state your claim, give your evidence (with grade: empirical, corroborated, theoretical, inherited, anecdotal).
+- **Propose refinements** — open a pull request or a Refinement issue. Say what you would change, why, and what other sections it affects.
+- **Build a reference implementation** — link your work and it will be added to the roadmap.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide, including how the paper's own epistemic principles (evidence grades, mandatory dissent, honest limitations) apply to its development.
 
 ## Citation
 
 If you reference this work, please cite:
 
-> Oliver, D. (2026). *The Agent Colony: A Pattern Language for Self-Governing AI Agent Ecosystems*. https://github.com/DavidROliverBA/agent-colony-pattern
+> Oliver, D. (2026). *The Agent Colony: A Pattern Language for Self-Governing AI Agent Ecosystems* (v1.1.2). https://github.com/DavidROliverBA/agent-colony-pattern
+
+Machine-readable citation metadata is in [`CITATION.cff`](CITATION.cff).
 
 ## License
 
