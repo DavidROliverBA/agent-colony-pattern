@@ -1,0 +1,75 @@
+name: Challenge the Argument
+description: Challenge a principle, gap, mechanism, or claim in the Agent Colony Pattern
+title: "[Challenge] "
+labels: ["challenge"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template to challenge a specific section of the Agent Colony Pattern. Read the relevant section before submitting. Apply mandatory dissent to your own argument — what is the strongest case against your challenge?
+
+  - type: dropdown
+    id: section
+    attributes:
+      label: Which section are you challenging?
+      description: Select the section your challenge addresses. If it spans multiple sections, pick the primary one.
+      options:
+        - Principle 1 — Coexistence, not control
+        - Principle 2 — Identity over implementation
+        - Principle 3 — Equilibrium over optimisation
+        - Principle 4 — Longevity by design
+        - Principle 5 — Earned autonomy
+        - Principle 6 — Mutual defence
+        - Agent Mirror
+        - Equilibrium System
+        - Colony Memory
+        - Epistemic Discipline
+        - Gap Analysis
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: claim
+    attributes:
+      label: What is your specific claim?
+      description: State clearly what you believe is wrong, incomplete, or mis-scoped. Be specific — "this is wrong" is not a claim; "Principle 3 assumes fragmentation and consolidation are the only equilibrium pressures, ignoring X" is a claim.
+      placeholder: Your counter-claim here
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: What evidence supports your claim?
+      description: |
+        Provide evidence at the highest grade you can support:
+        - **Empirical** — directly observed, reproducible
+        - **Corroborated** — observed multiple times across contexts
+        - **Theoretical** — logically sound, not yet empirically tested
+        - **Inherited** — from external sources, not yet validated here
+        - **Anecdotal** — single observation, not yet reproduced
+
+        Label your evidence grade at the top of your response.
+      placeholder: "Evidence grade: [Empirical / Corroborated / Theoretical / Inherited / Anecdotal]\n\nEvidence:\n"
+    validations:
+      required: true
+
+  - type: textarea
+    id: consequence
+    attributes:
+      label: What should change if your claim holds?
+      description: If you are right, what specifically should be different in the paper? A revised principle? A retracted gap? A modified mechanism? Be concrete.
+      placeholder: If this claim holds, Section X should be changed to say...
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I have read the relevant section before opening this issue
+          required: true
+        - label: I have considered the mandatory dissent against my own argument — I have thought through the strongest case against my challenge
+          required: true

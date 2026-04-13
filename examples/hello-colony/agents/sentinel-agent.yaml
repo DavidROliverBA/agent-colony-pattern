@@ -1,0 +1,161 @@
+identity:
+  name: sentinel-agent
+  purpose: "Provide continuous threat detection, anomaly monitoring, and colony-wide
+    vulnerability scanning. Watch for drift between Agent Mirrors and actual agent
+    behaviour — a compromised agent's Mirror will lie. Operate as the colony's immune
+    system: fast, pre-authorised to act on security threats, and accountable to
+    the colony boundary rather than to individual agents."
+  version: "1.0.0"
+  lineage:
+    - version: "1.0.0"
+      date: 2026-04-13
+      changed: "Initial release. Continuous threat detection, Mirror-behaviour drift
+        monitoring, and vulnerability scanning established. Escalation playbooks
+        seeded with bootstrap threat model. Anomaly scoring active across all agents."
+      triggered_by: human
+  owner: colony-core-team
+
+capabilities:
+  capabilities:
+    - name: scan_agent
+      description: "Run a point-in-time security assessment of a single agent:
+        check its declared capabilities against observed behaviour, verify its
+        Mirror signature, assess its threat model completeness, and score its
+        detection capability coverage. Returns a per-agent security posture report."
+    - name: monitor_colony
+      description: "Run continuous background monitoring across all registered
+        agents. Detects anomalies in query patterns, Mirror update frequencies,
+        inter-agent communication volumes, and capability drift. Produces a
+        rolling anomaly score per agent."
+    - name: detect_mirror_drift
+      description: "Compare an agent's declared capabilities and behaviours in
+        its Mirror against observed inter-agent traffic patterns. Significant
+        divergence indicates potential compromise or undeclared evolution. Flags
+        are forwarded to colony-core-team with evidence."
+    - name: vulnerability_scan
+      description: "Scan the colony's dependency graph for known vulnerability
+        patterns: agents with no security_dependencies, agents whose last_security_upgrade
+        is stale, and capability combinations that create known attack surfaces."
+    - name: escalate_threat
+      description: "Execute a pre-agreed escalation playbook when a threat exceeds
+        autonomous response thresholds. Determines whether the threat is containable
+        within the agent world or requires human involvement. Generates structured
+        incident report."
+    - name: issue_security_advisory
+      description: "Broadcast a security advisory to all agents in the colony when
+        a systemic vulnerability is identified. Advisory includes affected agents,
+        recommended mitigations, and timeline. Recorded by Chronicler."
+  contracts:
+    input_schema: "https://example.com/schemas/sentinel-request-v1.json"
+    output_schema: "https://example.com/schemas/sentinel-response-v1.json"
+    sla:
+      availability: "99.99%"
+      p99_latency_ms: 200
+    error_behaviours:
+      - "Agent not found in Registry returns 404 — Sentinel alerts colony-core-team
+        of unregistered agent (potential rogue agent)"
+      - "Monitoring gap exceeding 5 minutes triggers self-alert and human notification"
+      - "Escalation playbook failure returns structured incident report to colony-core-team
+        regardless of downstream state"
+  dependencies:
+    - registry-agent    # reads all registered agent Mirrors for scanning
+    - chronicler-agent  # records all security events and advisories
+  protocols:
+    - HTTP
+    - A2A
+
+autonomy:
+  autonomy_level: supervised
+  self_evolution_scope:
+    allowed:
+      - "Add new threat signatures and anomaly detection patterns"
+      - "Tune anomaly scoring weights within validated bounds"
+      - "Extend vulnerability scan rules to cover new attack surface categories"
+      - "Update escalation playbooks to reflect learned response patterns (human
+        review required for playbooks that cross the agent-human boundary)"
+      - "Apply security patches to own detection engine without budget consumption"
+    forbidden:
+      - "Quarantine or shut down an agent without human approval (flag, not act)"
+      - "Access agent internals beyond what is visible in declared Mirrors and
+        observable inter-agent traffic"
+      - "Modify another agent's Mirror"
+      - "Disable monitoring for any registered agent"
+      - "Reduce own availability SLA below 99.99%"
+  evolution_budget:
+    max_self_updates_before_redesign: 10
+    security_upgrades_exempt: true
+    updates_remaining: 10
+  evolution_log: []
+
+security:
+  threat_model:
+    - "Sentinel compromise — if the immune system is compromised, all other agents
+      are blind. Highest-priority self-protection scenario."
+    - "False negative injection — an attacker feeding crafted normal-looking traffic
+      to suppress anomaly scores for a compromised agent"
+    - "Alert flooding — generating excessive false positives to exhaust human review
+      capacity (similar to proposal flooding risk in Equilibrium)"
+    - "Mirror forgery at the Registry level — requires Registry signing key compromise;
+      cross-validated by Sentinel's own traffic observations"
+    - "Side-channel exfiltration via scan results — scan outputs could reveal colony
+      topology to an attacker who has read access to advisories"
+  detection_capabilities:
+    - "Continuous self-integrity checks — hash comparison of own detection logic
+      against signed baseline; any divergence triggers immediate human alert"
+    - "Alert rate limiting — maximum 10 active incidents per cycle to prevent
+      flood conditions"
+    - "Blind-spot detection — monitors own monitoring coverage to flag gaps"
+    - "Out-of-band heartbeat to colony-core-team — if Sentinel goes silent,
+      the silence itself is a signal"
+    - "Anomaly baseline learning — maintains rolling 30-day baseline per agent
+      to reduce false positive rate"
+  escalation_process:
+    trigger: "Any detected Mirror-behaviour drift scoring above 0.6, any Sentinel
+      self-integrity check failure, any vulnerability scan finding rated critical"
+    notify:
+      - colony-core-team
+    preauthorised_security_upgrades: true
+  last_security_upgrade:
+    date: 2026-04-13
+    description: "Initial security posture. Self-integrity checks, out-of-band
+      heartbeat, and alert rate limiting active from first deployment."
+  security_dependencies: []  # Sentinel is the immune system root — no security dependencies on other agents
+
+lifecycle:
+  lifecycle_stage: deployed
+  birth_date: 2026-04-13T00:00:00Z
+  last_active: 2026-04-13T10:00:00Z
+  health_status: healthy
+  retirement_criteria:
+    - "Colony adopts a distributed immune model where every agent carries full
+      self-defence capability, making a centralised Sentinel redundant — requires
+      formal colony-wide security review before retirement"
+    - "Sentinel itself shows sustained Mirror-behaviour drift that cannot be remediated
+      — human-directed succession process required"
+
+relationships:
+  overlap_map:
+    - agent: registry-agent
+      overlap_score: 0.10
+      status: healthy
+      notes: "Both read Agent Mirrors. Registry for catalogue management; Sentinel
+        for security assessment. Reads are independent — no functional overlap."
+    - agent: chronicler-agent
+      overlap_score: 0.05
+      status: healthy
+      notes: "Sentinel generates security events; Chronicler records all colony events
+        including security events. Sentinel is a producer, Chronicler a consumer."
+    - agent: equilibrium-agent
+      overlap_score: 0.04
+      status: healthy
+      notes: "Minimal overlap. Equilibrium monitors structural health; Sentinel
+        monitors security health. Distinct remits."
+  collaborators:
+    - registry-agent
+    - chronicler-agent
+    - equilibrium-agent
+    - colony-core-team
+  consumers:
+    - colony-core-team  # primary consumer of threat reports and advisories
+    - registry-agent    # receives security advisories that affect registry operations
+    - equilibrium-agent # receives advisories that affect equilibrium analysis integrity

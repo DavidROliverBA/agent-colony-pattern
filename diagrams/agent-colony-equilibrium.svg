@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 -20 1480 880" width="1480" height="880" font-family="Virgil, Segoe UI Emoji, sans-serif">
+<rect x="-20" y="-20" width="1480" height="880" fill="#ffffff"/>
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="strokeWidth">
+    <path d="M 0 0 L 10 5 L 0 10 z" fill="#1e1e1e"/>
+  </marker>
+</defs>
+<ellipse cx="720.0" cy="286.0" rx="24.0" ry="24.0" fill="#3b82f6" stroke="#1e3a5f" stroke-width="2"/>
+<rect x="40" y="280" width="240" height="160" rx="8" ry="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+<ellipse cx="160.0" cy="360.0" rx="80.0" ry="60.0" fill="#fecaca" stroke="#dc2626" stroke-width="2"/>
+<rect x="1160" y="280" width="240" height="160" rx="8" ry="8" fill="#dbeafe" stroke="#1e40af" stroke-width="2" stroke-dasharray="8 4"/>
+<ellipse cx="1200.0" cy="320.0" rx="20.0" ry="20.0" fill="#dbeafe" stroke="#1e40af" stroke-width="2"/>
+<ellipse cx="1245.0" cy="335.0" rx="15.0" ry="15.0" fill="#dbeafe" stroke="#1e40af" stroke-width="2"/>
+<ellipse cx="1282.0" cy="312.0" rx="12.0" ry="12.0" fill="#dbeafe" stroke="#1e40af" stroke-width="2"/>
+<ellipse cx="1200.0" cy="360.0" rx="10.0" ry="10.0" fill="#dbeafe" stroke="#1e40af" stroke-width="2"/>
+<ellipse cx="1310.0" cy="340.0" rx="10.0" ry="10.0" fill="#dbeafe" stroke="#1e40af" stroke-width="2"/>
+<ellipse cx="1248.0" cy="368.0" rx="8.0" ry="8.0" fill="#dbeafe" stroke="#1e40af" stroke-width="2"/>
+<ellipse cx="1287.0" cy="367.0" rx="7.0" ry="7.0" fill="#dbeafe" stroke="#1e40af" stroke-width="2"/>
+<ellipse cx="1328.0" cy="316.0" rx="8.0" ry="8.0" fill="#dbeafe" stroke="#1e40af" stroke-width="2"/>
+<rect x="540" y="260" width="360" height="200" rx="8" ry="8" fill="#a7f3d0" stroke="#047857" stroke-width="2"/>
+<ellipse cx="630.0" cy="330.0" rx="50.0" ry="40.0" fill="#a7f3d0" stroke="#047857" stroke-width="2"/>
+<ellipse cx="725.0" cy="330.0" rx="35.0" ry="30.0" fill="#a7f3d0" stroke="#047857" stroke-width="2"/>
+<ellipse cx="795.0" cy="340.0" rx="25.0" ry="20.0" fill="#a7f3d0" stroke="#047857" stroke-width="2"/>
+<ellipse cx="650.0" cy="395.0" rx="30.0" ry="25.0" fill="#a7f3d0" stroke="#047857" stroke-width="2"/>
+<ellipse cx="760.0" cy="387.0" rx="20.0" ry="17.0" fill="#a7f3d0" stroke="#047857" stroke-width="2"/>
+<rect x="40" y="628" width="260" height="80" rx="8" ry="8" fill="#3b82f6" stroke="#1e3a5f" stroke-width="2"/>
+<rect x="460" y="628" width="320" height="80" rx="8" ry="8" fill="#3b82f6" stroke="#1e3a5f" stroke-width="2"/>
+<rect x="1040" y="628" width="380" height="80" rx="8" ry="8" fill="#3b82f6" stroke="#1e3a5f" stroke-width="2"/>
+<rect x="360" y="760" width="720" height="80" rx="8" ry="8" fill="#ddd6fe" stroke="#6d28d9" stroke-width="2"/>
+<path d="M 120,280 L 720,280" fill="none" stroke="#64748b" stroke-width="3"/>
+<path d="M 720,280 L 1320,280" fill="none" stroke="#64748b" stroke-width="3"/>
+<path d="M 720,310 L 720,350" fill="none" stroke="#64748b" stroke-width="3"/>
+<path d="M 160,174 L 160,274" fill="none" stroke="#dc2626" stroke-width="2" marker-end="url(#arrowhead)"/>
+<path d="M 20,470 L 280,470" fill="none" stroke="#b91c1c" stroke-width="2" stroke-dasharray="8 4"/>
+<path d="M 1280,174 L 1280,274" fill="none" stroke="#1e40af" stroke-width="2" marker-end="url(#arrowhead)"/>
+<text x="720.0" y="28.8" fill="#1e40af" font-size="32" text-anchor="middle">The Equilibrium System</text>
+<text x="720.0" y="62.2" fill="#64748b" font-size="18" text-anchor="middle">Dynamic balance, not fixed structure</text>
+<text x="160.0" y="114.4" fill="#dc2626" font-size="16" text-anchor="middle">Consolidation Pressure</text>
+<text x="140.0" y="140.4" fill="#64748b" font-size="16" text-anchor="middle">Successful agents absorb scope</text>
+<text x="160.0" y="364.4" fill="#374151" font-size="16" text-anchor="middle">super-agent</text>
+<text x="0" y="490.4" fill="#b91c1c" font-size="16" text-anchor="start">Too few agents = brittle monolith</text>
+<text x="20" y="530.4" fill="#b91c1c" font-size="16" text-anchor="start">anti-monopoly threshold</text>
+<text x="1280.0" y="114.4" fill="#1e40af" font-size="16" text-anchor="middle">Fragmentation Pressure</text>
+<text x="1280.0" y="140.4" fill="#64748b" font-size="16" text-anchor="middle">Easier to build new than find existing</text>
+<text x="1160" y="490.4" fill="#1e40af" font-size="16" text-anchor="start">Too many agents = ungovernable swarm</text>
+<text x="720.0" y="118.0" fill="#047857" font-size="20" text-anchor="middle">Equilibrium</text>
+<text x="720.0" y="140.4" fill="#64748b" font-size="16" text-anchor="middle">Healthy diversity</text>
+<text x="170.0" y="614.4" fill="#1e40af" font-size="16" text-anchor="middle">Overlap Index</text>
+<text x="170.0" y="652.4" fill="#ffffff" font-size="16" text-anchor="middle">&lt;15% healthy</text>
+<text x="170.0" y="672.4" fill="#ffffff" font-size="16" text-anchor="middle">15-40% watch</text>
+<text x="170.0" y="692.4" fill="#ffffff" font-size="16" text-anchor="middle">&gt;40% merge</text>
+<text x="620.0" y="614.4" fill="#1e40af" font-size="16" text-anchor="middle">Concentration Index</text>
+<text x="620.0" y="672.4" fill="#ffffff" font-size="16" text-anchor="middle">Inspired by Herfindahl-Hirschman Index</text>
+<text x="1230.0" y="614.4" fill="#1e40af" font-size="16" text-anchor="middle">Vitality Index</text>
+<text x="1230.0" y="662.4" fill="#ffffff" font-size="16" text-anchor="middle">Birth rate, retirement rate,</text>
+<text x="1230.0" y="682.4" fill="#ffffff" font-size="16" text-anchor="middle">evolution rate, diversity</text>
+<text x="720.0" y="808.4" fill="#374151" font-size="16" text-anchor="middle">Self-evolution pressure — agents drift toward what their consumers want, regardless of colony coherence</text>
+<text x="720.0" y="744.4" fill="#6d28d9" font-size="16" text-anchor="middle">Third force:</text>
+</svg>

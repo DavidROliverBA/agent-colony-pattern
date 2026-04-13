@@ -1,0 +1,196 @@
+colony:
+  name: hello-colony
+  version: "1.0"
+  started: 2026-04-13
+  description: "A minimal 5-agent Agent Colony demonstrating the pattern in practice.
+    Includes one L1 governance set (Registry, Equilibrium, Chronicler), one L2 immune
+    system agent (Sentinel), and one L3 domain agent (Finance). Not a production
+    colony — a worked example for learning the pattern."
+
+agents:
+  - file: agents/registry-agent.yaml
+    name: registry-agent
+    role: governance
+    layer: L1
+    version: "1.0.0"
+    health_status: healthy
+    lifecycle_stage: deployed
+    owner: colony-core-team
+
+  - file: agents/equilibrium-agent.yaml
+    name: equilibrium-agent
+    role: governance
+    layer: L1
+    version: "1.0.0"
+    health_status: healthy
+    lifecycle_stage: deployed
+    owner: colony-core-team
+
+  - file: agents/sentinel-agent.yaml
+    name: sentinel-agent
+    role: immune-system
+    layer: L2
+    version: "1.0.0"
+    health_status: healthy
+    lifecycle_stage: deployed
+    owner: colony-core-team
+
+  - file: agents/chronicler-agent.yaml
+    name: chronicler-agent
+    role: governance-memory
+    layer: L1
+    version: "1.0.0"
+    health_status: healthy
+    lifecycle_stage: deployed
+    owner: colony-core-team
+
+  - file: agents/domain-agent-finance.yaml
+    name: domain-agent-finance
+    role: domain
+    layer: L3
+    version: "1.0.0"
+    health_status: healthy
+    lifecycle_stage: deployed
+    owner: finance-team
+
+overlap_matrix:
+  # All pairwise overlap scores across the colony.
+  # Scores are declared by agents in their own Mirrors and aggregated here by Equilibrium Agent.
+  # Status: healthy (<15%), watch (15-40%), merger-candidate (>40%)
+
+  - pair: [registry-agent, equilibrium-agent]
+    overlap_score: 0.08
+    status: healthy
+    notes: "Small overlap on agent-metadata reads. Both read Mirror data but for
+      distinct purposes — catalogue management vs. equilibrium analysis."
+
+  - pair: [registry-agent, sentinel-agent]
+    overlap_score: 0.10
+    status: healthy
+    notes: "Both read Agent Mirrors. Registry for storage and retrieval; Sentinel
+      for security assessment. Independent reads, no functional overlap."
+
+  - pair: [registry-agent, chronicler-agent]
+    overlap_score: 0.12
+    status: healthy
+    notes: "Both maintain records of agent state. Registry owns current state;
+      Chronicler owns historical event records. Different time horizons."
+
+  - pair: [registry-agent, domain-agent-finance]
+    overlap_score: 0.03
+    status: healthy
+    notes: "Domain agent uses Registry for specialist discovery only. Pure
+      consumer/provider relationship."
+
+  - pair: [equilibrium-agent, sentinel-agent]
+    overlap_score: 0.04
+    status: healthy
+    notes: "Equilibrium monitors structural health; Sentinel monitors security
+      health. Distinct remits."
+
+  - pair: [equilibrium-agent, chronicler-agent]
+    overlap_score: 0.06
+    status: healthy
+    notes: "Equilibrium observes colony state for analysis; Chronicler records
+      colony events for history. Complementary."
+
+  - pair: [equilibrium-agent, domain-agent-finance]
+    overlap_score: 0.24
+    status: watch
+    notes: "Domain agent has accreted some self-monitoring and summary reporting
+      capabilities that overlap with Equilibrium's colony-wide monitoring pattern.
+      Domain agent may be acquiring governance-adjacent scope. Review scheduled
+      for next equilibrium cycle. Not yet a merger candidate — different remits
+      (finance domain vs. colony-wide) — but worth watching."
+
+  - pair: [sentinel-agent, chronicler-agent]
+    overlap_score: 0.05
+    status: healthy
+    notes: "Sentinel detects and escalates; Chronicler records. Sentinel is a
+      high-frequency Chronicler producer. No capability overlap."
+
+  - pair: [sentinel-agent, domain-agent-finance]
+    overlap_score: 0.06
+    status: healthy
+    notes: "Sentinel receives escalations from Finance; Finance is a Sentinel
+      consumer. Producer/consumer relationship, not peer overlap."
+
+  - pair: [chronicler-agent, domain-agent-finance]
+    overlap_score: 0.04
+    status: healthy
+    notes: "Finance records domain events to Chronicler. Chronicler is a dependency
+      of Finance. No capability overlap."
+
+vitality:
+  # Colony vitality metrics as of snapshot date.
+  # Calculated over the prior 90-day window where available;
+  # this colony is new so all figures reflect the bootstrap period.
+  snapshot_date: 2026-04-13
+  birth_rate_90d: 5         # 5 agents created in bootstrap
+  retirement_rate_90d: 0    # no retirements yet — colony is new
+  self_evolution_rate_90d: 0  # no self-evolutions yet — v1.0 files are human-authored
+  diversity_score: 0.80     # 4 distinct capability categories across 5 agents; healthy
+  notes: "Young colony at bootstrap. All vitality metrics reflect initial human-directed
+    creation. First self-evolutions expected within 30 days as agents encounter
+    real workloads. Retirement rate expected to remain zero until first agents reach
+    their redesign gates. Diversity score is healthy — no concentration concerns."
+
+trust_ledger:
+  # Colony-wide trust and autonomy stage assessment.
+  # Each dimension starts at its most conservative value and earns progression.
+  snapshot_date: 2026-04-13
+  governance_stage: human-directed
+  funding_stage: seeded
+  experimentation_stage: observe-only
+  notes: "Earliest maturity — humans approve every significant action. Colony must
+    demonstrate reliable behaviour before any governance stage advances. First
+    governance_stage review scheduled after 90 days of operation. Security upgrades
+    are always pre-authorised regardless of governance stage, per the colony's
+    mutual defence principle."
+
+  stage_definitions:
+    governance_stage:
+      human-directed: "Humans approve every significant action. Agents propose; humans decide."
+      human-reviewed: "Agents act on minor decisions autonomously; humans review outcomes."
+      human-bounded: "Agents self-govern within human-set boundaries; humans adjust boundaries."
+      self-governing: "Agents self-govern; humans set overall direction only."
+    funding_stage:
+      seeded: "Colony is funded by initial investment. Value not yet demonstrated at scale."
+      proven: "Colony has demonstrated measurable value outcomes. Funding renewed on evidence."
+      self-sustaining: "Colony generates value that justifies its own cost at the hosting organisation level."
+    experimentation_stage:
+      observe-only: "Agents may observe outcomes but not run experiments."
+      sandboxed: "Agents may run experiments in isolated environments with human oversight."
+      bounded-live: "Agents may run live experiments within defined safety boundaries."
+      self-directed: "Agents design and run their own experiments, reporting outcomes."
+
+dependency_graph:
+  # Summary of inter-agent dependencies declared in Agent Mirrors.
+  # Arrows represent: consumer → dependency (consumer depends on dependency).
+  edges:
+    - from: equilibrium-agent
+      to: registry-agent
+      type: primary-data-source
+    - from: equilibrium-agent
+      to: chronicler-agent
+      type: event-recording
+    - from: sentinel-agent
+      to: registry-agent
+      type: mirror-reads
+    - from: sentinel-agent
+      to: chronicler-agent
+      type: event-recording
+    - from: registry-agent
+      to: chronicler-agent
+      type: event-recording
+    - from: domain-agent-finance
+      to: registry-agent
+      type: specialist-discovery
+    - from: domain-agent-finance
+      to: chronicler-agent
+      type: event-recording
+  notes: "Chronicler Agent is a terminal dependency — it intentionally depends on
+    no other colony agent to avoid circular recording. Registry Agent is the most
+    widely consumed agent (3 consumers). Sentinel and Equilibrium form the governance
+    spine. Domain Agent Finance is the only L3 agent; as the mesh grows, new domain
+    and specialist agents will add edges primarily to Registry and Chronicler."

@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 -20 1180 860" width="1180" height="860" font-family="Virgil, Segoe UI Emoji, sans-serif">
+<rect x="-20" y="-20" width="1180" height="860" fill="#ffffff"/>
+<defs>
+  <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="strokeWidth">
+    <path d="M 0 0 L 10 5 L 0 10 z" fill="#1e1e1e"/>
+  </marker>
+</defs>
+<rect x="380" y="100" width="480" height="100" rx="8" ry="8" fill="#3b82f6" stroke="#1e3a5f" stroke-width="2"/>
+<rect x="380" y="200" width="480" height="100" rx="8" ry="8" fill="#60a5fa" stroke="#1e3a5f" stroke-width="2"/>
+<rect x="380" y="300" width="480" height="120" rx="8" ry="8" fill="#ddd6fe" stroke="#6d28d9" stroke-width="2"/>
+<rect x="380" y="420" width="480" height="120" rx="8" ry="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+<rect x="380" y="540" width="480" height="120" rx="8" ry="8" fill="#fed7aa" stroke="#c2410c" stroke-width="2"/>
+<rect x="380" y="660" width="480" height="100" rx="8" ry="8" fill="#a7f3d0" stroke="#047857" stroke-width="2"/>
+<path d="M 220,420 L 280,380 L 380,360" fill="none" stroke="#6d28d9" stroke-width="2" marker-end="url(#arrowhead)"/>
+<path d="M 220,440 L 180,520 L 220,600 L 380,600" fill="none" stroke="#6d28d9" stroke-width="2" marker-end="url(#arrowhead)"/>
+<path d="M 940,240 L 860,250" fill="none" stroke="#60a5fa" stroke-width="2" marker-end="url(#arrowhead)"/>
+<path d="M 940,700 L 860,710" fill="none" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrowhead)"/>
+<path d="M 940,480 L 860,480" fill="none" stroke="#dc2626" stroke-width="2" marker-end="url(#arrowhead)"/>
+<text x="620.0" y="28.8" fill="#1e40af" font-size="32" text-anchor="middle">The Agent Mirror</text>
+<text x="620.0" y="54.4" fill="#64748b" font-size="16" text-anchor="middle">The standard that reflects what an agent is</text>
+<text x="620.0" y="134.4" fill="#ffffff" font-size="16" text-anchor="middle">1. Core Identity</text>
+<text x="620.0" y="154.4" fill="#ffffff" font-size="16" text-anchor="middle">name, purpose, version,</text>
+<text x="620.0" y="174.4" fill="#ffffff" font-size="16" text-anchor="middle">lineage, owner</text>
+<text x="620.0" y="234.4" fill="#374151" font-size="16" text-anchor="middle">2. Capabilities &amp; Contracts</text>
+<text x="620.0" y="254.4" fill="#374151" font-size="16" text-anchor="middle">capabilities, contracts,</text>
+<text x="620.0" y="274.4" fill="#374151" font-size="16" text-anchor="middle">dependencies, protocols</text>
+<text x="620.0" y="334.4" fill="#374151" font-size="16" text-anchor="middle">3. Autonomy &amp; Self-Evolution</text>
+<text x="620.0" y="354.4" fill="#374151" font-size="16" text-anchor="middle">autonomy level, evolution scope,</text>
+<text x="620.0" y="374.4" fill="#374151" font-size="16" text-anchor="middle">evolution budget (security upgrades exempt),</text>
+<text x="620.0" y="394.4" fill="#374151" font-size="16" text-anchor="middle">evolution log</text>
+<text x="620.0" y="464.4" fill="#374151" font-size="16" text-anchor="middle">4. Security Posture</text>
+<text x="620.0" y="484.4" fill="#374151" font-size="16" text-anchor="middle">threat model, detection, escalation,</text>
+<text x="620.0" y="504.4" fill="#374151" font-size="16" text-anchor="middle">last upgrade, dependencies</text>
+<text x="620.0" y="584.4" fill="#374151" font-size="16" text-anchor="middle">5. Lifecycle</text>
+<text x="620.0" y="604.4" fill="#374151" font-size="16" text-anchor="middle">stage, birth, last active,</text>
+<text x="620.0" y="624.4" fill="#374151" font-size="16" text-anchor="middle">health, retirement criteria</text>
+<text x="620.0" y="694.4" fill="#374151" font-size="16" text-anchor="middle">6. Colony Relationships</text>
+<text x="620.0" y="714.4" fill="#374151" font-size="16" text-anchor="middle">overlap map, collaborators,</text>
+<text x="620.0" y="734.4" fill="#374151" font-size="16" text-anchor="middle">consumers</text>
+<text x="100.0" y="418.0" fill="#6d28d9" font-size="20" text-anchor="middle">Self</text>
+<text x="100.0" y="444.4" fill="#64748b" font-size="16" text-anchor="middle">The agent reads these</text>
+<text x="100.0" y="464.4" fill="#64748b" font-size="16" text-anchor="middle">to understand itself</text>
+<text x="1020.0" y="238.0" fill="#60a5fa" font-size="20" text-anchor="middle">Other Agents</text>
+<text x="1020.0" y="264.4" fill="#64748b" font-size="16" text-anchor="middle">Agents read these to</text>
+<text x="1020.0" y="284.4" fill="#64748b" font-size="16" text-anchor="middle">discover and consume</text>
+<text x="1020.0" y="698.0" fill="#3b82f6" font-size="20" text-anchor="middle">Governance</text>
+<text x="1020.0" y="724.4" fill="#64748b" font-size="16" text-anchor="middle">The Registry and Equilibrium</text>
+<text x="1020.0" y="744.4" fill="#64748b" font-size="16" text-anchor="middle">agents read these</text>
+<text x="1030.0" y="478.0" fill="#dc2626" font-size="20" text-anchor="middle">Immune System</text>
+<text x="1030.0" y="504.4" fill="#64748b" font-size="16" text-anchor="middle">Sentinel reads these</text>
+<text x="1030.0" y="524.4" fill="#64748b" font-size="16" text-anchor="middle">to detect drift</text>
+<text x="620.0" y="814.4" fill="#64748b" font-size="16" text-anchor="middle">Descriptive, not prescriptive — divergence between Mirror and behaviour is a signal, not a constraint</text>
+</svg>

@@ -11,6 +11,14 @@ The Agent Colony is an architectural pattern for building self-governing ecosyst
 - **[Specification](specification.md)** — the detailed technical reference for implementers. Covers the four-layer architecture, the Agent Mirror schema, colony dynamics, and the maturity model.
 - **[Diagrams](diagrams/)** — six Excalidraw source files. View at [excalidraw.com](https://excalidraw.com) or in [Obsidian](https://obsidian.md) with the Excalidraw plugin.
 
+## Scope and audiences
+
+This repository has three distinct audiences. Read the document that fits your need:
+
+- **If you want the argument** — read [`manifesto.md`](manifesto.md). 15 minutes. Opinionated, shareable. No engineering detail.
+- **If you want the evidence** — read [`thesis.md`](thesis.md). Literature review against 12 existing standards, formal gap analysis, 6 diagrams. This is the version to cite in peer review.
+- **If you want to build it** — read [`specification.md`](specification.md) and the [`schemas/`](schemas/) and [`examples/`](examples/) directories. Contains the Agent Mirror JSON Schema and a worked 5-agent colony example.
+
 ## The argument in one paragraph
 
 Every paradigm shift in distributed systems has changed the unit of independent work and the way populations of those units are governed. Monoliths, SOA, microservices — each answered the question differently. AI agents are the next answer, but agents add three things that did not exist before: autonomy, self-evolution, and lifecycle identity. Building agent ecosystems with the patterns we used for services will repeat every mistake we made before, plus new ones we have not seen yet. The Agent Colony is a pattern language for doing it differently.

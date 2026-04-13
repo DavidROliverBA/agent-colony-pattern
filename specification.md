@@ -3,7 +3,7 @@
 **Author:** David Oliver
 **Date:** 2026-04-11
 **Status:** v1.0 — Foundation
-**Licence:** Personal intellectual property of the author. Published for peer review.
+**Licence:** [CC BY 4.0](LICENSE) — you may share and adapt this work for any purpose, including commercially, provided you give appropriate credit.
 
 ---
 
@@ -483,6 +483,82 @@ These gaps represent a fundamentally different category of problem. Containers n
 
 ---
 
+## 7.5 Conformance
+
+A pattern is only useful if you can tell when you are deviating from it. This section makes that possible — it lists five anti-patterns that indicate a system is *not* doing Agent Colony, five observable health signals that indicate it *is*, and three named failure modes with the defences the pattern attempts to provide.
+
+### 7.5.1 Anti-patterns: You are not doing Agent Colony if...
+
+**1. Your agents have no machine-readable identity that other agents can inspect.**
+If an agent cannot read another agent's Mirror (or equivalent), there is no basis for discovery, trust, or migration. The colony's governance layer depends on agents being legible to each other — the Registry Agent cannot catalogue what it cannot read, the Equilibrium Agent cannot detect overlap between agents that cannot describe their own capabilities, and the Sentinel Agent cannot detect drift in an agent that has no declared posture to drift from. You have services with LLMs attached, not a colony.
+
+**2. Your agent population is fixed at design time — no birth, no retirement, no equilibrium review.**
+Colonies are populations, not rosters. If the set of agents is defined once by developers and never changes under the colony's own governance, you are running a multi-agent framework, not maintaining a colony. The Vitality Index should always show non-zero birth and retirement rates. A system where developers add agents and agents never retire is a microservices architecture with AI inside it — a useful thing, but not this pattern.
+
+**3. Your multi-agent system has no collective memory that outlives individual agents.**
+If lessons die with the agents that learned them, the colony cannot learn. Per-agent memory is necessary but not sufficient — Event Memory, Lesson Memory, and Constitutional Memory must operate at the colony level, not the agent level. A colony where each new agent starts from zero is not accumulating institutional knowledge. It is running the same experiments its predecessors ran, failing the same ways, and forgetting the failures the same way. The reflection cycle is not a nice-to-have.
+
+**4. Your human-agent interface is a permission system, not a boundary.**
+If every significant agent action requires human approval, you have tools with extra steps. The Coexistence Boundary is not a gate that humans hold the keys to — it is a shared border with agreed playbooks, defined crossing conditions, and mutual accountability. Coexistence requires that agents have real authority within their world. A system where no consequential action proceeds without a human in the loop has not earned autonomy; it has not started the process of earning it.
+
+**5. Your agents cannot improve their own security without going through a governance cycle.**
+Security is a survival instinct, not a feature request. If an agent that identifies a vulnerability in itself has to wait for the next sprint planning meeting, your mutual defence principle is theatrical. The preauthorisation of security upgrades exists precisely because attacks do not wait for governance cycles. A colony that cannot patch itself under threat is not a self-governing system — it is a collection of agents that depend on human intervention for survival.
+
+### 7.5.2 Observable health signals
+
+These are things you can actually measure or observe — not value statements about what a good colony should be.
+
+**1. Birth rate and retirement rate are both non-zero over any 90-day window.**
+A colony that only creates agents is growing without discipline. A colony that only retires is dying. Healthy colonies do both. The Vitality Index tracks this. If either rate is zero for a quarter, the Equilibrium Agent's thresholds or the Lifecycle Agent's retirement criteria deserve inspection — not celebration.
+
+**2. Every active agent's Mirror has been updated in the last 30 days — or the agent carries an explicit dormancy declaration.**
+Stale Mirrors indicate drift between declared and actual behaviour. This is the primary signal the Sentinel Agent watches for when detecting possible compromise — a compromised agent's Mirror will eventually diverge from what it is actually doing. A colony where Mirrors go months without updates either has agents that are genuinely doing nothing (in which case, why are they active?) or has agents whose actual behaviour is no longer reflected in their declared posture.
+
+**3. The Overlap Index distribution shows most pairs below 15% with a small number in the 15–40% range under active review.**
+If no pairs are ever in the watch zone, the Equilibrium Agent is probably not running correctly or its thresholds are too lenient. If many pairs are in the merger zone simultaneously, consolidation pressure is winning and the anti-monopoly thresholds need attention. The healthy state is not zero overlap — it is understood and governed overlap.
+
+**4. The Trust Ledger shows experiments that failed, not just ones that succeeded.**
+A colony with a 100% experiment success rate is not running honest experiments — it is running tests it already knows will pass. Failed experiments, honestly reported with accurate rollback execution, are the signal that the colony has earned the right to advance its experimentation stage. The Trust Ledger is only meaningful if it contains failures. A clean ledger is a red flag, not a clean bill of health.
+
+**5. Constitutional rules have been retired as well as created.**
+Rules that cannot be retired are dogma. A healthy colony retires rules whose original conditions no longer apply — and preserves the memory of why they existed so it does not re-derive the same bad rule under different circumstances. The Constitutional Agent's retirement function is as important as its promotion function. A constitution that only grows is accumulating constraints without examining whether they still apply.
+
+### 7.5.3 Named failure modes and defences
+
+Three failure modes specific to the Agent Colony pattern — distinct from generic multi-agent failure modes because they exploit mechanisms that the pattern itself introduces.
+
+---
+
+**Failure mode 1: Compromised Reflector**
+
+A Reflector Agent extracts biased or false lessons from events. Over time, Constitutional Memory accumulates rules derived from those lessons. The colony builds its own superstition — appearing to learn while actually encoding the Reflector's systematic bias into its governing rules. Because the constitutional rules emerge from a legitimate process (lesson frequency, evidence grading, structured review), the bias is hard to detect from the outside. The colony is following its own rules; the rules are simply wrong.
+
+*Defence:* Three layers. First, the evidence grade requirement — Constitutional rules require corroborated or higher evidence, and provisional rules are flagged for mandatory re-validation on a schedule. A biased Reflector will struggle to generate the corroborated evidence required for constitutional promotion without the bias becoming visible across multiple events. Second, mandatory dissent at every rule promotion — every significant rule promotion must include a structured counter-argument before it proceeds, and the dissent record is preserved alongside the rule. Third, the bias detection sub-function actively scans for recency bias, survivorship bias, and groupthink signals in lesson extraction. When bias is detected, it triggers re-examination of the lessons the Reflector produced during the suspect period.
+
+None of these defences are tested by a real implementation. They are the design, not a proven defence. Whether corroborated evidence requirements are sufficient to surface a sophisticated Reflector bias, and whether mandatory dissent is genuinely independent when all agents share the same constitutional context, are open questions that a reference implementation will need to answer.
+
+---
+
+**Failure mode 2: Runaway Equilibrium merger**
+
+The Equilibrium Agent proposes a sequence of mergers that collapses the colony toward a single super-agent. Each individual merger looks reasonable — the pair has high overlap, the merged agent is more capable than its predecessors, the proposal passes governance review. But the cumulative effect is loss of diversity and a concentration of capability that makes the colony ungovernable. The failure is not in any single decision; it is in the sequence. No individual review catches it because each review evaluates the current merger, not the trajectory.
+
+*Defence:* Four layers. First, the anti-monopoly hard gate from the Concentration Index — no single agent may account for more than a defined fraction of total colony capabilities, regardless of overlap justifications. This is a floor, not a guideline. Second, human approval is required for all mergers until the colony reaches Phase 3 maturity — which means the trajectory is visible to human collaborators who can spot a pattern across proposals that individual reviewers might miss. Third, the Vitality Index diversity floor — the Equilibrium Agent's own Vitality Index score is downgraded if its proposals reduce diversity below the floor, creating a self-limiting mechanism on consolidation proposals. Fourth, Trust Ledger downgrade — if the Equilibrium Agent's behaviour shows a pattern that matches a known failure mode, its experimentation stage is downgraded and its proposals revert to requiring human approval.
+
+Again, theoretical until tested. The anti-monopoly threshold is configurable and the right value is not known until a real colony exercises it. Whether the diversity floor creates effective self-limiting behaviour or simply changes the merger sequence without changing the outcome is an open question.
+
+---
+
+**Failure mode 3: Preauthorised-security abuse**
+
+A compromised agent classifies its own exfiltration or privilege escalation as a "security upgrade" to bypass governance. Because security upgrades are preauthorised — they do not consume the evolution budget, do not require governance review, and are a stated survival instinct — the compromised agent executes the abuse without triggering the normal checkpoints. The mechanism designed to protect the colony is used to subvert it.
+
+*Defence:* Three layers. First, the Sentinel Agent's drift detection — a Mirror that declares a "security upgrade" while the agent's actual behaviour diverges from its declared security posture is the primary signal of compromise. Security upgrades must update the Mirror's `last_security_upgrade` field and `security_dependencies` — a genuine security upgrade should make the Mirror more accurate, not less. An upgrade that leaves the Mirror stale or introduces inconsistencies triggers an anomaly flag. Second, Patch Agent scope limits — security upgrades may only modify declared security fields in the Mirror and security-scoped behaviour. Modifications to purpose, contracts, or capabilities under a security upgrade classification are out of scope and trigger immediate escalation. Third, the Response Coordinator escalates immediately if a self-declared security upgrade triggers anomaly signals elsewhere in the colony. Mutual defence is not unconditional trust — it is transparent defence with cross-checks across the immune system.
+
+This is the failure mode most likely to matter in practice. The preauthorisation of security upgrades is the sharpest edge in the pattern — the mechanism that enables real security autonomy is the same mechanism that an adversary would target first. It is also the defence most likely to be refined substantially in v2.0 after a reference implementation exercises it. The defences above are the current design; they should be treated as provisional until tested against a real attack scenario.
+
+---
+
 ## 8. Deliverables and Roadmap
 
 ### Three Outputs
@@ -508,6 +584,7 @@ Structure:
 - Section 5: Colony Memory
 - Section 6: Epistemic Discipline
 - Section 7: Standards Landscape and Gap Analysis
+- Section 7.5: Conformance
 - Appendix A: Agent Mirror schema (full field reference)
 - Appendix B: Maturity model (governance x funding x experimentation)
 - Appendix C: Glossary of terms
@@ -587,4 +664,4 @@ These prior notes informed the pattern but are not prerequisites. The Agent Colo
 ---
 
 *Agent Colony v1.0 — David Oliver, 2026-04-11*
-*Published for peer review. Contributions, challenges, and implementations welcome.*
+*Licensed [CC BY 4.0](LICENSE). Contributions, challenges, and implementations welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).*

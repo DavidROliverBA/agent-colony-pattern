@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+title: "The Agent Colony: A Pattern Language for Self-Governing AI Agent Ecosystems"
+message: "If you use or reference this work, please cite it as below."
+type: software
+authors:
+  - family-names: Oliver
+    given-names: David
+version: "1.1.0"
+date-released: 2026-04-13
+url: "https://github.com/DavidROliverBA/agent-colony-pattern"
+license: CC-BY-4.0
+keywords:
+  - agent colony
+  - multi-agent systems
+  - agent architecture
+  - agent mirror
+  - pattern language
+  - autonomous agents
+  - AI governance
+abstract: >
+  A universal architectural pattern for self-governing ecosystems of autonomous
+  AI agents that persist beyond projects, evolve across technology generations,
+  and coexist with human organisations through defined boundaries. The work
+  includes six principles, the Agent Mirror identity standard, and analysis of
+  six gaps in current standards.

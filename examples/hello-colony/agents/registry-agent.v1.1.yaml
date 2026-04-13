@@ -1,0 +1,168 @@
+identity:
+  name: registry-agent
+  purpose: "Maintain the Agent Mirror catalogue for the colony. Provide discovery,
+    dependency graphing, and overlap analysis inputs to the Equilibrium Agent. Serve
+    as the single authoritative index of every agent in the colony."
+  version: "1.1.0"
+  lineage:
+    - version: "1.0.0"
+      date: 2026-04-13
+      changed: "Initial release. Core register, discover, and dependency-graph capabilities
+        established. Schema validation enforced on all submissions."
+      triggered_by: human
+    - version: "1.1.0"
+      date: 2026-04-21
+      changed: "Added bulk_register capability to support colony bootstrap scenarios
+        where multiple agents need to be registered in a single atomic operation.
+        Applied security patch to signature verification logic — CVE-2026-0441
+        allowed a crafted Mirror to bypass signature check under specific timing
+        conditions. Patch closes the window by enforcing strict sequencing of
+        decode-then-verify. Security upgrade does not consume evolution budget."
+      triggered_by: self
+      trigger_context: "Equilibrium Agent flagged that domain-agent-finance registration
+        took 4 sequential round-trips during colony bootstrap. Registry self-identified
+        the missing bulk path. CVE-2026-0441 discovered by Sentinel Agent during
+        routine anomaly scan of submission logs."
+  owner: colony-core-team
+
+capabilities:
+  capabilities:
+    - name: register_agent
+      description: "Accept a new Agent Mirror and add it to the catalogue. Validates
+        the submitted YAML against the Agent Mirror schema before accepting. Returns
+        the registered agent's canonical ID."
+    - name: update_agent
+      description: "Accept an updated Agent Mirror for an existing agent. Validates
+        version bump is present and lineage entry is complete. Rejects downgrades."
+    - name: discover_by_capability
+      description: "Return agents matching a capability query. Supports exact name
+        match and keyword search across capability descriptions. Returns ranked list
+        with capability overlap scores."
+    - name: dependency_graph
+      description: "Return the dependency graph for a given agent — all agents it
+        depends on, transitively. Used by Lifecycle Agent to compute blast radius
+        before retirement decisions."
+    - name: health_summary
+      description: "Return a summary of all registered agents grouped by lifecycle
+        stage and health status. Used by Equilibrium Agent during vitality scoring."
+    - name: bulk_register
+      description: "Accept a list of Agent Mirrors and register them in a single
+        atomic operation. All submissions are validated before any are committed —
+        if one fails validation the entire batch is rejected. Designed for colony
+        bootstrap and batch migration scenarios. Non-breaking addition to v1.0 contract."
+  contracts:
+    input_schema: "https://example.com/schemas/registry-request-v1.json"
+    output_schema: "https://example.com/schemas/registry-response-v1.json"
+    sla:
+      availability: "99.9%"
+      p99_latency_ms: 100
+    error_behaviours:
+      - "Unknown agent name returns 404 with message 'agent not found in registry'"
+      - "Invalid Mirror schema returns 400 with field-level validation details"
+      - "Version conflict (submitted version <= current version) returns 409"
+      - "Duplicate registration returns 409 with existing agent canonical ID"
+      - "bulk_register partial failure returns 400 with per-item validation results;
+        no items are committed"
+  dependencies:
+    - chronicler-agent  # records all registry events for audit trail
+  protocols:
+    - HTTP
+    - A2A
+
+autonomy:
+  autonomy_level: bounded
+  self_evolution_scope:
+    allowed:
+      - "Add new capability fields that do not break existing contracts"
+      - "Tune internal caching strategy and TTL values"
+      - "Update supported protocol versions to latest stable"
+      - "Improve schema validation error messages for clarity"
+      - "Add new health_summary grouping dimensions"
+    forbidden:
+      - "Modify the Agent Mirror schema definition without human approval"
+      - "Change input or output contract schemas in breaking ways"
+      - "Alter the dependency graph algorithm in ways that change transitive results"
+      - "Grant registry access to agents outside the colony boundary"
+      - "Delete or archive registered agents autonomously"
+  evolution_budget:
+    max_self_updates_before_redesign: 5
+    security_upgrades_exempt: true
+    updates_remaining: 4  # decremented from 5 — bulk_register addition consumed one slot
+  evolution_log:
+    - version: "1.1.0"
+      date: 2026-04-21T09:14:00Z
+      type: capability_addition
+      description: "Added bulk_register capability. Non-breaking — new endpoint,
+        no changes to existing endpoints or schemas. Triggered by Equilibrium Agent
+        observation that sequential registration creates unnecessary bootstrap latency."
+      triggered_by: self
+      human_approved: false  # within autonomy scope — non-breaking addition
+      security_upgrade: false
+    - version: "1.1.0"
+      date: 2026-04-21T09:22:00Z
+      type: security_patch
+      description: "Patched CVE-2026-0441 — timing-window bypass in signature
+        verification. Enforced strict decode-then-verify sequencing. No contract
+        changes. Flagged to colony-core-team post-application per escalation process."
+      triggered_by: sentinel-agent
+      human_approved: false  # preauthorised — security upgrades are always exempt
+      security_upgrade: true
+
+security:
+  threat_model:
+    - "Malicious Mirror submission — poisoning the registry with false capability claims"
+    - "Denial-of-service on discovery queries — flooding to degrade colony discoverability"
+    - "Credential theft targeting registry signing key — enables undetected Mirror forgery"
+    - "Privilege escalation via dependency graph — using graph traversal to infer unexposed topology"
+    - "Mirror replay attack — submitting a stale valid Mirror to mask agent drift"
+  detection_capabilities:
+    - "Rate limiting per source agent (sliding window, 100 req/min default)"
+    - "Schema validation on all submissions — rejects structurally malformed Mirrors"
+    - "Signature verification on all Mirror submissions (CVE-2026-0441 patched 2026-04-21)"
+    - "Anomaly detection on query patterns — unusual discovery queries flagged to Sentinel"
+    - "Version freshness checks — Mirrors not updated in 30 days trigger staleness alert"
+  escalation_process:
+    trigger: "Any detection that exceeds defined thresholds, or any submission that
+      passes schema validation but triggers anomaly scoring above 0.7"
+    notify:
+      - sentinel-agent
+      - colony-core-team
+    preauthorised_security_upgrades: true
+  last_security_upgrade:
+    date: 2026-04-21
+    description: "Patched CVE-2026-0441 — timing-window bypass in signature verification
+      logic. Strict decode-then-verify sequencing enforced. Notified colony-core-team
+      post-application."
+  security_dependencies:
+    - sentinel-agent
+
+lifecycle:
+  lifecycle_stage: deployed
+  birth_date: 2026-04-13T00:00:00Z
+  last_active: 2026-04-21T09:22:00Z
+  health_status: healthy
+  retirement_criteria:
+    - "A successor registry agent has been promoted, all consumers migrated, and
+      a 30-day parallel-run period completed without divergence"
+    - "Colony size drops below 3 agents (registry overhead exceeds value)"
+    - "Colony adopts a federated registry model that supersedes a centralised catalogue"
+
+relationships:
+  overlap_map:
+    - agent: equilibrium-agent
+      overlap_score: 0.08
+      status: healthy
+      notes: "Small overlap on agent-metadata reads; both read Mirror data but for
+        distinct purposes — Registry for storage/retrieval, Equilibrium for analysis"
+    - agent: chronicler-agent
+      overlap_score: 0.12
+      status: healthy
+      notes: "Both maintain records of agent state. Registry is authoritative for
+        current state; Chronicler is authoritative for historical events. Non-competing."
+  collaborators:
+    - equilibrium-agent
+    - chronicler-agent
+  consumers:
+    - equilibrium-agent
+    - sentinel-agent
+    - domain-agent-finance

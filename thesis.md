@@ -28,7 +28,7 @@ That capability changes how you design, govern, and sustain an ecosystem of them
 
 The following diagram traces this evolution and what each shift added to the architectural vocabulary.
 
-![](https://claude.ai/chat/agent-colony-evolutionary-context.excalidraw)
+![](https://claude.ai/chat/agent-colony-evolutionary-context.svg)
 
 Notice the progression in governance complexity. Monoliths required no governance model — one team, one artefact. SOA introduced the service registry. Microservices introduced the service mesh. Agent Colonies require something that does not yet fully exist: self-governance with human boundaries.
 
@@ -213,7 +213,7 @@ The colony is structured in four layers. Each layer is independently replaceable
 
 The following diagram shows how these layers stack, with the Coexistence Boundary at the top separating the agent world from the human world.
 
-![](https://claude.ai/chat/agent-colony-four-layer-architecture.excalidraw)
+![](https://claude.ai/chat/agent-colony-four-layer-architecture.svg)
 
 Notice that meta-agents are concentrated in Layer 1 (Governance) and Layer 2 (Immune System), while Layer 3 (Agent Mesh) contains an unbounded, dynamic population. Layer 4 (Substrate) is deliberately thin — the colony consumes infrastructure but does not own it.
 
@@ -245,7 +245,7 @@ The schema comprises six sections, each read by different parts of the colony.
 
 The following diagram shows the schema as a structured identity document, with annotations indicating who reads each section.
 
-![](https://claude.ai/chat/agent-colony-agent-mirror.excalidraw)
+![](https://claude.ai/chat/agent-colony-agent-mirror.svg)
 
 Notice how the readership fans out: the agent itself reads its own Autonomy and Lifecycle sections for self-governance decisions. Other agents read Capabilities and Contracts for interoperability. Governance reads Colony Relationships for overlap and population health. The Immune System reads Security Posture for threat assessment.
 
@@ -327,7 +327,7 @@ _Self-evolution pressure:_ agents that can modify themselves will naturally drif
 
 The following diagram illustrates the tension between these forces and how the Equilibrium System maintains balance.
 
-![](https://claude.ai/chat/agent-colony-equilibrium.excalidraw)
+![](https://claude.ai/chat/agent-colony-equilibrium.svg)
 
 Notice the anti-monopoly threshold on the consolidation side — a hard boundary that prevents any single agent from absorbing too much of the colony's total capability. The three gauges represent the metrics the Equilibrium Agent monitors continuously.
 
@@ -359,7 +359,7 @@ _A note on terminology._ The word _constitutional_ is borrowed from Anthropic's 
 
 The following diagram shows how these three layers form a reflection cycle, with memory agents positioned at their respective stages.
 
-![](https://claude.ai/chat/agent-colony-memory-cycle.excalidraw)
+![](https://claude.ai/chat/agent-colony-memory-cycle.svg)
 
 Notice the feedback loop: constitutional rules shape how new events are interpreted, which in turn produces new events, new lessons, and potentially revised constitutional rules. The cycle is continuous. The colony is always learning — and always questioning what it has learned.
 
@@ -432,7 +432,7 @@ Colony maturity advances across three interlocking progressions.
 
 The following diagram shows these three tracks advancing through stages, with the interlocking requirement that all three must progress together.
 
-![](https://claude.ai/chat/agent-colony-maturity-model.excalidraw)
+![](https://claude.ai/chat/agent-colony-maturity-model.svg)
 
 Notice the stage gates between each transition. A colony cannot reach self-directed experimentation while still on seed funding, because the trust required for one implies the trust required for the others. Advancing one dimension while the others lag creates instability — a colony that experiments freely but cannot demonstrate ROI will lose funding; a colony that is self-governing but still on seed funding has no mandate for its autonomy.
 

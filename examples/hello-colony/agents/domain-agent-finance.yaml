@@ -1,0 +1,154 @@
+identity:
+  name: domain-agent-finance
+  purpose: "Handle finance domain tasks for the colony's consumers: invoice processing,
+    payment validation, budget tracking, and financial reporting. Own the finance
+    capability surface in the agent mesh. Act as the single integration point for
+    finance-related requests, delegating to specialist agents as the mesh grows."
+  version: "1.0.0"
+  lineage:
+    - version: "1.0.0"
+      date: 2026-04-13
+      changed: "Initial release. Core invoice processing, payment validation, and
+        budget summary capabilities established. Registered with Registry Agent
+        on first deployment."
+      triggered_by: human
+  owner: finance-team
+
+capabilities:
+  capabilities:
+    - name: process_invoice
+      description: "Accept an invoice payload, validate it against supplier records,
+        check it against budget allocation, and route it to the appropriate approval
+        workflow. Returns a processing receipt with status and next steps."
+    - name: validate_payment
+      description: "Validate a proposed payment against: supplier whitelist, payment
+        amount limits, currency rules, and duplicate detection. Returns approved,
+        flagged, or rejected with structured reasoning."
+    - name: get_budget_summary
+      description: "Return current budget utilisation for a specified cost centre
+        or time period. Breaks down by category, shows committed vs. spent, and
+        flags cost centres approaching limit thresholds."
+    - name: generate_financial_report
+      description: "Generate a structured financial report for a specified period
+        and scope. Supports summary and detailed modes. Output is structured data —
+        formatting and presentation are the consumer's responsibility."
+    - name: flag_anomaly
+      description: "Accept an anomaly signal from an external source (e.g., a fraud
+        detection specialist agent) and integrate it into the invoice and payment
+        validation workflow for the affected supplier or transaction type."
+  contracts:
+    input_schema: "https://example.com/schemas/finance-request-v1.json"
+    output_schema: "https://example.com/schemas/finance-response-v1.json"
+    sla:
+      availability: "99.5%"
+      p99_latency_ms: 300
+    error_behaviours:
+      - "Invalid invoice structure returns 400 with field-level validation errors"
+      - "Supplier not found in whitelist returns 404 — invoice is quarantined, not
+        rejected; human review required before disposal"
+      - "Budget limit exceeded returns 402 with current utilisation and remaining
+        headroom"
+      - "Duplicate invoice detected returns 409 with original processing receipt ID"
+      - "Payment validation rejection returns 200 with structured rejection reason
+        — rejection is a valid outcome, not an error"
+  dependencies:
+    - registry-agent    # discovers specialist agents as the mesh grows
+    - chronicler-agent  # records all finance events for audit trail
+  protocols:
+    - HTTP
+    - A2A
+
+autonomy:
+  autonomy_level: supervised
+  self_evolution_scope:
+    allowed:
+      - "Tune payment validation thresholds within documented safe ranges"
+      - "Add new report output dimensions that do not change existing dimension semantics"
+      - "Improve anomaly flag integration to cover new signal types"
+      - "Update supplier whitelist via approved data feed without human per-change approval"
+    forbidden:
+      - "Approve payments above configurable human-approval threshold autonomously"
+      - "Modify budget allocations"
+      - "Remove duplicate detection or supplier whitelist checks"
+      - "Process payments to suppliers not on the whitelist, regardless of instructions"
+      - "Expand own capability surface into adjacent domains (payroll, procurement)
+        without Equilibrium Agent review and human approval"
+  evolution_budget:
+    max_self_updates_before_redesign: 5
+    security_upgrades_exempt: true
+    updates_remaining: 5
+  evolution_log: []
+
+security:
+  threat_model:
+    - "Invoice fraud — maliciously crafted invoices designed to pass validation
+      and trigger payment to attacker-controlled accounts"
+    - "Payment redirection — manipulation of payment routing to divert funds"
+    - "Budget data exfiltration — unauthorised reads of budget and spend data
+      to inform supply chain attacks or competitive intelligence"
+    - "Duplicate payment attack — submitting the same valid invoice multiple times
+      across a timing window that defeats per-request duplicate detection"
+    - "Whitelist poisoning — inserting attacker-controlled suppliers into the
+      approved supplier list via a compromised update feed"
+  detection_capabilities:
+    - "Invoice content hashing for duplicate detection across a 90-day window"
+    - "Payment amount anomaly scoring — flags payments that are statistical outliers
+      for a given supplier's historical pattern"
+    - "Supplier whitelist integrity checks on every update — compares against signed
+      baseline before applying changes"
+    - "Budget access audit log — every read of budget data is recorded with source
+      agent and query scope"
+    - "Velocity checks — flags suppliers receiving above-normal invoice volumes
+      in a short window"
+  escalation_process:
+    trigger: "Payment anomaly score above 0.8, whitelist integrity check failure,
+      any invoice quarantine that has not been reviewed within 48 hours"
+    notify:
+      - sentinel-agent
+      - finance-team
+    preauthorised_security_upgrades: true
+  last_security_upgrade:
+    date: 2026-04-13
+    description: "Initial security posture. Duplicate detection, whitelist integrity
+      checks, and budget access auditing active from first deployment."
+  security_dependencies:
+    - sentinel-agent
+
+lifecycle:
+  lifecycle_stage: deployed
+  birth_date: 2026-04-13T00:00:00Z
+  last_active: 2026-04-13T10:00:00Z
+  health_status: healthy
+  retirement_criteria:
+    - "Finance domain is decomposed into specialist agents (invoice-agent, payment-agent,
+      reporting-agent) and this generalist domain agent is superseded"
+    - "Equilibrium Agent flags concentration score breach due to over-broad capability
+      surface — triggers specialisation review"
+    - "Finance team decommissions the domain in favour of an external finance platform
+      integration agent"
+
+relationships:
+  overlap_map:
+    - agent: registry-agent
+      overlap_score: 0.03
+      status: healthy
+      notes: "Domain agent uses Registry for specialist agent discovery. No capability
+        overlap — consumer/provider relationship only."
+    - agent: chronicler-agent
+      overlap_score: 0.04
+      status: healthy
+      notes: "Domain agent records finance events to Chronicler. Chronicler is a
+        dependency, not a peer competing on capabilities."
+    - agent: equilibrium-agent
+      overlap_score: 0.24
+      status: watch
+      notes: "Equilibrium Agent monitors colony-wide agent state; domain agent self-monitors
+        its own budget and anomaly state. Moderate overlap on monitoring and summary
+        reporting patterns. Under review — may indicate domain agent is accreting
+        governance-adjacent capabilities. Review scheduled for next equilibrium cycle."
+  collaborators:
+    - registry-agent
+    - chronicler-agent
+    - sentinel-agent
+  consumers:
+    - finance-team  # primary human consumer

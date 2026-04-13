@@ -1,0 +1,57 @@
+name: Propose a Refinement
+description: Propose a correction, clarification, or extension to the Agent Colony Pattern
+title: "[Refinement] "
+labels: ["refinement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template to propose a refinement — a correction, clarification, extension, or editorial improvement. For fundamental challenges to the argument, use the Challenge template instead.
+
+  - type: dropdown
+    id: document
+    attributes:
+      label: Which document does this affect?
+      description: Select the primary document this refinement targets.
+      options:
+        - manifesto.md
+        - thesis.md
+        - specification.md
+        - schemas/
+        - examples/
+        - README.md
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: change
+    attributes:
+      label: What would you change?
+      description: Describe the specific change you are proposing. Quote the existing text if it helps. If you have a proposed replacement, include it here.
+      placeholder: |
+        Current text:
+        "..."
+
+        Proposed change:
+        "..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: reasoning
+    attributes:
+      label: Why?
+      description: Explain the reasoning. Is this correcting an error? Improving clarity? Adding a missing case? Extending the argument with new evidence?
+      placeholder: The reasoning for this change is...
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: What other sections does this affect?
+      description: Consider whether your change has knock-on effects. Does it require updating diagrams, other sections, the glossary, or the changelog?
+      placeholder: This change may also affect...
+    validations:
+      required: false
