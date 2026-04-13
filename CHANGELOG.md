@@ -5,6 +5,20 @@ All notable changes to the Agent Colony Pattern are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] — 2026-04-13
+
+### Added
+- **`specification.md` §7 — The Comprehension Contract** — new first-class mechanism formalising the requirement that no action executes without a comprehension artefact matching the agent's trust tier and blast radius. Fourteen sub-sections covering: the dark code problem (Jones 2026), the contract invariant, three timescales of comprehension (Structural Classifier, quarantine/composed actions, audit/Lesson Memory feedback), the review regime formula with trust-tier × blast-radius table, three load-bearing properties, the classifier as Constitutional, honest limits (delayed-consequence residual), Agent Mirror changes (v0.2.0 fields), relationship to existing mechanisms, critical path position (§7.10), NFRs in the Mirror (§7.11), multi-perspective valuation (§7.12), the Graduation Checklist (§7.13), and false comprehension artefacts / micro-misalignment (§7.14, IndyDevDan 2026).
+- **`specification.md` §8.5.1** — two new conformance anti-patterns: actions without comprehension artefacts; Structural Classifier rules not in Constitutional Memory.
+
+### Changed
+- **`specification.md`** — §7 Standards Landscape → §8; §7.5 Conformance → §8.5 (sub-sections renumbered accordingly); §8 Deliverables → §9. Specification status updated to v1.4.0.
+- **`thesis.md`** — §3 extended with Comprehension Contract as the fourth mechanism alongside Equilibrium, Memory, and Epistemic Discipline.
+
+### Why
+
+The Comprehension Contract was designed and implemented as a Mirror schema extension (v0.2.0) and hello-colony example in v1.3.0. v1.4.0 makes it a formal specification section — the mechanism is now fully described, its relationship to all existing mechanisms documented, and its conformance implications stated. The dark code response (Jones 2026) is now not just named in the knowledge base but answered in the specification itself.
+
 ## [1.3.0] — 2026-04-13
 
 ### Added

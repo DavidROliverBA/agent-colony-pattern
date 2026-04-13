@@ -245,6 +245,10 @@ Notice that meta-agents are concentrated in Layer 1 (Governance) and Layer 2 (Im
 
 **Layer 4: Substrate.** The colony's only infrastructure dependency, kept as thin as possible. Compute, storage, networking, AI model access — all provider-agnostic. The substrate is consumed, not owned. This is what makes multi-decade survival possible: when today's cloud providers are replaced by whatever comes next, only this layer changes.
 
+## The Comprehension Contract
+
+The Equilibrium System, Colony Memory, and Epistemic Discipline together answer the population-level question: how does a colony learn, govern itself, and stay honest over time? The **Comprehension Contract** (§7 of the specification) answers the action-level question: how does the colony ensure that no single action executes without someone — human or machine — having genuinely comprehended what is about to happen? Nate B Jones (2026) names the failure mode this contract addresses *dark code* — code where the comprehension step did not happen because the process no longer required it. IndyDevDan (2026) extends the threat to *false comprehension artefacts*, where an agent produces a record of comprehension that does not reflect its actual decision process. The Comprehension Contract's invariant is structural: no action executes without a pre-action artefact matching the agent's current trust tier and the action's blast radius, and that artefact must be honest — output-action consistency checking, blind audit indistinguishable from normal events, and cross-agent blast radius verification are the defences against deliberate falsification. The fourth mechanism joins the other three not as an add-on but as the action-level instantiation of the same discipline — the colony cannot be epistemically honest at the population level if it permits comprehension-free action at the individual level.
+
 ---
 
 # 4. The Agent Mirror

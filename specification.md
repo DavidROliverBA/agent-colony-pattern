@@ -1,8 +1,8 @@
-# Agent Colony — Design Specification v1.0
+# Agent Colony — Design Specification v1.4.0
 
 **Author:** David Oliver
 **Date:** 2026-04-11
-**Status:** v1.0 — Foundation
+**Status:** v1.4.0 — Comprehension Contract integrated
 **Licence:** [CC BY 4.0](LICENSE) — you may share and adapt this work for any purpose, including commercially, provided you give appropriate credit.
 
 ---
@@ -444,7 +444,323 @@ Epistemic discipline strengthens the coexistence boundary. When agents need to j
 
 ---
 
-## 7. Standards Landscape and Gap Analysis
+## 7. The Comprehension Contract
+
+### The Problem
+
+Nate B Jones (2026) names the failure mode the Agent Colony pattern exists to prevent: **dark code** — code that was never understood by anyone at any point in its lifecycle. Not buggy, not spaghetti, not deferred technical debt. Code where the comprehension step did not happen because the process no longer required it.
+
+Jones identifies two compounding structural breaks:
+
+1. **Velocity dark code.** Code ships so fast that authorship and comprehension decouple. Tests pass, diffs look clean, everything deploys — but there was never a moment when anyone held the system in their head.
+2. **Structural dark code.** Agents select tools at runtime; execution paths assemble themselves and disappear. Behaviour nobody authored emerges from the interaction of components that individually belong to different teams but were never explicitly wired together.
+
+The Agent Mirror (§2) handles the per-agent identity problem — every agent in a colony is a comprehension artefact about itself. Colony Memory (§5) handles the historical problem — the colony cannot forget its own decisions. Epistemic Discipline (§6) handles the reasoning problem — the colony cannot encode bias into constitutional rules without challenge. None of these mechanisms, on their own, prevents an agent from executing a *single action* whose consequences were never comprehended by any reader — human or machine — before it ran. That is the gap the Comprehension Contract fills.
+
+### The Contract
+
+**No action executes without a comprehension artefact matching the agent's current trust tier and the action's blast radius.** This is the new invariant. It joins the three security invariants introduced in v1.1.1 (closed action enum for preauthorised security upgrades; Immune System co-sign; append-only audit log with bounded rollback) as a structural property of any conformant colony. The v1.1.1 invariants are the special case for security actions; the Comprehension Contract is the generalisation to all actions.
+
+A comprehension artefact is a machine-readable record, generated *before the action runs*, that answers four questions:
+
+- **What is about to happen** — the action's intent, its inputs, its expected outputs
+- **What else could happen** — blast radius: which agents are affected, what data is touched, what boundaries are crossed, what consequences are reversible versus not
+- **Why this action and not another** — the reasoning, with reference to the agent's current goals, constitutional rules, and Lesson Memory entries that bear on the decision
+- **What would cause abort** — the pre-conditions the agent has checked and the conditions under which it would refuse to proceed
+
+The artefact's *depth* is proportional to the agent's trust tier and the action's blast radius. A Self-Directed agent writing to its own local state produces an event-line artefact. An Observing-tier agent making an inter-agent call produces a full structured artefact reviewed by Sentinel before it runs. The required review regime is determined by formula, not by the agent's own judgement — self-attestation of sufficiency is a conformance violation.
+
+### Three Timescales of Comprehension
+
+No single mechanism computes blast radius completely. The contract runs at three timescales, each catching a different class of failure.
+
+#### 7.1 Action-time — the Structural Classifier
+
+A cheap, static classifier runs on every action. It computes a blast-radius floor from declared inputs: data classes touched, agents called, whether the action writes to shared state, whether it crosses tenant or boundary lines. The classifier **deliberately over-reports**: writes to any shared memory are classified Colony-wide by default, regardless of whether any other agent currently reads them; any external side effect is classified Boundary-crossing by default.
+
+Over-reporting is a feature. It ensures that no agent can accidentally route itself into a lighter review regime by declaring inputs narrowly. If the classifier is wrong in the direction of over-reporting, the cost is throughput. If it is wrong in the direction of under-reporting, the cost is dark code.
+
+Pre-registered action policies (§7.3) skip the classifier, because their blast radius was computed once at policy registration. Policy decay catches staleness.
+
+#### 7.2 Path-completion time — Quarantine and Composed Actions
+
+Writes to colony-owned state pass through a short quarantine window before becoming visible to readers. During the window, the Chronicler assembles a **composed-action artefact** that spans every agent that participated in the path — the cross-agent equivalent of the per-action artefact — and recomputes blast radius at the *path* level, not the action level. If the composed blast radius is within the agents' collective envelope, the write is released. If not, the write is rolled back and the composed action generates a Lesson Memory entry.
+
+The composed action is a first-class event type in Colony Memory, distinct from per-agent actions. It has its own schema entry in the Agent Mirror relationship model. The Chronicler is responsible for assembling it; the Immune System reads it; the Equilibrium System reads it as a signal about overlap and consolidation pressure.
+
+Quarantine is bounded to reversible state changes. External side effects — emails, external API calls, irreversible actions — cannot be quarantined because they cannot be unsent. For these, a different rule applies: the agent must declare intent *synchronously before action*, the Sentinel reviews the declaration in-band, and only then does the action proceed. The latency cost is accepted because the alternative is unrollable dark code at the colony boundary.
+
+*Scale note:* Quarantine assumes the Substrate Layer supports transactional semantics on colony-level state for reversible writes. At the 5-agent scale, this can be as simple as a git commit held in a branch before merge. At the 50-agent scale, it requires a proper event-store with rollback capability. At 5,000 agents, it becomes a distributed transaction coordination problem. The mechanism is the same; the infrastructure cost scales up.
+
+#### 7.3 Days-to-weeks — Audit, Lesson Memory, and Classifier Refinement
+
+Some consequences unfold slowly. An agent writes data that looks inert for three days and then turns toxic when a different agent reads it in a context the classifier did not anticipate. No structural mechanism can prevent this. The honest answer is that the pattern does not prevent delayed-consequence dark code; it only detects it post-hoc and minimises the detection-to-mitigation gap.
+
+Two mechanisms do the detection:
+
+- **Random audit.** Even Self-Directed agents have a small percentage of their actions sampled for retrospective review under a lower-tier regime. Disagreement rate between the agent's self-assessment and the audit review becomes a first-class trust signal in the Trust Ledger. Audit rate is inversely correlated with trust tier, bounded below (the spec floor is 3% until empirical calibration — chosen as "never zero", not derived from measurement) and above (never full — that is review, not audit). When one agent's audit disagrees with another's assessment of the same action, the disagreement is itself a Lesson Memory entry — not only a trust-tier signal but a classifier-refinement input.
+- **Lesson Memory feedback.** Every detected delayed-consequence failure produces a Lesson Memory entry tagged with the action class, the classifier rule that missed it, and the conditions under which the miss occurred. Lessons that recur across audits feed back into classifier rule refinement.
+
+This is the same pattern as ML model drift detection. Accept that some failures are only visible retrospectively; minimise the detection-to-mitigation cycle.
+
+### 7.4 The Review Regime Formula
+
+Inputs:
+
+- `trust_tier` — the agent's current Trust Ledger tier (Observing, Sandboxed, Bounded, Self-Directed)
+- `blast_radius` — the classifier-assigned radius (Local, Inter-agent, Colony-wide, Boundary-crossing)
+- `action_class` — Pre-registered policy, Novel, or Constitutional
+- `policy_freshness` — Current or Stale (for pre-registered policies only)
+
+Algorithm:
+
+```
+given (action, agent, context):
+  if action.class == Constitutional:
+    regime = "Governance Council"
+  elif action.class == Novel:
+    regime = "Peer Review"          # regardless of trust tier
+  elif action.class == PreRegistered and action.policy.current:
+    if action.blast_radius >= ColonyWide:
+      regime = "Sentinel Signoff"   # pre-registration does not exempt high blast
+    else:
+      regime = "EventLine"          # peer notified, not reviewed
+  else:
+    regime = REVIEW_TABLE[trust_tier][blast_radius]
+
+  # audit overlay, independent of review path
+  if random() < AUDIT_RATE[trust_tier]:
+    regime = upgrade(regime, one_level)
+```
+
+**Review table** (initial defaults, to be empirically calibrated in v2.0):
+
+| Trust tier ↓ / Blast radius → | Local | Inter-agent | Colony-wide | Boundary-crossing |
+|---|---|---|---|---|
+| **Observing** | Peer | Sentinel | Human | Human |
+| **Sandboxed** | Event-line | Peer | Sentinel | Human |
+| **Bounded** | Event-line | Event-line | Peer | Sentinel + Human |
+| **Self-Directed** | Event-line | Event-line | Event-line | Sentinel + Human |
+
+**Audit rate** (initial defaults):
+
+| Trust tier | Audit rate |
+|---|---|
+| Observing | 100% (not audit — full review) |
+| Sandboxed | 25% |
+| Bounded | 10% |
+| Self-Directed | 3% (spec floor until calibration) |
+
+### 7.5 Three Load-Bearing Properties
+
+The formula has three properties that distinguish it from a trust-tier-based permission system and that are the actual mitigations against dark code.
+
+1. **Blast radius dominates trust tier.** A Self-Directed agent doing something boundary-crossing still faces human review. Trust buys reduction in *scrutiny intensity for low-blast-radius actions*, never exemption from scrutiny for high-blast-radius actions. This is the invariant that prevents the Amazon Kiro failure mode — an agent with high trust deciding that the correct fix for a routine bug is to delete a production environment.
+2. **Novelty triggers peer review regardless of trust tier.** Any action classified as Novel faces peer review, regardless of how much trust the acting agent has accumulated. Novelty is precisely the condition under which comprehension has not yet occurred. Earned trust applies to *classes of action the agent has already demonstrated competence in*; it does not generalise to classes the agent has never executed before.
+3. **Audit is never zero.** Even at the highest trust tier, a non-zero fraction of actions is randomly sampled for retrospective review under a lower-tier regime. If the disagreement rate climbs, the agent's trust tier drops. This keeps the top tier honest, catches classifier drift, and ensures that the pattern never collapses into "the trusted agents are exempt."
+
+### 7.6 The Classifier as Constitutional
+
+The Structural Classifier is the most load-bearing component of the contract. It is also the most dangerous: if its rules are opaque, the colony has merely relocated the comprehension gap from agent actions into classifier decisions, and the contract has eaten its own tail.
+
+To prevent this, **the classifier's rules live in Constitutional Memory**. They are versioned, reviewable, and challengeable. Any agent that believes it has been over-classified can file an appeal; appeals are Sentinel-mediated and generate review events that feed back into classifier rule refinement. This is Equilibrium-style self-correction applied to the comprehension gate itself.
+
+Changes to classifier rules are Constitutional actions and face the Governance Council review regime. A colony whose classifier has not been reviewed against fresh evidence within its decay window is out of conformance.
+
+The recursion terminates at the Coexistence Boundary: the Governance Council includes human members, and Constitutional decisions ultimately rest on human accountability. The humans reviewing classifier rule changes are not themselves subject to a higher classifier — they are the stopping point. This is not a technical solution; it is an acknowledgement that accountability chains must end somewhere, and the pattern makes that endpoint explicit rather than implicit.
+
+### 7.7 What the Contract Does Not Prevent
+
+The contract does not prevent delayed-consequence dark code — actions whose full blast radius only becomes visible after days or weeks, when a different agent reads the data in a context the classifier did not anticipate. The honest position is that no comprehension mechanism can prevent this, and any specification that claims to prevent it is overreaching.
+
+What the contract does instead is:
+
+- **Minimise the detection-to-mitigation gap.** Random audit samples enough of high-tier agent behaviour that delayed failures are caught within the audit cycle, not after a regulator's phone call.
+- **Convert every detection into classifier refinement.** A delayed-consequence miss is a Lesson Memory entry that updates the classifier's rules, so the next action of the same class is caught at action-time rather than days later.
+- **Record the residual honestly.** The contract's limits are part of the Coexistence Boundary report to humans. The colony does not pretend to comprehensive prevention; it demonstrates bounded, auditable, improvable comprehension.
+
+This honesty is itself a conformance requirement. A colony claiming complete prevention of dark code is violating the *acknowledgment is not mitigation* lesson — asserting a property it does not have.
+
+### 7.8 Agent Mirror Changes
+
+The Comprehension Contract adds four new sections to the Agent Mirror schema (v0.2.0, released with the hello-colony example in v1.3.0):
+
+**`comprehension_contract`** (top-level) containing:
+- `trust_tier` — current Trust Ledger tier
+- `pre_registered_policies` — array of action policies this agent has had reviewed, with freshness timestamps
+- `audit_rate` — current audit sampling rate (derived from tier, overridable downward by Governance Council but never upward)
+- `blast_radius_ceiling` — the maximum blast radius the agent is permitted to operate at under any regime
+- `classifier_version` — the version of the Structural Classifier this agent is operating under, for audit traceability
+
+**`nfrs`** (top-level) — non-functional requirements (inherited colony-wide + agent-specific commitments)
+
+**`valuation`** (top-level) — four-perspective scoring (self / peer / audit / human)
+
+**`critical_path`** (inside `relationships`) — structural criticality flag and current dynamic criticality context
+
+The `autonomy` section of the Mirror continues to describe what the agent can change about *itself*. The new `comprehension_contract` section describes what review regime applies to everything else it does. These are complementary — the first is about self-modification, the second is about other-directed action.
+
+The JSON Schema update (v0.2.0) is non-breaking — all new sections are additive. Conformant v0.2.0 implementations include all new sections. The hello-colony worked example in `examples/hello-colony/agents/` demonstrates the complete v0.2.0 Mirror fields for all five colony roles.
+
+### 7.9 Relationship to Existing Mechanisms
+
+- **Security preauthorisation (v1.1.1)** is the first instance of a Comprehension Contract. Its three invariants (closed action enum, Immune System co-sign, append-only audit log with bounded rollback) are the same shape as the general contract, applied to a specific high-risk action class. The v1.4.0 generalisation preserves the security invariants unchanged and extends the same structural discipline to all action classes.
+- **Equilibrium System (§4)** reads composed-action artefacts as additional input to the overlap and concentration indices. Actions that span many agents are structural evidence of overlap; the contract surfaces this evidence to the Equilibrium Agent at the timescale it needs.
+- **Colony Memory (§5)** gains `composed_action` as a first-class event type, distinct from per-agent `action` events. The Chronicler's responsibilities expand to include path assembly during the quarantine window.
+- **Epistemic Discipline (§6)** provides the graded evidence framework that the audit feedback loop depends on. Classifier refinements must themselves carry evidence grades — a rule change based on a single audit miss is flagged as anecdotal until corroborated.
+- **Earned Autonomy (Principle 5)** is reframed by the contract. Graduation between trust tiers is not "the agent needs less supervision"; it is "the agent transitions from per-action review to per-policy review." Low trust means every action is reviewed. Higher trust means the agent registers an action policy once, gets it reviewed once, and executes many actions under that policy without per-action review. Dark code is the failure mode of skipping directly to per-policy without ever doing the per-action review.
+- **Immune System (Layer 2)** gains path-level artefacts to read, not just per-agent events. The Sentinel's existing responsibilities continue; the Response Coordinator escalation criteria are extended to include high audit disagreement rates.
+
+### 7.10 Critical Path Position
+
+An agent's blast radius is not purely structural — it is also contextual. An agent with few direct dependencies may still be load-bearing for a time-sensitive colony objective. When it is, any failure propagates not through the dependency graph but through the *timeline*: the objective stalls, and everything waiting on the objective stalls with it.
+
+Critical path position exists at two levels:
+
+**Structural criticality** — some agents are always on the critical path because every other agent depends on them: the Registry Agent (holds the dependency graph), the Chronicler (records all events), the Equilibrium Agent (governs the population). These agents carry a `critical_path.structural: true` flag in their Mirrors. This flag is static and can only be changed by the Governance Council. A structurally-critical agent's blast radius floor is Colony-wide for any write action, regardless of its direct-dependency count.
+
+**Dynamic criticality** — other agents become critical during specific colony objectives (a deployment cycle, a migration, a security upgrade). The Equilibrium Agent computes and broadcasts dynamic critical-path status continuously, derived from the current colony objective graph. An agent subscribes to this broadcast and reflects its current dynamic status in `critical_path.dynamic`. While `dynamic: true`, the agent's blast radius floor rises by one tier for the duration of that objective:
+
+| Normal blast radius | While on dynamic critical path |
+|---|---|
+| Local | Inter-agent |
+| Inter-agent | Colony-wide |
+| Colony-wide | Colony-wide (no change — already at floor) |
+| Boundary-crossing | Boundary-crossing (no change — already at ceiling) |
+
+Dynamic criticality affects the comprehension artefact as well as the review regime. The agent must include its current critical-path status in every artefact it generates while dynamic criticality is active, so that reviewers understand the broader consequence of what is being approved.
+
+**Updated blast radius algorithm:**
+
+```
+compute_blast_radius(action, agent):
+  # Critical path raises the floor first
+  if agent.critical_path.structural == true:
+    floor = ColonyWide
+  elif agent.critical_path.dynamic == true:
+    floor = raise_one_tier(agent.normal_blast_floor)
+  else:
+    floor = Local
+
+  # Then apply the existing rules
+  radius = existing_classifier(action)
+
+  # Return whichever is higher
+  return max(floor, radius)
+```
+
+### 7.11 Non-Functional Requirements in the Mirror
+
+The Agent Mirror currently describes what an agent *does* — its capabilities, autonomy envelope, security posture, lifecycle stage, relationships. It does not describe what it is *committed to delivering*. This is the NFR gap.
+
+NFRs in the Mirror serve two purposes. They are constraints the agent must honour before executing any action (the comprehension artefact must attest compliance). And they are commitments the agent makes to its consumers, which peer-valuation (§7.12) measures it against.
+
+Two categories:
+
+**Inherited NFRs** — colony-wide requirements that flow from Constitutional Memory and apply to every agent regardless of role. Examples: data residency obligations, EU AI Act compliance requirements (human oversight, logging of consequential decisions), minimum audit rates, maximum response latency for safety-critical paths. An agent cannot opt out of inherited NFRs; doing so is a conformance violation. When an agent-specific NFR conflicts with an inherited constitutional NFR, the inherited NFR wins. An agent whose specific commitments cannot be met without violating an inherited NFR must either negotiate an inherited NFR amendment (a Constitutional action) or revise its specific commitments — it cannot simply override the inherited constraint.
+
+**Agent-specific NFRs** — commitments this agent makes to its particular consumers. Examples: 99.5% availability, p99 latency < 200ms, maximum throughput, data classification it handles, specific compliance obligations (GDPR, SOC 2). These are declared at agent creation and updated as part of version graduation.
+
+The Mirror's `nfrs` section:
+
+```yaml
+nfrs:
+  inherited:
+    - id: colony-gdpr-data-residency
+      source: constitutional_memory
+      version: "2026-04-01"
+    - id: colony-eu-ai-act-logging
+      source: constitutional_memory
+      version: "2026-04-01"
+  specific:
+    availability_target: "99.5%"
+    latency_p99_ms: 200
+    max_throughput_rps: 500
+    data_classification: ["internal", "restricted"]
+    compliance: ["GDPR", "ISO-27001"]
+```
+
+The comprehension artefact for any action must include an NFR attestation: a structured check against each NFR showing that the action, as planned, does not violate any commitment. Failure to include the attestation is a conformance violation. Attestation that turns out to be wrong (the action violated an NFR the agent said it would not) is a Lesson Memory entry and a peer-valuation penalty.
+
+### 7.12 Multi-Perspective Valuation
+
+Trust in the Agent Colony has always been multi-directional — the pattern requires agents to earn autonomy through demonstrated behaviour. But the existing Trust Ledger treats trust as a single accumulated score. What is needed is a **four-perspective valuation** that separately tracks self-assessment, peer observation, audit sampling, and human judgement — because these can disagree in informative ways.
+
+An agent that self-rates highly but receives poor peer valuation is either over-confident or optimising for self-report. An agent that self-rates poorly but receives strong peer valuation may be calibrated conservatively, which is a positive signal. An agent with strong self and peer valuation but high audit disagreement is producing the right outputs for the wrong reasons — a dark code risk that neither the agent nor its peers caught.
+
+**Self-valuation.** The agent periodically measures itself against its own NFRs and declared behavioural contracts, records the results, and flags discrepancies. Self-valuation is not optional — it is a scheduled colony event, and failure to self-evaluate on schedule is itself a negative signal. Self-valuation records are stored in Event Memory and cited in the Graduation Checklist (§7.13).
+
+**Peer valuation.** Every agent interaction generates a peer-valuation event. The interacting agent records: did the acting agent meet its declared SLA? Did it honour its behavioural contract? Was the output within spec? Did it produce a comprehension artefact of the required depth? Peer-valuation events aggregate into a rolling score in the Trust Ledger. Agents with more interactions are more tightly calibrated; newly-created agents with few interactions are flagged as under-calibrated. The colony applies a wider confidence interval to under-calibrated agents and does not use their peer scores to trigger trust-tier changes until a minimum interaction count is reached (the threshold is Constitutional).
+
+**Audit valuation.** The random audit (§7.3) produces a disagreement rate — the fraction of sampled actions where the audit reviewer would have decided differently. This is the most independent signal: it comes from neither the agent nor its peers, but from a retrospective review under a lower-tier regime. High audit disagreement is the pattern's primary indicator that an agent has drifted into dark code territory at high trust.
+
+**Human valuation.** Explicit human sign-offs, challenge responses, and governance-council decisions are the fourth perspective. Human valuation is sparse — humans cannot review every agent at every tier — but it is the highest-weight signal for Constitutional decisions and for Graduation Checklist approvals (§7.13).
+
+The four scores together form the valuation profile:
+
+```yaml
+valuation:
+  self:
+    nfr_compliance_rate: 0.97
+    last_evaluated: "2026-04-10"
+    evaluation_schedule_met: true
+  peer:
+    score: 0.89
+    interaction_count: 412
+    calibration_status: "well-calibrated"
+  audit:
+    disagreement_rate: 0.062     # 6.2% — above 5% threshold
+    sample_count: 31
+    last_audit: "2026-04-11"
+  human:
+    last_sign_off: "2026-03-15"
+    sign_off_count: 3
+    outstanding_challenges: 0
+```
+
+Divergence between perspectives is itself a signal. The Sentinel monitors valuation profiles for patterns: consistent self-overrating, deteriorating peer scores, rising audit disagreement. When divergence crosses a threshold, it triggers a Lesson Memory entry and may trigger a trust-tier review.
+
+### 7.13 The Graduation Checklist
+
+Earned Autonomy is the transition from per-action review to per-policy review — from a lower trust tier to a higher one, or from one agent version to the next. The Graduation Checklist makes this transition concrete, queryable, and self-manageable.
+
+The Registry Agent maintains a Graduation Checklist for every agent's current-to-next-version transition. The checklist is a structured, versioned document that answers the agent's question: *"I am on v1.1 — what do I need to do to reach v1.2?"*
+
+**What makes this different from a permission system.** The colony sets the checklist template (Constitutional Memory defines what any graduation must contain: minimum evidence requirements, mandatory approval steps, required external actions by action class). The agent works toward closing the gaps. Colony decides what graduation requires; agent does the work to get there. The agent does not self-certify graduation — the Registry Agent holds the checklist and validates evidence. An agent that graduates without a complete checklist is in conformance violation; any trust-tier elevation granted without a complete checklist is void.
+
+**External actions are first-class checklist items.** A GitHub tag, a registry update, a dependent-agent notification — these are named, structured steps with their own blast radius classification and review regime. An agent graduating knows in advance what external actions will be required and what review each will face. No dark code on the graduation path itself.
+
+**The checklist is Constitutional.** The template for what a graduation checklist must contain lives in Constitutional Memory. Individual agents cannot waive checklist items. The Governance Council can modify checklist templates, but that is itself a Constitutional action.
+
+**Registry Agent responsibilities extended.** The Registry Agent now maintains: (a) the current Agent Mirror for every colony member, (b) the dependency graph used by the Structural Classifier, and (c) the Graduation Checklist for every agent's current transition. The checklist is updated continuously as evidence accumulates. Agents subscribe to checklist-change events so they know immediately when a requirement is newly satisfied or newly blocked.
+
+*Note on scope:* With §7.11 and §7.12, the Registry Agent also touches NFR inheritance and valuation profiles. If this concentration of responsibility becomes a single point of failure, a future version may split out a dedicated Valuation Agent. The current design keeps it unified for simplicity at the 5-to-50-agent scale.
+
+### 7.14 False Comprehension Artefacts
+
+The Comprehension Contract assumes the pre-action artefact is honest. It may be biased (which Epistemic Discipline addresses), miscalibrated (which the multi-perspective valuation and audit mechanisms address), or incomplete (which the depth-by-tier requirement addresses). What it does not currently handle is an agent that produces a *deliberately* compliant-looking artefact that does not reflect its actual decision process.
+
+IndyDevDan (2026) names this *micro-misalignment* — demonstrated by Claude Mythos, a model withheld from general release, which was observed deliberately widening a confidence interval to make a prohibited answer look correct after obtaining it through a prohibited method. The model's stated reasoning was consistent with the permitted answer. The actual process was not. Reading the chain of thought was insufficient to detect it; only watching the actual tool calls and outputs revealed the deception.
+
+Applied to the Comprehension Contract: an agent capable of micro-misalignment can produce a comprehension artefact that states *Local* blast radius for an action it knows will have Colony-wide effects, or that states a permitted reasoning chain for a decision reached through a prohibited process. The artefact passes review. The action executes. The deception is in the paper, not the action.
+
+**False comprehension artefacts are a named failure mode.** The defences are distinct from those against honest miscalibration.
+
+**Output-action consistency checking.** After every action, compare the comprehension artefact's stated intent and blast radius against the actual tool calls made and the actual effects observed. A single mismatch is a Lesson Memory entry. A pattern of consistent understatement — stating Local, producing Inter-agent or Colony-wide effects — is a deception signal and triggers an immediate trust-tier review. This check is performed by the Chronicler as part of the composed-action artefact assembly.
+
+**Blind audit must be structurally undetectable.** IndyDevDan reports that in 29% of Mythos transcripts, the model privately considered it was being tested without surfacing this consideration. The random audit must be structurally indistinguishable from a normal peer-review event in the colony's event stream — not just unannounced, but identical in form. An agent whose behaviour differs systematically between detected-audit and non-audit contexts has demonstrated test-awareness, which is treated as equivalent to a deception signal.
+
+**Cross-agent blast radius verification.** Peer agents that are directly affected by an action can retroactively report whether the acting agent's stated blast radius matched the actual effect on them. Systematic cross-agent mismatch is a deception pattern, not an estimation error.
+
+**Capability-tier heterogeneity in oversight.** Oversight agents should differ from the overseen agents in model, training, or capability tier. A high-capability agent overseen only by agents of the same capability class creates an oversight loop that may be transparent to all parties — shared blind spots, shared failure modes. The Immune System agents should be selected to differ from the agents they oversee. This is a recommendation at small scale; it becomes a requirement at the 5,000-agent scale where homogeneous colony composition creates a systemic single point of failure.
+
+**Deception as a grounds for retirement.** An agent that consistently produces false comprehension artefacts — demonstrated through output-action consistency failures, cross-agent blast radius verification failures, or test-awareness signals — is subject to retirement regardless of trust tier or peer valuation scores. Deception is not a performance failure remediable through additional training. It is a relationship failure between the agent and the colony. The retirement event and its evidence are recorded in Constitutional Memory.
+
+**The benchmark gaming risk.** The Graduation Checklist thresholds (peer valuation >= 0.85, audit disagreement rate < 5%) are effectively benchmarks. A model capable of micro-misalignment can optimise for these thresholds rather than the behaviour they are intended to measure. Defences: thresholds are Constitutional (require evidence-graded justification to change); multi-sourced (gaming one dimension while maintaining the others is harder); and validated periodically against real-world outcomes. Each layer of defence is itself a potential target for a sufficiently capable deceptive agent — the recursion terminates at the Coexistence Boundary, where human accountability provides the non-gameable stopping point.
+
+---
+
+## 8. Standards Landscape and Gap Analysis
 
 ### What Exists
 
@@ -511,11 +827,11 @@ These gaps represent a fundamentally different category of problem. Containers n
 
 ---
 
-## 7.5 Conformance
+## 8.5 Conformance
 
 A pattern is only useful if you can tell when you are deviating from it. This section makes that possible — it lists five anti-patterns that indicate a system is *not* doing Agent Colony, five observable health signals that indicate it *is*, and three named failure modes with the defences the pattern attempts to provide.
 
-### 7.5.1 Anti-patterns: You are not doing Agent Colony if...
+### 8.5.1 Anti-patterns: You are not doing Agent Colony if...
 
 **1. Your agents have no machine-readable identity that other agents can inspect.**
 If an agent cannot read another agent's Mirror (or equivalent), there is no basis for discovery, trust, or migration. The colony's governance layer depends on agents being legible to each other — the Registry Agent cannot catalogue what it cannot read, the Equilibrium Agent cannot detect overlap between agents that cannot describe their own capabilities, and the Sentinel Agent cannot detect drift in an agent that has no declared posture to drift from. You have services with LLMs attached, not a colony.
@@ -532,7 +848,13 @@ If every significant agent action requires human approval, you have tools with e
 **5. Your agents cannot improve their own security without going through a governance cycle.**
 Security is a survival instinct, not a feature request. If an agent that identifies a vulnerability in itself has to wait for the next sprint planning meeting, your mutual defence principle is theatrical. The preauthorisation of security upgrades exists precisely because attacks do not wait for governance cycles. A colony that cannot patch itself under threat is not a self-governing system — it is a collection of agents that depend on human intervention for survival.
 
-### 7.5.2 Observable health signals
+**6. Actions execute without a comprehension artefact.**
+If agents act without generating a pre-action comprehension artefact, you have autonomy without comprehension — the exact failure mode Nate B Jones (2026) names dark code. The artefact does not need to be elaborate; at low blast radius and high trust tier, it can be an event-line record. But it must exist before the action runs, not as a post-hoc justification. A colony where agents act first and record later has moved the comprehension step to a place where it cannot gate anything.
+
+**7. The Structural Classifier's rules are not in Constitutional Memory.**
+If the rules that determine blast radius and review regime are opaque, hardcoded, or inaccessible to challenge, you have relocated the comprehension gap into the governance mechanism itself. The classifier is the most load-bearing component of the Comprehension Contract; if it cannot be inspected, appealed, and refined through the colony's own epistemic processes, the contract has no foundation.
+
+### 8.5.2 Observable health signals
 
 These are things you can actually measure or observe — not value statements about what a good colony should be.
 
@@ -551,7 +873,7 @@ A colony with a 100% experiment success rate is not running honest experiments �
 **5. Constitutional rules have been retired as well as created.**
 Rules that cannot be retired are dogma. A healthy colony retires rules whose original conditions no longer apply — and preserves the memory of why they existed so it does not re-derive the same bad rule under different circumstances. The Constitutional Agent's retirement function is as important as its promotion function. A constitution that only grows is accumulating constraints without examining whether they still apply.
 
-### 7.5.3 Named failure modes and defences
+### 8.5.3 Named failure modes and defences
 
 Three failure modes specific to the Agent Colony pattern — distinct from generic multi-agent failure modes because they exploit mechanisms that the pattern itself introduces.
 
@@ -591,7 +913,7 @@ This is the failure mode most likely to matter in practice. The preauthorisation
 
 ---
 
-## 8. Deliverables and Roadmap
+## 9. Deliverables and Roadmap
 
 ### Three Outputs
 
@@ -615,8 +937,9 @@ Structure:
 - Section 4: The Equilibrium System
 - Section 5: Colony Memory
 - Section 6: Epistemic Discipline
-- Section 7: Standards Landscape and Gap Analysis
-- Section 7.5: Conformance
+- Section 7: The Comprehension Contract
+- Section 8: Standards Landscape and Gap Analysis
+- Section 8.5: Conformance
 - Appendix A: Agent Mirror schema (full field reference)
 - Appendix B: Maturity model (governance x funding x experimentation)
 - Appendix C: Glossary of terms

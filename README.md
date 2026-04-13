@@ -6,7 +6,7 @@ The Agent Colony is an architectural pattern for building self-governing ecosyst
 
 > 📖 **New here? Start with the lay-audience article:** [*It takes a village — the Agent Colony definition*](https://medium.com/@davidroliver/it-takes-a-village-the-agent-colony-definition-32b9bd714bb8) on Medium (16 min read). It explains the pattern using the metaphor of a village, with no jargon. The text is also preserved in [`knowledge-base/writings/`](knowledge-base/writings/2026-04-12-it-takes-a-village.md).
 
-Current version: **v1.3.0** · [What's new](CHANGELOG.md) · [Latest release](https://github.com/DavidROliverBA/agent-colony-pattern/releases/latest)
+Current version: **v1.4.0** · [What's new](CHANGELOG.md) · [Latest release](https://github.com/DavidROliverBA/agent-colony-pattern/releases/latest)
 
 ## What's in this repository
 
@@ -69,7 +69,7 @@ See the [thesis paper](thesis.md) for the full analysis and the literature revie
 
 ## Status
 
-**v1.3.0** — Pattern demonstrated, not just described. The hello-colony example now carries the full Comprehension Contract Mirror fields (trust tier, NFRs, valuation, critical path). A deterministic Python runtime runs four colony events against real schema validation. A browser-based Equilibrium Playground makes the three indices interactive. The pattern is still **practically untested at production scale** — no full LLM-backed reference implementation exists yet.
+**v1.4.0** — Comprehension Contract formalised as §7 of the specification. The mechanism is now fully described across 14 sub-sections: from the dark code problem (Jones 2026) through the review regime formula, the classifier as Constitutional, NFRs in the Mirror, multi-perspective valuation, the Graduation Checklist, and false comprehension artefacts / micro-misalignment (IndyDevDan 2026). Two new conformance anti-patterns added. The pattern is still **practically untested at production scale** — no full LLM-backed reference implementation exists yet.
 
 **Roadmap:**
 
@@ -83,7 +83,8 @@ See the [thesis paper](thesis.md) for the full analysis and the literature revie
 | v1.2.1 | ✅ released 2026-04-13 | First published article; writings subfolder in knowledge base |
 | v1.2.2 | ✅ released 2026-04-13 | Dark code reference (Jones 2026); IndyDevDan six ideas + §7.14 False Comprehension Artefacts |
 | v1.3.0 | ✅ released 2026-04-13 | Comprehension Contract Mirror fields; schema v0.2.0; graduation checklist; live runtime; equilibrium playground |
-| v1.4+ | planned | Peer feedback incorporation from public review; Comprehension Contract formalised in specification |
+| v1.4.0 | ✅ released 2026-04-13 | Comprehension Contract formalised as §7 of specification; review regime formula; 14 sub-sections; two new conformance anti-patterns |
+| v1.5+ | planned | Peer feedback incorporation from public review |
 | v2.0 | planned | First LLM-backed reference implementation; empirical threshold calibration |
 | v3.0 | planned | Standards engagement — A2A, AAIF, NIST, AGNTCY |
 
@@ -103,7 +104,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide, including how the pap
 
 If you reference this work, please cite:
 
-> Oliver, D. (2026). *The Agent Colony: A Pattern Language for Self-Governing AI Agent Ecosystems* (v1.3.0). https://github.com/DavidROliverBA/agent-colony-pattern
+> Oliver, D. (2026). *The Agent Colony: A Pattern Language for Self-Governing AI Agent Ecosystems* (v1.4.0). https://github.com/DavidROliverBA/agent-colony-pattern
 
 Machine-readable citation metadata is in [`CITATION.cff`](CITATION.cff).
 
