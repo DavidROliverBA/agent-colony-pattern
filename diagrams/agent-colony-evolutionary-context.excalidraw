@@ -184,12 +184,20 @@
       "isDeleted": false,
       "groupIds": [],
       "boundElements": [
-        {"id": "text_monolith", "type": "text"},
-        {"id": "arrow_1_2", "type": "arrow"}
+        {
+          "id": "text_monolith",
+          "type": "text"
+        },
+        {
+          "id": "arrow_1_2",
+          "type": "arrow"
+        }
       ],
       "link": null,
       "locked": false,
-      "roundness": {"type": 3}
+      "roundness": {
+        "type": 3
+      }
     },
     {
       "type": "text",
@@ -278,9 +286,26 @@
       "boundElements": null,
       "link": null,
       "locked": false,
-      "points": [[0, 0], [100, 0]],
-      "startBinding": {"elementId": "box_monolith", "focus": 0, "gap": 2},
-      "endBinding": {"elementId": "box_soa", "focus": 0, "gap": 2},
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          100,
+          0
+        ]
+      ],
+      "startBinding": {
+        "elementId": "box_monolith",
+        "focus": 0,
+        "gap": 2
+      },
+      "endBinding": {
+        "elementId": "box_soa",
+        "focus": 0,
+        "gap": 2
+      },
       "startArrowhead": null,
       "endArrowhead": "arrow"
     },
@@ -305,13 +330,24 @@
       "isDeleted": false,
       "groupIds": [],
       "boundElements": [
-        {"id": "text_soa", "type": "text"},
-        {"id": "arrow_1_2", "type": "arrow"},
-        {"id": "arrow_2_3", "type": "arrow"}
+        {
+          "id": "text_soa",
+          "type": "text"
+        },
+        {
+          "id": "arrow_1_2",
+          "type": "arrow"
+        },
+        {
+          "id": "arrow_2_3",
+          "type": "arrow"
+        }
       ],
       "link": null,
       "locked": false,
-      "roundness": {"type": 3}
+      "roundness": {
+        "type": 3
+      }
     },
     {
       "type": "text",
@@ -352,8 +388,8 @@
       "y": 340,
       "width": 200,
       "height": 80,
-      "text": "Unit: Service\nComposition: WSDL/ESB\nGovernance: Service registry",
-      "originalText": "Unit: Service\nComposition: WSDL/ESB\nGovernance: Service registry",
+      "text": "Unit: Services\nComposition: WSDL/ESB\nGovernance: Service registry",
+      "originalText": "Unit: Services\nComposition: WSDL/ESB\nGovernance: Service registry",
       "fontSize": 13,
       "fontFamily": 3,
       "textAlign": "center",
@@ -400,9 +436,26 @@
       "boundElements": null,
       "link": null,
       "locked": false,
-      "points": [[0, 0], [100, 0]],
-      "startBinding": {"elementId": "box_soa", "focus": 0, "gap": 2},
-      "endBinding": {"elementId": "box_microservices", "focus": 0, "gap": 2},
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          100,
+          0
+        ]
+      ],
+      "startBinding": {
+        "elementId": "box_soa",
+        "focus": 0,
+        "gap": 2
+      },
+      "endBinding": {
+        "elementId": "box_microservices",
+        "focus": 0,
+        "gap": 2
+      },
       "startArrowhead": null,
       "endArrowhead": "arrow"
     },
@@ -427,13 +480,24 @@
       "isDeleted": false,
       "groupIds": [],
       "boundElements": [
-        {"id": "text_microservices", "type": "text"},
-        {"id": "arrow_2_3", "type": "arrow"},
-        {"id": "arrow_3_4", "type": "arrow"}
+        {
+          "id": "text_microservices",
+          "type": "text"
+        },
+        {
+          "id": "arrow_2_3",
+          "type": "arrow"
+        },
+        {
+          "id": "arrow_3_4",
+          "type": "arrow"
+        }
       ],
       "link": null,
       "locked": false,
-      "roundness": {"type": 3}
+      "roundness": {
+        "type": 3
+      }
     },
     {
       "type": "text",
@@ -474,8 +538,8 @@
       "y": 340,
       "width": 200,
       "height": 80,
-      "text": "Unit: Microservice\nComposition: HTTP/gRPC/events\nGovernance: API gateway",
-      "originalText": "Unit: Microservice\nComposition: HTTP/gRPC/events\nGovernance: API gateway",
+      "text": "Unit: Microservices\nComposition: HTTP/gRPC/events\nGovernance: API gateway",
+      "originalText": "Unit: Microservices\nComposition: HTTP/gRPC/events\nGovernance: API gateway",
       "fontSize": 13,
       "fontFamily": 3,
       "textAlign": "center",
@@ -522,9 +586,26 @@
       "boundElements": null,
       "link": null,
       "locked": false,
-      "points": [[0, 0], [100, 0]],
-      "startBinding": {"elementId": "box_microservices", "focus": 0, "gap": 2},
-      "endBinding": {"elementId": "box_agent_colony", "focus": 0, "gap": 2},
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          100,
+          0
+        ]
+      ],
+      "startBinding": {
+        "elementId": "box_microservices",
+        "focus": 0,
+        "gap": 2
+      },
+      "endBinding": {
+        "elementId": "box_agent_colony",
+        "focus": 0,
+        "gap": 2
+      },
       "startArrowhead": null,
       "endArrowhead": "arrow"
     },
@@ -551,7 +632,9 @@
       "boundElements": null,
       "link": null,
       "locked": false,
-      "roundness": {"type": 3}
+      "roundness": {
+        "type": 3
+      }
     },
     {
       "type": "rectangle",
@@ -574,12 +657,20 @@
       "isDeleted": false,
       "groupIds": [],
       "boundElements": [
-        {"id": "text_agent_colony", "type": "text"},
-        {"id": "arrow_3_4", "type": "arrow"}
+        {
+          "id": "text_agent_colony",
+          "type": "text"
+        },
+        {
+          "id": "arrow_3_4",
+          "type": "arrow"
+        }
       ],
       "link": null,
       "locked": false,
-      "roundness": {"type": 3}
+      "roundness": {
+        "type": 3
+      }
     },
     {
       "type": "text",
@@ -620,8 +711,8 @@
       "y": 380,
       "width": 280,
       "height": 100,
-      "text": "Unit: Agent\nComposition: Open protocol\nGovernance: Self-governing\nwith human boundaries",
-      "originalText": "Unit: Agent\nComposition: Open protocol\nGovernance: Self-governing\nwith human boundaries",
+      "text": "Unit: Agents\nComposition: Open protocol\nGovernance: Self-governing\nwith human boundaries",
+      "originalText": "Unit: Agents\nComposition: Open protocol\nGovernance: Self-governing\nwith human boundaries",
       "fontSize": 13,
       "fontFamily": 3,
       "textAlign": "center",
@@ -644,6 +735,37 @@
       "locked": false,
       "containerId": null,
       "lineHeight": 1.25
+    },
+    {
+      "type": "text",
+      "id": "1o4n84ah6q9ocw2jdl81e",
+      "x": 420.0,
+      "y": 500,
+      "width": 500,
+      "height": 16,
+      "text": "Agent Colony v1.1.6 \u2014 design, not validated",
+      "originalText": "Agent Colony v1.1.6 \u2014 design, not validated",
+      "fontSize": 10,
+      "fontFamily": 1,
+      "textAlign": "center",
+      "verticalAlign": "top",
+      "strokeColor": "#94a3b8",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "angle": 0,
+      "seed": 529114096,
+      "version": 1,
+      "versionNonce": 1518305368,
+      "isDeleted": false,
+      "groupIds": [],
+      "boundElements": [],
+      "updated": 1,
+      "link": null,
+      "locked": false
     }
   ],
   "appState": {

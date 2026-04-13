@@ -1,62 +1,80 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 -20 1280 1060" width="1280" height="1060" font-family="Virgil, Segoe UI Emoji, sans-serif">
-<rect x="-20" y="-20" width="1280" height="1060" fill="#ffffff"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 -20 1370 1266" width="1370" height="1266" font-family="Virgil, Segoe UI Emoji, sans-serif">
+<rect x="-20" y="-20" width="1370" height="1266" fill="#ffffff"/>
 <defs>
   <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="strokeWidth">
     <path d="M 0 0 L 10 5 L 0 10 z" fill="#1e1e1e"/>
   </marker>
 </defs>
-<rect x="0" y="80" width="900" height="80" rx="8" ry="8" fill="#93c5fd" stroke="#1e3a5f" stroke-width="2"/>
-<rect x="0" y="180" width="900" height="60" rx="8" ry="8" fill="#fee2e2" stroke="#dc2626" stroke-width="3" stroke-dasharray="12 6"/>
-<rect x="0" y="280" width="900" height="220" rx="8" ry="8" fill="#3b82f6" stroke="#1e3a5f" stroke-width="2"/>
-<rect x="40" y="330" width="240" height="60" rx="8" ry="8" fill="#dbeafe" stroke="#1e3a5f" stroke-width="1"/>
-<rect x="320" y="330" width="240" height="60" rx="8" ry="8" fill="#dbeafe" stroke="#1e3a5f" stroke-width="1"/>
-<rect x="600" y="330" width="240" height="60" rx="8" ry="8" fill="#dbeafe" stroke="#1e3a5f" stroke-width="1"/>
-<rect x="40" y="420" width="240" height="60" rx="8" ry="8" fill="#dbeafe" stroke="#1e3a5f" stroke-width="1"/>
-<rect x="320" y="420" width="240" height="60" rx="8" ry="8" fill="#dbeafe" stroke="#1e3a5f" stroke-width="1"/>
-<rect x="600" y="420" width="240" height="60" rx="8" ry="8" fill="#dbeafe" stroke="#1e3a5f" stroke-width="1"/>
-<rect x="0" y="540" width="900" height="140" rx="8" ry="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
-<rect x="40" y="590" width="240" height="60" rx="8" ry="8" fill="#ffffff" stroke="#dc2626" stroke-width="1"/>
-<rect x="320" y="590" width="240" height="60" rx="8" ry="8" fill="#ffffff" stroke="#dc2626" stroke-width="1"/>
-<rect x="600" y="590" width="240" height="60" rx="8" ry="8" fill="#ffffff" stroke="#dc2626" stroke-width="1"/>
-<rect x="0" y="720" width="900" height="180" rx="8" ry="8" fill="#a7f3d0" stroke="#047857" stroke-width="2"/>
-<ellipse cx="90.0" cy="820.0" rx="50.0" ry="50.0" fill="#d1fae5" stroke="#047857" stroke-width="1"/>
-<ellipse cx="205.0" cy="835.0" rx="25.0" ry="25.0" fill="#d1fae5" stroke="#047857" stroke-width="1"/>
-<ellipse cx="330.0" cy="820.0" rx="50.0" ry="50.0" fill="#d1fae5" stroke="#047857" stroke-width="1"/>
-<ellipse cx="435.0" cy="835.0" rx="15.0" ry="15.0" fill="#d1fae5" stroke="#047857" stroke-width="1"/>
-<ellipse cx="520.0" cy="820.0" rx="40.0" ry="40.0" fill="#d1fae5" stroke="#047857" stroke-width="1"/>
-<ellipse cx="630.0" cy="820.0" rx="30.0" ry="30.0" fill="#d1fae5" stroke="#047857" stroke-width="1"/>
-<ellipse cx="750.0" cy="820.0" rx="50.0" ry="50.0" fill="#d1fae5" stroke="#047857" stroke-width="1"/>
-<ellipse cx="260.0" cy="850.0" rx="10.0" ry="10.0" fill="#d1fae5" stroke="#047857" stroke-width="1"/>
-<ellipse cx="470.0" cy="850.0" rx="10.0" ry="10.0" fill="#d1fae5" stroke="#047857" stroke-width="1"/>
-<ellipse cx="840.0" cy="840.0" rx="20.0" ry="20.0" fill="#d1fae5" stroke="#047857" stroke-width="1"/>
-<rect x="0" y="940" width="900" height="80" rx="8" ry="8" fill="#dbeafe" stroke="#1e40af" stroke-width="2" stroke-dasharray="8 4"/>
-<text x="0" y="28.8" fill="#1e40af" font-size="32" text-anchor="start">Colony Architecture — Four Layers</text>
-<text x="450.0" y="113.7" fill="#1e3a5f" font-size="18" text-anchor="middle">Human World</text>
-<text x="450.0" y="136.2" fill="#1e3a5f" font-size="18" text-anchor="middle">Organisations, people, physical systems, legal obligations</text>
-<text x="450.0" y="214.4" fill="#dc2626" font-size="16" text-anchor="middle">Coexistence Boundary — checkpoints, playbooks, mutual trust</text>
-<text x="20" y="306.0" fill="#ffffff" font-size="20" text-anchor="start">L1: Colony Governance</text>
-<text x="160.0" y="363.9" fill="#1e3a5f" font-size="16" text-anchor="middle">Registry Agent</text>
-<text x="440.0" y="363.9" fill="#1e3a5f" font-size="16" text-anchor="middle">Equilibrium Agent</text>
-<text x="720.0" y="363.9" fill="#1e3a5f" font-size="16" text-anchor="middle">Lifecycle Agent</text>
-<text x="160.0" y="453.9" fill="#1e3a5f" font-size="16" text-anchor="middle">Chronicler Agent</text>
-<text x="440.0" y="453.9" fill="#1e3a5f" font-size="16" text-anchor="middle">Reflector Agent</text>
-<text x="720.0" y="453.9" fill="#1e3a5f" font-size="16" text-anchor="middle">Constitutional Agent</text>
-<text x="20" y="566.0" fill="#dc2626" font-size="20" text-anchor="start">L2: Colony Immune System</text>
-<text x="160.0" y="623.9" fill="#dc2626" font-size="16" text-anchor="middle">Sentinel Agent</text>
-<text x="440.0" y="623.9" fill="#dc2626" font-size="16" text-anchor="middle">Response Coordinator</text>
-<text x="720.0" y="623.9" fill="#dc2626" font-size="16" text-anchor="middle">Patch Agent</text>
-<text x="20" y="746.0" fill="#047857" font-size="20" text-anchor="start">L3: Agent Mesh</text>
-<text x="90.0" y="823.9" fill="#047857" font-size="16" text-anchor="middle">Domain</text>
-<text x="205.0" y="838.9" fill="#047857" font-size="16" text-anchor="middle">Spec.</text>
-<text x="330.0" y="823.9" fill="#047857" font-size="16" text-anchor="middle">Domain</text>
-<text x="520.0" y="823.9" fill="#047857" font-size="16" text-anchor="middle">Gen.</text>
-<text x="630.0" y="823.9" fill="#047857" font-size="16" text-anchor="middle">Spec.</text>
-<text x="750.0" y="823.9" fill="#047857" font-size="16" text-anchor="middle">Domain</text>
-<text x="860" y="804.4" fill="#047857" font-size="16" text-anchor="start">...</text>
-<text x="40" y="894.4" fill="#047857" font-size="16" text-anchor="start">Unbounded — grows and contracts as the colony evolves</text>
-<text x="450.0" y="974.4" fill="#1e40af" font-size="16" text-anchor="middle">L4: Substrate</text>
-<text x="450.0" y="994.4" fill="#1e40af" font-size="16" text-anchor="middle">Compute, Storage, Network, AI Models — any provider, replaceable by design</text>
-<text x="960" y="494.4" fill="#64748b" font-size="16" text-anchor="start">No layer knows the</text>
-<text x="960" y="514.4" fill="#64748b" font-size="16" text-anchor="start">implementation details</text>
-<text x="960" y="534.4" fill="#64748b" font-size="16" text-anchor="start">of the layer below.</text>
+<rect x="90" y="80" width="900" height="80" rx="8" ry="8" fill="#93c5fd" stroke="#1e3a5f" stroke-width="2"/>
+<rect x="90" y="180" width="900" height="60" rx="8" ry="8" fill="#fee2e2" stroke="#dc2626" stroke-width="3" stroke-dasharray="12 6"/>
+<rect x="90" y="280" width="900" height="220" rx="8" ry="8" fill="#3b82f6" stroke="#1e3a5f" stroke-width="2"/>
+<rect x="130" y="330" width="240" height="60" rx="8" ry="8" fill="#dbeafe" stroke="#1e3a5f" stroke-width="1"/>
+<rect x="410" y="330" width="240" height="60" rx="8" ry="8" fill="#dbeafe" stroke="#1e3a5f" stroke-width="1"/>
+<rect x="690" y="330" width="240" height="60" rx="8" ry="8" fill="#dbeafe" stroke="#1e3a5f" stroke-width="1"/>
+<rect x="130" y="420" width="240" height="60" rx="8" ry="8" fill="#dbeafe" stroke="#1e3a5f" stroke-width="1"/>
+<rect x="410" y="420" width="240" height="60" rx="8" ry="8" fill="#dbeafe" stroke="#1e3a5f" stroke-width="1"/>
+<rect x="690" y="420" width="240" height="60" rx="8" ry="8" fill="#dbeafe" stroke="#1e3a5f" stroke-width="1"/>
+<rect x="90" y="540" width="900" height="140" rx="8" ry="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+<rect x="130" y="590" width="240" height="60" rx="8" ry="8" fill="#ffffff" stroke="#dc2626" stroke-width="1"/>
+<rect x="410" y="590" width="240" height="60" rx="8" ry="8" fill="#ffffff" stroke="#dc2626" stroke-width="1"/>
+<rect x="690" y="590" width="240" height="60" rx="8" ry="8" fill="#ffffff" stroke="#dc2626" stroke-width="1"/>
+<rect x="90" y="720" width="900" height="180" rx="8" ry="8" fill="#a7f3d0" stroke="#047857" stroke-width="2"/>
+<ellipse cx="180.0" cy="820.0" rx="50.0" ry="50.0" fill="#d1fae5" stroke="#047857" stroke-width="1"/>
+<ellipse cx="295.0" cy="835.0" rx="25.0" ry="25.0" fill="#d1fae5" stroke="#047857" stroke-width="1"/>
+<ellipse cx="420.0" cy="820.0" rx="50.0" ry="50.0" fill="#d1fae5" stroke="#047857" stroke-width="1"/>
+<ellipse cx="525.0" cy="835.0" rx="15.0" ry="15.0" fill="#d1fae5" stroke="#047857" stroke-width="1"/>
+<ellipse cx="610.0" cy="820.0" rx="40.0" ry="40.0" fill="#d1fae5" stroke="#047857" stroke-width="1"/>
+<ellipse cx="720.0" cy="820.0" rx="30.0" ry="30.0" fill="#d1fae5" stroke="#047857" stroke-width="1"/>
+<ellipse cx="840.0" cy="820.0" rx="50.0" ry="50.0" fill="#d1fae5" stroke="#047857" stroke-width="1"/>
+<ellipse cx="350.0" cy="850.0" rx="10.0" ry="10.0" fill="#d1fae5" stroke="#047857" stroke-width="1"/>
+<ellipse cx="560.0" cy="850.0" rx="10.0" ry="10.0" fill="#d1fae5" stroke="#047857" stroke-width="1"/>
+<ellipse cx="930.0" cy="840.0" rx="20.0" ry="20.0" fill="#d1fae5" stroke="#047857" stroke-width="1"/>
+<rect x="90" y="940" width="900" height="80" rx="8" ry="8" fill="#dbeafe" stroke="#1e40af" stroke-width="2" stroke-dasharray="8 4"/>
+<path d="M 250,654 L 250,716" fill="none" stroke="#b91c1c" stroke-width="2" marker-end="url(#arrowhead)"/>
+<path d="M 810,654 L 810,716" fill="none" stroke="#b91c1c" stroke-width="2" marker-end="url(#arrowhead)"/>
+<path d="M 530,716 L 530,654" fill="none" stroke="#1e40af" stroke-width="2" marker-end="url(#arrowhead)"/>
+<path d="M 370,620 L 690,620" fill="none" stroke="#b91c1c" stroke-width="1" stroke-dasharray="4 2" marker-end="url(#arrowhead)"/>
+<path d="M 50,810 L 50,430" fill="none" stroke="#1e40af" stroke-width="2" stroke-dasharray="8 4" marker-end="url(#arrowhead)"/>
+<path d="M 50,450 L 128,450" fill="none" stroke="#1e40af" stroke-width="2" stroke-dasharray="8 4" marker-end="url(#arrowhead)"/>
+<path d="M 128,810 L 50,810" fill="none" stroke="#1e40af" stroke-width="2" stroke-dasharray="8 4" marker-end="url(#arrowhead)"/>
+<path d="M 1050,590 L 1050,210" fill="none" stroke="#dc2626" stroke-width="2" stroke-dasharray="8 4" marker-end="url(#arrowhead)"/>
+<path d="M 930,620 L 1050,620" fill="none" stroke="#dc2626" stroke-width="2" stroke-dasharray="8 4" marker-end="url(#arrowhead)"/>
+<path d="M 1050,210 L 990,210" fill="none" stroke="#dc2626" stroke-width="2" stroke-dasharray="8 4" marker-end="url(#arrowhead)"/>
+<text x="90" y="28.8" fill="#1e40af" font-size="32" text-anchor="start">Colony Architecture — Four Layers</text>
+<text x="540.0" y="113.7" fill="#1e3a5f" font-size="18" text-anchor="middle">Human World</text>
+<text x="540.0" y="136.2" fill="#1e3a5f" font-size="18" text-anchor="middle">Organisations, people, physical systems, legal obligations</text>
+<text x="540.0" y="214.4" fill="#dc2626" font-size="16" text-anchor="middle">Coexistence Boundary — checkpoints, playbooks, mutual trust</text>
+<text x="110" y="306.0" fill="#ffffff" font-size="20" text-anchor="start">L1: Colony Governance</text>
+<text x="250.0" y="363.9" fill="#1e3a5f" font-size="16" text-anchor="middle">Registry Agent</text>
+<text x="530.0" y="363.9" fill="#1e3a5f" font-size="16" text-anchor="middle">Equilibrium Agent</text>
+<text x="810.0" y="363.9" fill="#1e3a5f" font-size="16" text-anchor="middle">Lifecycle Agent</text>
+<text x="250.0" y="453.9" fill="#1e3a5f" font-size="16" text-anchor="middle">Chronicler Agent</text>
+<text x="530.0" y="453.9" fill="#1e3a5f" font-size="16" text-anchor="middle">Reflector Agent</text>
+<text x="810.0" y="453.9" fill="#1e3a5f" font-size="16" text-anchor="middle">Constitutional Agent</text>
+<text x="110" y="566.0" fill="#dc2626" font-size="20" text-anchor="start">L2: Colony Immune System</text>
+<text x="250.0" y="623.9" fill="#dc2626" font-size="16" text-anchor="middle">Sentinel Agent</text>
+<text x="530.0" y="623.9" fill="#dc2626" font-size="16" text-anchor="middle">Response Coordinator</text>
+<text x="810.0" y="623.9" fill="#dc2626" font-size="16" text-anchor="middle">Patch Agent</text>
+<text x="110" y="746.0" fill="#047857" font-size="20" text-anchor="start">L3: Agent Mesh</text>
+<text x="180.0" y="823.9" fill="#047857" font-size="16" text-anchor="middle">Domain</text>
+<text x="295.0" y="838.9" fill="#047857" font-size="16" text-anchor="middle">Spec.</text>
+<text x="420.0" y="823.9" fill="#047857" font-size="16" text-anchor="middle">Domain</text>
+<text x="610.0" y="823.9" fill="#047857" font-size="16" text-anchor="middle">Gen.</text>
+<text x="720.0" y="823.9" fill="#047857" font-size="16" text-anchor="middle">Spec.</text>
+<text x="840.0" y="823.9" fill="#047857" font-size="16" text-anchor="middle">Domain</text>
+<text x="950" y="804.4" fill="#047857" font-size="16" text-anchor="start">...</text>
+<text x="130" y="894.4" fill="#047857" font-size="16" text-anchor="start">Unbounded — grows and contracts as the colony evolves</text>
+<text x="540.0" y="974.4" fill="#1e40af" font-size="16" text-anchor="middle">L4: Substrate</text>
+<text x="540.0" y="994.4" fill="#1e40af" font-size="16" text-anchor="middle">Compute, Storage, Network, AI Models — any provider, replaceable by design</text>
+<text x="1050" y="494.4" fill="#64748b" font-size="16" text-anchor="start">No layer knows the</text>
+<text x="1050" y="514.4" fill="#64748b" font-size="16" text-anchor="start">implementation details</text>
+<text x="1050" y="534.4" fill="#64748b" font-size="16" text-anchor="start">of the layer below.</text>
+<text x="260" y="686.4" fill="#b91c1c" font-size="16" text-anchor="start">monitors</text>
+<text x="820" y="686.4" fill="#b91c1c" font-size="16" text-anchor="start">applies patches</text>
+<text x="540" y="686.4" fill="#1e40af" font-size="16" text-anchor="start">reports anomalies</text>
+<text x="530.0" y="614.4" fill="#b91c1c" font-size="16" text-anchor="middle">co-signs security upgrades (v1.1.1)</text>
+<text x="40.0" y="614.4" fill="#1e40af" font-size="16" text-anchor="middle">events recorded</text>
+<text x="1060.0" y="394.4" fill="#dc2626" font-size="16" text-anchor="middle">escalates across</text>
+<text x="1060.0" y="414.4" fill="#dc2626" font-size="16" text-anchor="middle">boundary</text>
+<text x="665.0" y="1224.4" fill="#94a3b8" font-size="16" text-anchor="middle">Agent Colony v1.1.6 — design, not validated</text>
 </svg>

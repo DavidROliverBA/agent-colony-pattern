@@ -5,6 +5,19 @@ All notable changes to the Agent Colony Pattern are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.6] — 2026-04-13
+
+### Added
+- **`diagrams/README.md`** — shared colour palette and style conventions across all six diagrams. Explains what blue / green / purple / red / orange / yellow mean and where each is used, so the set reads as coherent rather than as six different authors.
+- **`Agent Colony v1.1.6 — design, not validated`** footer stamp on every diagram. Prevents the common misreading that the diagrams describe a real running system. Matches the intellectual honesty of the prose.
+- **Four-layer architecture: inter-layer arrows.** Previously the diagram was a static stack with no dynamics. Now shows: Sentinel → Mesh (monitors), Patch → Mesh (applies patches), Mesh → Response Coordinator (reports anomalies), Sentinel ↔ Patch (co-signs security upgrades — v1.1.1 reference), Mesh → Chronicler (events recorded, via left gutter), Response Coordinator → Coexistence Boundary (escalates, via right gutter).
+- **Equilibrium diagram: index → failure mapping.** Each of the three detection indices now carries a small annotation mapping it to the failure mode it detects — Overlap and Concentration detect consolidation, Vitality detects either extreme.
+- **Maturity model: labelled trust gates** — each column's gates now carry a specific criterion ("honest observation", "intellectual honesty") instead of the generic "trust gate". **Row independence annotation** — explicit note that a colony can be Proven in Governance while still Seeded in Funding. **Earned Autonomy tagline** — "You graduate by proving you can — you do not graduate by waiting."
+- **Agent Mirror: v1.1.1 co-sign annotation.** The Immune System reader description now explicitly mentions co-signing preauthorised security upgrades. The Governance reader description now lists all the agents that read relationship data (Registry, Equilibrium, Lifecycle, Constitutional) instead of only the first two.
+
+### Fixed
+- **Evolutionary context: singular/plural consistency.** Unit fields are now "Services", "Microservices", "Agents" (plural) to match the paradigm-level framing. Only "Application" remains singular because monoliths have exactly one per era.
+
 ## [1.1.5] — 2026-04-13
 
 ### Fixed

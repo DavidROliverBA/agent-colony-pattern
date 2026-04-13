@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 -20 1240 860" width="1240" height="860" font-family="Virgil, Segoe UI Emoji, sans-serif">
-<rect x="-20" y="-20" width="1240" height="860" fill="#ffffff"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 -20 1240 896" width="1240" height="896" font-family="Virgil, Segoe UI Emoji, sans-serif">
+<rect x="-20" y="-20" width="1240" height="896" fill="#ffffff"/>
 <defs>
   <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="strokeWidth">
     <path d="M 0 0 L 10 5 L 0 10 z" fill="#1e1e1e"/>
@@ -53,8 +53,13 @@
 <text x="980" y="272.4" fill="#64748b" font-size="16" text-anchor="start">discover and consume</text>
 <text x="980" y="454.2" fill="#b91c1c" font-size="18" text-anchor="start">Immune System</text>
 <text x="980" y="482.4" fill="#64748b" font-size="16" text-anchor="start">Sentinel reads these</text>
-<text x="980" y="502.4" fill="#64748b" font-size="16" text-anchor="start">to detect drift</text>
+<text x="980" y="502.4" fill="#64748b" font-size="16" text-anchor="start">to detect drift;</text>
+<text x="980" y="522.4" fill="#64748b" font-size="16" text-anchor="start">co-signs preauthorised</text>
+<text x="980" y="542.4" fill="#64748b" font-size="16" text-anchor="start">security upgrades</text>
 <text x="980" y="684.2" fill="#1e40af" font-size="18" text-anchor="start">Governance</text>
-<text x="980" y="712.4" fill="#64748b" font-size="16" text-anchor="start">Registry and Equilibrium</text>
-<text x="980" y="732.4" fill="#64748b" font-size="16" text-anchor="start">agents read these</text>
+<text x="980" y="712.4" fill="#64748b" font-size="16" text-anchor="start">Registry, Equilibrium,</text>
+<text x="980" y="732.4" fill="#64748b" font-size="16" text-anchor="start">Lifecycle, and</text>
+<text x="980" y="752.4" fill="#64748b" font-size="16" text-anchor="start">Constitutional agents</text>
+<text x="980" y="772.4" fill="#64748b" font-size="16" text-anchor="start">read these</text>
+<text x="600.0" y="854.4" fill="#94a3b8" font-size="16" text-anchor="middle">Agent Colony v1.1.6 — design, not validated</text>
 </svg>

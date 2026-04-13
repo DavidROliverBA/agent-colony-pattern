@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 -20 1260 480" width="1260" height="480" font-family="Virgil, Segoe UI Emoji, sans-serif">
-<rect x="-20" y="-20" width="1260" height="480" fill="#ffffff"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 -20 1260 516" width="1260" height="516" font-family="Virgil, Segoe UI Emoji, sans-serif">
+<rect x="-20" y="-20" width="1260" height="516" fill="#ffffff"/>
 <defs>
   <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="strokeWidth">
     <path d="M 0 0 L 10 5 L 0 10 z" fill="#1e1e1e"/>
@@ -25,16 +25,17 @@
 <text x="100.0" y="334.4" fill="#64748b" font-size="16" text-anchor="middle">Composition: Internal calls</text>
 <text x="100.0" y="354.4" fill="#64748b" font-size="16" text-anchor="middle">Governance: Single team</text>
 <text x="400.0" y="224.95" fill="#374151" font-size="18" text-anchor="middle">SOA</text>
-<text x="400.0" y="314.4" fill="#64748b" font-size="16" text-anchor="middle">Unit: Service</text>
+<text x="400.0" y="314.4" fill="#64748b" font-size="16" text-anchor="middle">Unit: Services</text>
 <text x="400.0" y="334.4" fill="#64748b" font-size="16" text-anchor="middle">Composition: WSDL/ESB</text>
 <text x="400.0" y="354.4" fill="#64748b" font-size="16" text-anchor="middle">Governance: Service registry</text>
 <text x="700.0" y="224.95" fill="#ffffff" font-size="18" text-anchor="middle">Microservices</text>
-<text x="700.0" y="314.4" fill="#64748b" font-size="16" text-anchor="middle">Unit: Microservice</text>
+<text x="700.0" y="314.4" fill="#64748b" font-size="16" text-anchor="middle">Unit: Microservices</text>
 <text x="700.0" y="334.4" fill="#64748b" font-size="16" text-anchor="middle">Composition: HTTP/gRPC/events</text>
 <text x="700.0" y="354.4" fill="#64748b" font-size="16" text-anchor="middle">Governance: API gateway</text>
 <text x="1040.0" y="225.5" fill="#374151" font-size="20" text-anchor="middle">Agent Colonies</text>
-<text x="1040.0" y="354.4" fill="#6d28d9" font-size="16" text-anchor="middle">Unit: Agent</text>
+<text x="1040.0" y="354.4" fill="#6d28d9" font-size="16" text-anchor="middle">Unit: Agents</text>
 <text x="1040.0" y="374.4" fill="#6d28d9" font-size="16" text-anchor="middle">Composition: Open protocol</text>
 <text x="1040.0" y="394.4" fill="#6d28d9" font-size="16" text-anchor="middle">Governance: Self-governing</text>
 <text x="1040.0" y="414.4" fill="#6d28d9" font-size="16" text-anchor="middle">with human boundaries</text>
+<text x="610.0" y="474.4" fill="#94a3b8" font-size="16" text-anchor="middle">Agent Colony v1.1.6 — design, not validated</text>
 </svg>
