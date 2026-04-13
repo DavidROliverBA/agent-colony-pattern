@@ -11,8 +11,8 @@
 <rect x="380" y="420" width="480" height="120" rx="8" ry="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
 <rect x="380" y="540" width="480" height="120" rx="8" ry="8" fill="#fed7aa" stroke="#c2410c" stroke-width="2"/>
 <rect x="380" y="660" width="480" height="100" rx="8" ry="8" fill="#a7f3d0" stroke="#047857" stroke-width="2"/>
-<path d="M 220,420 L 280,380 L 380,360" fill="none" stroke="#6d28d9" stroke-width="2" marker-end="url(#arrowhead)"/>
-<path d="M 220,440 L 180,520 L 220,600 L 380,600" fill="none" stroke="#6d28d9" stroke-width="2" marker-end="url(#arrowhead)"/>
+<path d="M 220,420 L 380,360" fill="none" stroke="#6d28d9" stroke-width="2" marker-end="url(#arrowhead)"/>
+<path d="M 220,440 L 380,600" fill="none" stroke="#6d28d9" stroke-width="2" marker-end="url(#arrowhead)"/>
 <path d="M 940,240 L 860,250" fill="none" stroke="#60a5fa" stroke-width="2" marker-end="url(#arrowhead)"/>
 <path d="M 940,700 L 860,710" fill="none" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrowhead)"/>
 <path d="M 940,480 L 860,480" fill="none" stroke="#dc2626" stroke-width="2" marker-end="url(#arrowhead)"/>

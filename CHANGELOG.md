@@ -5,6 +5,11 @@ All notable changes to the Agent Colony Pattern are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.3] — 2026-04-13
+
+### Fixed
+- **Arrows in diagrams are now straight.** The SVG exporter was preserving intermediate waypoints from the Excalidraw source, causing some arrows (most visibly the "Self" arrows in the Agent Mirror diagram) to zig-zag. The exporter now draws arrows as direct lines from the first point to the last point, ignoring intermediate waypoints. Lines (non-arrows) keep their polyline shape because they often draw borders or underlines where the shape matters.
+
 ## [1.1.2] — 2026-04-13
 
 ### Added

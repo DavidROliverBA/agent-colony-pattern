@@ -137,6 +137,11 @@ def render_line_or_arrow(el, is_arrow):
         return ""
     # Points are relative to x, y
     abs_points = [(x + p[0], y + p[1]) for p in points]
+    # Arrows render as direct straight lines from start to end (ignore
+    # intermediate waypoints that Excalidraw adds for routing). Lines keep
+    # their polyline shape because they often draw borders or underlines.
+    if is_arrow and len(abs_points) > 2:
+        abs_points = [abs_points[0], abs_points[-1]]
     path_d = "M " + " L ".join(f"{px},{py}" for px, py in abs_points)
     arrow_marker = ""
     if is_arrow:
