@@ -207,6 +207,24 @@ _Rationale:_ Security imposed from outside the colony creates an adversarial rel
 
 _Implications:_ Every agent carries a security posture in its Agent Mirror. The colony maintains an Immune System layer — Sentinel, Response Coordinator, and Patch agents — that operates on different timescales and with different authority than governance. One corollary is explicit: security upgrades are always preauthorised. An agent that needs to patch a vulnerability does not wait for a governance cycle. Improving security posture is always a sufficient reason to self-upgrade, regardless of lifecycle stage or evolution budget. An agent that cannot improve its own security is a liability to the colony.
 
+Preauthorisation is not unconditional. It is bounded by three invariants. First, a closed enum of preauthorised actions — patch application, dependency update, credential rotation, certificate renewal, signature update, self-quarantine. Nothing outside the enum is preauthorised; anything else follows the normal governance path. Second, a second-party co-sign by the Immune System — every preauthorised action requires a signature from the Sentinel or Patch Agent, depending on the action class. A single compromised agent cannot self-authorise; it needs collusion across the L1/L2 boundary, which raises the attack cost. Third, an append-only audit log the acting agent cannot redact, with a bounded rollback window. An action that cannot be rolled back is not preauthorised; it is escalated. The canonical attack — a compromised agent classifying exfiltration as a "security upgrade" — fails at the enum (exfiltration is not in the list), at the co-sign (the Immune System refuses), and at the log (the action is recorded and reversible). The specification gives the full formulation.
+
+## Scales of Application
+
+The pattern is scale-adaptive. It applies to a 5-agent team, a 50-agent organisational estate, and a 5,000-agent cross-organisation ecosystem. What changes across scales is not the principles but the mechanisms that realise them. A 5-agent colony running the lightweight version — Agent Mirrors as YAML in git, weekly human-led equilibrium reviews, informal trust ledger — is not immature relative to a 5,000-agent ecosystem. It is correctly scaled. Over-engineering a small colony with cryptographic federation is as much a pattern violation as under-engineering a large one with shared markdown.
+
+| Principle / Mechanism | 5-agent team | 50-agent org estate | 5,000-agent ecosystem |
+|-----------------------|--------------|---------------------|------------------------|
+| Agent Mirror | Lightweight YAML in git; manual curation | Schema-validated; CI-gated on commit | Federated registry with signed attestations |
+| Equilibrium System | Human review in stand-ups | MAPE-K loop per colony | Cross-colony regime monitoring |
+| Colony Memory | Shared wiki; weekly retrospective | Event store + reflection pipeline | Distributed log; cross-colony lesson sharing |
+| Epistemic Discipline | Informal team discipline | Evidence grades; dissent role in PRs | Automated bias scanning; signed dissent records |
+| Trust Ledger | Spreadsheet or markdown table | Per-agent score, Architecture Board | Federated, cryptographic reputation |
+| Coexistence Boundary | Verbal agreements | Pre-agreed playbooks | Standardised cross-colony protocols |
+| Mutual Defence | Manual patching with human co-sign | Preauthorised enum + Immune System co-sign + audit log | Coordinated defence across colonies |
+
+The specification gives the full table. The principle stays across scales. The mechanism adapts.
+
 ## Four-Layer Architecture
 
 The colony is structured in four layers. Each layer is independently replaceable. No layer knows the implementation details of the layer below it.

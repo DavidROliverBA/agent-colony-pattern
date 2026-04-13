@@ -5,6 +5,16 @@ All notable changes to the Agent Colony Pattern are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] — 2026-04-13
+
+### Added
+- **Scales of application** subsection in `specification.md` §1 — explicit table showing how each principle/mechanism adapts at three scales (5-agent team, 50-agent org estate, 5,000-agent ecosystem). Reframes unit-of-analysis "slippage" as scale-adaptive application.
+- **Security upgrade preauthorisation** strengthened with three concrete invariants: closed enum of preauthorised action classes, Immune System co-sign requirement, append-only log with bounded rollback. Turns the corollary from acknowledged risk into a mitigation with defence in depth.
+- **Preauthorised-security abuse failure mode** in Conformance section (§7.5) now shows six-layer defence (three structural from the new invariants, three behavioural from Sentinel/Patch/Response).
+
+### Changed
+- `thesis.md` — mirrors the scale-adaptive table and strengthened preauthorisation treatment (shorter summaries, pointer to specification for full detail).
+
 ## [1.1.0] — 2026-04-13
 
 ### Added

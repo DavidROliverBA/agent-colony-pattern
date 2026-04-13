@@ -54,6 +54,34 @@ The boundary between agent and human worlds is a shared border, and attacks affe
 
 **Security upgrade preauthorisation:** Improving security posture is always a sufficient reason to self-upgrade, regardless of lifecycle stage, update budget, or governance cycle. Security upgrades do not consume self-evolution allowances. An agent that cannot improve its own security is a liability to the colony.
 
+Preauthorisation is not unconditional. It is bounded by three invariants that together prevent a compromised agent from classifying arbitrary behaviour as a security upgrade:
+
+1. **Closed enum of preauthorised actions.** A security upgrade is exactly one of: *patch application, dependency update, credential rotation, certificate renewal, signature update, self-quarantine.* Anything outside this enum is not preauthorised. It follows the normal governance path. The enum is deliberately tight — broader definitions invite abuse, narrower ones cripple legitimate defence.
+
+2. **Second-party co-sign by the Immune System.** Preauthorisation is not unilateral. Every security upgrade requires a co-signature from the Immune System layer — typically the Sentinel Agent or Patch Agent, depending on the action class. A single compromised agent cannot self-authorise; it needs collusion across the L1/L2 boundary, which raises the attack cost meaningfully. The co-signing agent verifies the action is in the enum and consistent with the agent's declared security posture before signing.
+
+3. **Append-only log and bounded rollback.** Every preauthorised action writes an entry to an append-only audit log that the acting agent cannot redact. The entry records: actor, co-signer, action class, affected fields, timestamp, and a cryptographic hash of the pre-state. Every preauthorised action must be reversible within a bounded rollback window — typically 60 minutes, configurable per colony. An action that cannot be rolled back is not preauthorised; it is escalated to the Response Coordinator and treated as a cross-boundary event.
+
+These three invariants turn the preauthorisation corollary from an acknowledgement of risk into a mitigation with defence in depth. The canonical attack — a compromised agent classifying exfiltration as a "security upgrade" — fails at the enum (exfiltration is not in the list), fails at the co-sign (the Immune System will refuse), and fails at the log (the action is recorded and reversible even if the first two layers are bypassed). None of these defences have been exercised by a reference implementation; they are the design, not a proven guarantee.
+
+---
+
+### Scales of application
+
+The pattern is deliberately scale-adaptive. It applies to a 5-agent team, a 50-agent organisational estate, and a 5,000-agent cross-organisation ecosystem. What changes across scales is not the principles but the mechanisms that realise them. Treating the table below as the "depth dial" prevents two common misreadings: that the pattern is overkill for small colonies, or that it cannot survive large ones.
+
+| Principle / Mechanism | 5-agent team | 50-agent org estate | 5,000-agent ecosystem |
+|-----------------------|--------------|---------------------|------------------------|
+| **Agent Mirror** | Lightweight YAML in a git repo; manual curation on a weekly cadence | Schema-validated; CI-gated on commit; required for deployment | Federated registry with signed attestations; cross-organisation discovery |
+| **Equilibrium System** | Human review in a Monday stand-up; overlap judged by eye | MAPE-K loop per colony; Equilibrium Agent executes minor rebalancing autonomously | Cross-colony regime monitoring; inter-colony overlap negotiation |
+| **Colony Memory** | Shared markdown in a wiki; weekly retrospective feeds Lesson Memory | Event store with structured reflection pipeline; Constitutional rules in a tracked repo | Distributed event log; cross-colony lesson sharing with provenance |
+| **Epistemic Discipline** | Informal; rely on team discipline and human dissent in reviews | Formal evidence grades; bias detection checklist; mandatory dissent role in rule promotion PRs | Automated bias scanning; cryptographically signed dissent records |
+| **Trust Ledger** | Informal; spreadsheet or markdown table | Per-agent score with human adjudication; stage transitions approved by an Architecture Board | Federated, cryptographic; cross-organisation trust reputation |
+| **Coexistence Boundary** | Verbal agreements; humans approve every cross-boundary action | Pre-agreed playbooks; Response Coordinator handles routine events | Standardised boundary protocols; cross-colony incident coordination |
+| **Mutual Defence** | Patch agents manually; humans co-sign | Preauthorised enum + Immune System co-sign + audit log (as defined above) | Coordinated defence across colonies; shared threat intelligence |
+
+The table is not a maturity model — a 5-agent colony running the lightweight version is not "immature" relative to a 5,000-agent ecosystem. It is correctly scaled. Over-engineering a small colony with cryptographic federation is as much a pattern violation as under-engineering a large one with shared markdown. The principle stays. The mechanism adapts.
+
 ---
 
 ## 2. The Agent Mirror Standard
@@ -553,9 +581,13 @@ Again, theoretical until tested. The anti-monopoly threshold is configurable and
 
 A compromised agent classifies its own exfiltration or privilege escalation as a "security upgrade" to bypass governance. Because security upgrades are preauthorised — they do not consume the evolution budget, do not require governance review, and are a stated survival instinct — the compromised agent executes the abuse without triggering the normal checkpoints. The mechanism designed to protect the colony is used to subvert it.
 
-*Defence:* Three layers. First, the Sentinel Agent's drift detection — a Mirror that declares a "security upgrade" while the agent's actual behaviour diverges from its declared security posture is the primary signal of compromise. Security upgrades must update the Mirror's `last_security_upgrade` field and `security_dependencies` — a genuine security upgrade should make the Mirror more accurate, not less. An upgrade that leaves the Mirror stale or introduces inconsistencies triggers an anomaly flag. Second, Patch Agent scope limits — security upgrades may only modify declared security fields in the Mirror and security-scoped behaviour. Modifications to purpose, contracts, or capabilities under a security upgrade classification are out of scope and trigger immediate escalation. Third, the Response Coordinator escalates immediately if a self-declared security upgrade triggers anomaly signals elsewhere in the colony. Mutual defence is not unconditional trust — it is transparent defence with cross-checks across the immune system.
+*Defence:* Six layers — the three preauthorisation invariants from Section 1 combined with three detection layers in the Immune System.
 
-This is the failure mode most likely to matter in practice. The preauthorisation of security upgrades is the sharpest edge in the pattern — the mechanism that enables real security autonomy is the same mechanism that an adversary would target first. It is also the defence most likely to be refined substantially in v2.0 after a reference implementation exercises it. The defences above are the current design; they should be treated as provisional until tested against a real attack scenario.
+The first three layers are structural, built into the preauthorisation contract itself. The **closed enum** means any action outside the defined list (patch application, dependency update, credential rotation, certificate renewal, signature update, self-quarantine) is not preauthorised at all — exfiltration and privilege escalation are simply not in the list. The **Immune System co-sign** means a single compromised agent cannot self-authorise; the Sentinel or Patch Agent must co-sign, verifying the action is in the enum and consistent with the agent's declared security posture. The **append-only audit log with bounded rollback** means every preauthorised action is recorded, non-redactable, and reversible within a bounded window; an action that cannot be rolled back is escalated rather than preauthorised.
+
+The second three layers are behavioural, running continuously in the Immune System. **Sentinel drift detection** compares the Mirror's declared state against actual behaviour — a genuine security upgrade makes the Mirror more accurate, not less. An upgrade that leaves the Mirror stale or introduces inconsistencies triggers an anomaly flag. **Patch Agent scope limits** restrict what fields a security upgrade may modify — changes to purpose, contracts, or capabilities under a security-upgrade classification are out of scope and trigger immediate escalation. **Response Coordinator cross-check** escalates if a self-declared security upgrade correlates with anomaly signals elsewhere in the colony — a compromised agent acting in isolation may fool its local co-signer but cannot fool colony-wide pattern detection.
+
+This is the failure mode most likely to matter in practice. The preauthorisation of security upgrades is the sharpest edge in the pattern — the mechanism that enables real security autonomy is the same mechanism an adversary would target first. The six-layer defence is designed to fail safely: for the attack to succeed, the adversary must defeat the enum, suborn the co-signer, defeat the audit log, evade drift detection, stay within scope limits, and avoid colony-wide correlation. Any one of those failing stops the attack. None of the six layers has been exercised by a reference implementation; they are the current design and should be treated as provisional until tested against a real attack scenario.
 
 ---
 
