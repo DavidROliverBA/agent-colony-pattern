@@ -132,6 +132,77 @@ def _hash_state(data: Any) -> str:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
 
 
+def _apply_changes(mirror_data: dict, changes: dict) -> dict:
+    """Apply a semantic change DSL to a Mirror dict.
+
+    The DSL keys are interpreted as instructions, NOT as literal YAML keys:
+
+    - ``add_capability``: {"name": str, ...}  appends to
+      ``capabilities.capabilities[]`` (skipping if a capability with the
+      same name already exists).
+    - ``remove_capability``: "<name>"  removes a capability by name from
+      ``capabilities.capabilities[]``.
+    - ``patch``: {arbitrary subset}  deep-merges the patch onto the mirror
+      (the old v1.6.x behaviour, preserved for anything that is not a
+      named semantic operation).
+
+    Any other top-level key in ``changes`` that is NOT one of the three
+    above is treated as a literal patch (deep-merged) for backwards
+    compatibility. This is the minimum change that removes the v1.6.x
+    ``capability_add`` bug while not breaking existing callers that pass
+    simple field updates.
+
+    Returns a new dict — mirror_data is not mutated in place.
+    """
+    out = dict(mirror_data)  # shallow; _deep_merge will do the deep work
+
+    for key, value in (changes or {}).items():
+        if key == "add_capability":
+            if not isinstance(value, dict) or "name" not in value:
+                raise ValueError(
+                    "add_capability requires a dict with at least a 'name' field"
+                )
+            caps_section = out.setdefault("capabilities", {})
+            if not isinstance(caps_section, dict):
+                # Mirror's capabilities field was a flat list; coerce to dict form.
+                caps_section = {"capabilities": list(caps_section or [])}
+                out["capabilities"] = caps_section
+            caps_list = caps_section.setdefault("capabilities", [])
+            # Skip if a capability with the same name already exists
+            existing_names = {
+                c.get("name") for c in caps_list if isinstance(c, dict)
+            }
+            if value["name"] not in existing_names:
+                caps_list.append(dict(value))
+
+        elif key == "remove_capability":
+            name = value if isinstance(value, str) else value.get("name") if isinstance(value, dict) else None
+            if not name:
+                raise ValueError(
+                    "remove_capability requires a capability name string"
+                )
+            caps_section = out.get("capabilities")
+            if isinstance(caps_section, dict):
+                caps_list = caps_section.get("capabilities", [])
+                caps_section["capabilities"] = [
+                    c for c in caps_list
+                    if not (isinstance(c, dict) and c.get("name") == name)
+                ]
+
+        elif key == "patch":
+            if not isinstance(value, dict):
+                raise ValueError("patch requires a dict value")
+            out = _deep_merge(out, value)
+
+        else:
+            # Backwards-compat: treat unknown top-level keys as literal patch
+            # entries (v1.6.x behaviour). Emit a warning comment in the
+            # evolution log downstream would be ideal; for now we just merge.
+            out = _deep_merge(out, {key: value})
+
+    return out
+
+
 class ClaudeCodeAdapter(SubstrateContract):
     """Claude Code substrate implementation of SubstrateContract."""
 
@@ -147,12 +218,14 @@ class ClaudeCodeAdapter(SubstrateContract):
         self.substrate_name = "claude-code"
 
         self.colony_dir = self.repo_root / "colony"
-        self.mirrors_dir = self.colony_dir / "mirrors"
+        self.mirrors_dir = self.colony_dir / "mirrors"  # baseline (read-only)
         self.state_dir = self.repo_root / "state"
+        self.state_mirrors_dir = self.state_dir / "mirrors"  # overlay (writes)
         self.kb_dir = self.state_dir / "kb"
         self.events_path = self.state_dir / "events.jsonl"
 
         self.state_dir.mkdir(parents=True, exist_ok=True)
+        self.state_mirrors_dir.mkdir(parents=True, exist_ok=True)
         self.kb_dir.mkdir(parents=True, exist_ok=True)
 
         self._client = None  # lazily constructed in non-mock dispatch
@@ -217,107 +290,383 @@ class ClaudeCodeAdapter(SubstrateContract):
             return {"raw": text}
 
     def _mock_response(self, agent_id: str, input: dict) -> dict:
-        task = (input or {}).get("task", "")
+        """Deterministic mock dispatcher.
+
+        Keys on a normalised agent id (the '-agent' suffix is stripped so that
+        driver calls like 'teacher-agent' and direct test calls like 'teacher'
+        both match) and on the actual input shape the lifecycle driver sends:
+
+        - Teacher:   {topic, question}                 — teach a topic
+        - Librarian: {corpus_file: <path>}             — curate a file
+        - Librarian: {action: 'compute_coverage', ...} — report coverage
+        - Equilibrium: {action: 'scan'}                — overlap scan
+        - Sentinel:  {task: 'cosign', action_class, actor} — co-sign decision
+
+        Returns canned responses that contain the observable strings the
+        walkthrough README promises ('worker' for beekeeping, 'Mirror' for
+        the Agent Colony pattern turn) so end-to-end tests can assert
+        against them.
+        """
+        if not isinstance(input, dict):
+            input = {}
         base = {"tokens": 0, "mock": True}
 
-        if agent_id == "teacher" and task == "teach":
+        # Normalise the agent id — strip the '-agent' suffix so 'teacher'
+        # and 'teacher-agent' map to the same branch.
+        normalised = agent_id[:-6] if agent_id.endswith("-agent") else agent_id
+
+        # ---- Teacher -------------------------------------------------------
+        if normalised == "teacher":
             topic = input.get("topic", "")
             if topic == "beekeeping":
                 return {
                     **base,
+                    "topic": topic,
                     "answer": (
-                        "Worker bees forage for nectar and pollen within a few kilometres of the "
-                        "hive; the queen is the colony's only reproductive female. "
-                        "Source: beekeeping-primer.md."
+                        "A beehive is organised around three kinds of bee. The queen is the "
+                        "colony's only reproductive female. Worker bees forage for nectar and "
+                        "pollen within a few kilometres of the hive, tend the brood, and build "
+                        "wax comb. Drones are the males whose only role is to mate with a queen. "
+                        "A worker's role changes with age — she starts as a nurse and graduates "
+                        "to foraging after about three weeks. Source: colony/corpus/beekeeping/primer.md."
                     ),
                 }
             if topic == "agent-colony-pattern":
                 return {
                     **base,
+                    "topic": topic,
                     "answer": (
                         "An Agent Colony is a self-governing ecosystem of specialised agents, "
-                        "much as a bee colony divides work between foragers, nurses, and a queen. "
-                        "Each agent has a Mirror (its role), and capabilities evolve through "
-                        "co-signed graduation. Source: agent-colony-pattern primer."
+                        "much like a bee colony that divides work between foragers, nurses, and "
+                        "a queen. Each agent has a Mirror — a machine-readable description of "
+                        "what it is, what it can do, and how it has evolved — the way a bee's "
+                        "role is stamped into her body at each life stage. Agents earn new "
+                        "capabilities through a graduation event: a structural classifier "
+                        "decides which review regime applies, a second agent co-signs, and the "
+                        "new capability is recorded in the Mirror with a pre-state and post-state "
+                        "hash. Nothing can change its own role alone — just as a worker bee "
+                        "cannot promote herself to queen. Source: the Agent Colony pattern "
+                        "specification, illustrated by the beekeeping primer."
                     ),
                 }
-            return {**base, "answer": f"I do not yet know how to teach '{topic}'."}
+            return {
+                **base,
+                "topic": topic,
+                "answer": (
+                    f"I do not yet know how to teach '{topic}'. My current capabilities "
+                    "are limited by what is in my Mirror."
+                ),
+            }
 
-        if agent_id == "librarian":
-            if task == "curate":
+        # ---- Librarian -----------------------------------------------------
+        if normalised == "librarian":
+            # Corpus reading (driver sends {corpus_file: <path>})
+            if "corpus_file" in input:
+                file_path = input["corpus_file"]
+                topic_slug = _slug(Path(file_path).stem) if file_path else "unknown"
+                concept = f"concept-from-{topic_slug}"
+                return {
+                    **base,
+                    "topic": "agent-colony-pattern",
+                    "kb_content": (
+                        f"Summary extracted from {file_path}: the Agent Colony pattern "
+                        "describes a self-governing ecosystem in which specialised agents "
+                        "earn autonomy through demonstrated trustworthiness."
+                    ),
+                    "concepts": [concept],
+                    "cross_references": ["beekeeping"],
+                }
+            # Coverage check (driver sends {action: 'compute_coverage', topic})
+            if input.get("action") == "compute_coverage":
+                return {
+                    **base,
+                    "topic": input.get("topic", "agent-colony-pattern"),
+                    "topics": {
+                        "beekeeping": {"docs": 1, "cross_references": 0},
+                        "agent-colony-pattern": {"docs": 7, "cross_references": 3},
+                    },
+                    "coverage_score": 0.82,
+                }
+            # Capability proposal (may be called from tests)
+            if input.get("task") == "propose_capability":
+                return {
+                    **base,
+                    "agent_id": "teacher-agent",
+                    "capability": "teach_agent_colony_pattern",
+                    "justification": (
+                        "KB coverage for agent-colony-pattern exceeds the graduation threshold "
+                        "(7 documents, 3 cross-references)."
+                    ),
+                }
+            # Legacy curate task (kept so test_portability.py still fires)
+            if input.get("task") == "curate":
                 file_path = input.get("file", "")
                 topic = _slug(Path(file_path).stem) if file_path else "unknown"
                 return {
                     **base,
                     "topic": topic,
                     "content": f"Curated summary for {topic}.",
-                    "cross_references": [],
-                }
-            if task == "compute_coverage":
-                return {
-                    **base,
-                    "topics": {
-                        "beekeeping": {"docs": 1, "cross_references": 0},
-                        "agent-colony-pattern": {"docs": 5, "cross_references": 3},
-                    },
-                }
-            if task == "propose_capability":
-                return {
-                    **base,
-                    "agent_id": "teacher",
-                    "capability": "teach_agent_colony_pattern",
-                    "justification": (
-                        "KB coverage for agent-colony-pattern exceeds the graduation threshold "
-                        "(5 documents, 3 cross-references)."
-                    ),
+                    "cross_references": ["beekeeping"],
                 }
 
-        if agent_id == "sentinel" and task == "cosign":
+        # ---- Equilibrium ---------------------------------------------------
+        if normalised == "equilibrium":
+            if input.get("action") == "scan":
+                return {
+                    **base,
+                    "flagged_pairs": [
+                        {
+                            "pair": ["librarian-agent", "teacher-agent"],
+                            "overlap": 0.18,
+                            "status": "watch",
+                        }
+                    ],
+                }
+
+        # ---- Sentinel ------------------------------------------------------
+        if normalised == "sentinel" and input.get("task") == "cosign":
             return {
                 **base,
                 "granted": True,
-                "reason": "matches pre-registered policy",
+                "reason": "matches pre-registered graduation_cosign policy",
                 "action_class": input.get("action_class", ""),
                 "actor": input.get("actor", ""),
             }
 
+        # ---- Fallback ------------------------------------------------------
         return {**base, "ok": True}
 
     # ---------------------------------------------------------------- mirrors
 
+    def _baseline_mirror_path(self, agent_id: str) -> Path:
+        """Find the baseline (read-only) Mirror file in colony/mirrors/.
+
+        Accepts either `teacher` or `teacher-agent` — canonicalises to the
+        long form. Used as the fallback source when no state/mirrors/ overlay
+        exists yet.
+        """
+        base = agent_id[:-6] if agent_id.endswith("-agent") else agent_id
+        long_form = self.mirrors_dir / f"{base}-agent.yaml"
+        if long_form.exists():
+            return long_form
+        short_form = self.mirrors_dir / f"{base}.yaml"
+        if short_form.exists():
+            return short_form
+        return long_form  # doesn't exist — used as write target signal
+
+    def _overlay_mirror_path(self, agent_id: str) -> Path:
+        """The state/mirrors/ overlay file for an agent.
+
+        v1.7.0 Fix 5 — all writes go to state/mirrors/, never to
+        colony/mirrors/. Reads prefer the overlay if it exists and fall
+        back to the baseline.
+        """
+        base = agent_id[:-6] if agent_id.endswith("-agent") else agent_id
+        return self.state_mirrors_dir / f"{base}-agent.yaml"
+
     def _mirror_path(self, agent_id: str) -> Path:
-        return self.mirrors_dir / f"{agent_id}.yaml"
+        """Legacy single-file accessor — kept for adapter-internal callers
+        that want the effective read path. Always prefers the overlay.
+        """
+        overlay = self._overlay_mirror_path(agent_id)
+        if overlay.exists():
+            return overlay
+        return self._baseline_mirror_path(agent_id)
 
     def read_mirror(self, agent_id: str) -> Mirror:
         path = self._mirror_path(agent_id)
         if not path.exists():
-            # Also try "<agent_id>-agent.yaml" for the teaching colony's file naming
-            alt = self.mirrors_dir / f"{agent_id}-agent.yaml"
-            if alt.exists():
-                path = alt
-            else:
-                return Mirror(agent_id=agent_id, data={})
+            return Mirror(agent_id=agent_id, data={})
         with path.open("r", encoding="utf-8") as f:
             data = yaml.safe_load(f) or {}
         return Mirror(agent_id=agent_id, data=data)
 
+    _BLAST_RADIUS_ORDER = {
+        "Local": 0,
+        "Inter-agent": 1,
+        "Colony-wide": 2,
+        "Boundary-crossing": 3,
+    }
+
+    def _change_action_class(self, changes: dict) -> str:
+        """Infer the action class from a change dict.
+
+        Semantic DSL keys map directly; legacy literal patches fall back
+        to 'mirror_patch' which gets the default blast radius from the
+        classifier table.
+        """
+        if "add_capability" in changes:
+            return "mirror_capability_add"
+        if "remove_capability" in changes:
+            return "mirror_capability_remove"
+        if "patch" in changes:
+            return "mirror_patch"
+        return "mirror_patch"
+
+    def _change_describes(self, changes: dict) -> str:
+        """Build a short human-readable description of a change dict.
+
+        Used to match entries in self_evolution_scope.forbidden, which are
+        themselves plain English strings.
+        """
+        if "add_capability" in changes:
+            name = changes["add_capability"].get("name", "<unknown>")
+            return f"Add new teaching topic {name}"
+        if "remove_capability" in changes:
+            name = changes["remove_capability"] if isinstance(
+                changes["remove_capability"], str
+            ) else changes["remove_capability"].get("name", "<unknown>")
+            return f"Remove teaching topic {name}"
+        return f"Patch mirror with keys: {sorted(changes.keys())}"
+
+    def _enforce_contract(
+        self,
+        agent_id: str,
+        target_mirror: dict,
+        changes: dict,
+        co_signer: str,
+    ) -> None:
+        """Enforce §7 Comprehension Contract clauses before any Mirror write.
+
+        Raises ContractViolation subclass if any check fails. All four
+        checks must pass before update_mirror proceeds to hash, merge, and
+        write. This is the v1.7.0 fix for the external review's Finding 3
+        ("the Comprehension Contract is not enforced").
+        """
+        # Late import so the adapter module stays importable even if
+        # colony.logic.exceptions moves.
+        try:
+            from examples.teaching_colony.colony.logic.exceptions import (  # type: ignore
+                BlastRadiusViolation,
+                ForbiddenEvolution,
+                UnauthorisedCoSign,
+            )
+        except ImportError:
+            from colony.logic.exceptions import (  # type: ignore
+                BlastRadiusViolation,
+                ForbiddenEvolution,
+                UnauthorisedCoSign,
+            )
+
+        # Step 0 — co-signer presence check (must be first so that
+        # downstream forbidden-list "exempts co-signed paths" logic has
+        # something truthy to check against).
+        if not co_signer:
+            raise UnauthorisedCoSign(
+                f"Change to {agent_id} requires a co_signer but none was provided"
+            )
+
+        action_class = self._change_action_class(changes)
+        description = self._change_describes(changes)
+
+        target_cc = target_mirror.get("comprehension_contract", {}) or {}
+        target_tier = target_cc.get("trust_tier", "Observing")
+        target_ceiling = target_cc.get("blast_radius_ceiling", "Colony-wide")
+        target_autonomy = target_mirror.get("autonomy", {}) or {}
+        target_scope = target_autonomy.get("self_evolution_scope", {}) or {}
+        forbidden = target_scope.get("forbidden", []) or []
+
+        # Step 1 — classify the action against the target's trust tier
+        classification = self.classify_action(
+            {"class": action_class},
+            {"actor_trust_tier": target_tier},
+        )
+
+        # Step 2 — blast radius ceiling check
+        classifier_rank = self._BLAST_RADIUS_ORDER.get(classification.blast_radius, 99)
+        ceiling_rank = self._BLAST_RADIUS_ORDER.get(target_ceiling, 99)
+        if classifier_rank > ceiling_rank:
+            raise BlastRadiusViolation(
+                f"Proposed change to {agent_id} has blast radius "
+                f"'{classification.blast_radius}' but the target's "
+                f"blast_radius_ceiling is '{target_ceiling}'. "
+                f"Action class: {action_class}."
+            )
+
+        # Step 3 — forbidden list check
+        # The forbidden list holds plain-English strings. We do a substring
+        # match on the description OR on any named capability in the change.
+        # If any entry matches AND the entry does NOT explicitly exempt
+        # co-signed paths (marker: "without a valid ... co-sign"), raise.
+        for entry in forbidden:
+            entry_lower = str(entry).lower()
+            description_lower = description.lower()
+            # If the forbidden entry exempts co-signed paths, and this
+            # change IS accompanied by a co-sign, skip.
+            exempts_cosigned = (
+                "without a valid" in entry_lower
+                and "co-sign" in entry_lower
+            )
+            if exempts_cosigned and co_signer:
+                # The entry explicitly permits co-signed paths; the
+                # UnauthorisedCoSign check below will catch a bad co-sign.
+                continue
+            # Simple keyword match: if the entry names the action
+            # (e.g. "Add new teaching topics"), it matches.
+            key_phrases = [
+                "add new teaching",
+                "add capability",
+                "remove capability",
+                "write to the colony knowledge base",
+            ]
+            for phrase in key_phrases:
+                if phrase in entry_lower and phrase[:3] in description_lower:
+                    raise ForbiddenEvolution(
+                        f"Proposed change to {agent_id} is forbidden by "
+                        f"self_evolution_scope.forbidden entry: {entry!r}. "
+                        f"Change description: {description!r}."
+                    )
+
+        # Step 4 — co-signer policy freshness check
+        co_signer_mirror = self.read_mirror(co_signer)
+        co_signer_cc = co_signer_mirror.data.get("comprehension_contract", {}) or {}
+        policies = co_signer_cc.get("pre_registered_policies", []) or []
+
+        # The action class for graduation co-sign is 'graduation_cosign'
+        # (what Sentinel pre-registers), not the underlying
+        # 'mirror_capability_add'. We check either.
+        valid_policy_classes = {"graduation_cosign", action_class}
+        if action_class == "mirror_capability_add":
+            valid_policy_classes.add("graduation_cosign")
+
+        matching = [
+            p for p in policies
+            if p.get("action_class") in valid_policy_classes
+            and str(p.get("freshness", "current")).lower() == "current"
+        ]
+        if not matching:
+            raise UnauthorisedCoSign(
+                f"Co-signer {co_signer} does not have a fresh "
+                f"pre-registered policy for action_class='{action_class}' "
+                f"(or for 'graduation_cosign' which covers capability adds). "
+                f"Available policies: {[p.get('action_class') for p in policies]}"
+            )
+
     def update_mirror(self, agent_id: str, changes: dict, co_signer: str) -> AuditEntry:
-        path = self._mirror_path(agent_id)
-        if not path.exists():
-            alt = self.mirrors_dir / f"{agent_id}-agent.yaml"
-            if alt.exists():
-                path = alt
-            else:
-                path.parent.mkdir(parents=True, exist_ok=True)
-                path.write_text("", encoding="utf-8")
+        # v1.7.0 Fix 5 — read from the effective path (overlay or baseline),
+        # but ALWAYS write to state/mirrors/ (the overlay). This keeps
+        # colony/mirrors/ clean across runs.
+        read_path = self._mirror_path(agent_id)
+        write_path = self._overlay_mirror_path(agent_id)
+        write_path.parent.mkdir(parents=True, exist_ok=True)
 
         existing = {}
-        if path.exists() and path.stat().st_size > 0:
-            with path.open("r", encoding="utf-8") as f:
+        if read_path.exists() and read_path.stat().st_size > 0:
+            with read_path.open("r", encoding="utf-8") as f:
                 existing = yaml.safe_load(f) or {}
 
+        # ---- §7 Comprehension Contract enforcement ------------------------
+        # See colony/logic/exceptions.py and substrate-contract.md.
+        # These four checks are what v1.6.x claimed to do but didn't.
+        self._enforce_contract(
+            agent_id=agent_id,
+            target_mirror=existing,
+            changes=changes,
+            co_signer=co_signer,
+        )
+
         pre_hash = _hash_state(existing)
-        merged = _deep_merge(existing, changes)
+        merged = _apply_changes(existing, changes)
 
         audit = AuditEntry(
             action="update_mirror",
@@ -345,7 +694,7 @@ class ClaudeCodeAdapter(SubstrateContract):
         audit.post_state_hash = post_hash
         evolution_log[-1]["post_state_hash"] = post_hash
 
-        with path.open("w", encoding="utf-8") as f:
+        with write_path.open("w", encoding="utf-8") as f:
             yaml.safe_dump(merged, f, sort_keys=False, default_flow_style=False)
 
         self.record_event(
@@ -476,6 +825,7 @@ class ClaudeCodeAdapter(SubstrateContract):
                 payload={
                     "action_class": action_class,
                     "subject_actor": actor,
+                    "granted": sig.granted,
                     "reason": sig.reason,
                 },
                 timestamp=sig.timestamp,
@@ -487,17 +837,27 @@ class ClaudeCodeAdapter(SubstrateContract):
     # ---------------------------------------------------------------- classify
 
     def classify_action(self, action: dict, context: dict) -> Classification:
+        # Try both import forms: fully-qualified (pytest from repo root)
+        # and sibling-relative (run.py from inside examples/teaching_colony/).
         try:
             from examples.teaching_colony.colony.logic.classifier import (
                 classify_action as _classify,
             )
-
+            return _classify(action, context)
+        except ImportError:
+            pass
+        try:
+            from colony.logic.classifier import (  # type: ignore
+                classify_action as _classify,
+            )
             return _classify(action, context)
         except Exception:
-            # Fallback: return a safe default so the adapter can still run.
+            # Final fallback — safe default so the adapter can still run,
+            # but this should NEVER fire in practice. If it does, the
+            # §7 enforcement will over-report and fail safe.
             return Classification(
-                blast_radius=action.get("blast_radius", "unknown"),
-                review_regime=action.get("review_regime", "human-in-the-loop"),
-                action_class=action.get("action_class", "unknown"),
-                actor_trust_tier=context.get("actor_trust_tier", "unknown"),
+                blast_radius=action.get("blast_radius", "Colony-wide"),
+                review_regime="Governance Council",
+                action_class=action.get("class", "unknown"),
+                actor_trust_tier=context.get("actor_trust_tier", "Observing"),
             )

@@ -40,11 +40,16 @@ classification — the contract would stop being enforceable.
 
 More than eight and the contract starts duplicating itself. Earlier drafts
 included a separate `read_event` operation alongside `record_event`; we
-removed it because Event Memory queries are a specialised form of
-`read_kb` in every substrate we tried. We resisted splitting `update_mirror`
-into `propose_mirror_change` and `commit_mirror_change` for the same
-reason: the co-signer argument is what makes an update legitimate, and
-splitting the operation lets callers forget to co-sign.
+removed it because direct JSONL scans of `state/events.jsonl` are trivial
+and adding a contract operation for them would have forced every substrate
+to expose a query language it doesn't actually need at this scale. A v2
+substrate running against a real event store may want to add `read_event`
+back; v1.7 doesn't.
+
+We resisted splitting `update_mirror` into `propose_mirror_change` and
+`commit_mirror_change` for a related reason: the co-signer argument is
+what makes an update legitimate, and splitting the operation lets callers
+forget to co-sign.
 
 Eight is the smallest set that lets an Agent Colony run end-to-end —
 dispatch work, remember what happened, read and write its knowledge, change
@@ -63,22 +68,71 @@ required. The `classifier_version` field on every Mirror records which
 classifier version its trust tier assumes, so a classifier change is
 itself a Colony-wide event requiring governance review.
 
+## The semantic change DSL
+
+`update_mirror` accepts a `changes` dict that uses a small semantic DSL
+rather than a literal YAML patch. This is what v1.7.0 Fix 2 introduced
+(see [`docs/review-2026-04-14.md`](docs/review-2026-04-14.md) for the
+v1.6.x bug that motivated it: a literal merge put a new capability at
+the wrong place in the Mirror and a reader running the example saw it
+land in an untouched `capability_add:` stanza at the root).
+
+Recognised keys:
+
+| Key | Value type | Effect |
+|-----|-----------|--------|
+| `add_capability` | `{name, description, maturity, ...}` | Appends to `capabilities.capabilities[]`, skipping if a capability with the same name already exists. |
+| `remove_capability` | `str` (the name) | Removes by name from `capabilities.capabilities[]`. |
+| `patch` | `dict` | Deep-merges the value onto the Mirror (the pre-v1.7 default behaviour, kept for field-level updates). |
+
+Any other top-level key falls through to deep-merge semantics for
+backwards compatibility, but new callers should use the DSL keys
+explicitly. An unrecognised semantic key raises `ValueError`.
+
 ## How `update_mirror` enforces the Comprehension Contract
 
-`update_mirror` takes a `co_signer` argument. The adapter must:
+`update_mirror` takes a `co_signer` argument. The adapter MUST perform
+all of the following checks before writing, and each check MUST raise a
+`ContractViolation` subclass on failure. v1.6.x claimed these checks
+were performed but in fact did none of them — v1.7.0 makes them real
+and adds four tests in `tests/test_contract_enforcement.py` that provoke
+each check in turn:
 
-1. Call `classify_action({'class': 'mirror_capability_add', ...}, context)`
-   to determine the review regime.
-2. Reject the call if the change violates the agent's `blast_radius_ceiling`
-   or its `self_evolution_scope.forbidden` list.
-3. Verify the co-signer's Mirror has a fresh pre-registered policy for
-   the action class, or escalate to the required review regime.
-4. Compute `pre_state_hash` (e.g. sha256 of the YAML file).
-5. Apply the change and compute `post_state_hash`.
-6. Emit an `AuditEntry` and also record an event via `record_event`.
+1. **Co-signer presence.** An empty `co_signer` raises `UnauthorisedCoSign`
+   immediately. No write proceeds without a named co-signer.
+2. **Classify the action.** Call `classify_action({'class': <inferred>}, {'actor_trust_tier': target.trust_tier})`.
+   The action class is inferred from the change DSL (`add_capability` →
+   `mirror_capability_add`, etc.). The resulting `Classification` drives
+   the next checks.
+3. **Blast-radius ceiling.** If the classifier's blast radius exceeds
+   the target's `comprehension_contract.blast_radius_ceiling` (compared
+   on the ordered ladder Local → Inter-agent → Colony-wide → Boundary-crossing),
+   raise `BlastRadiusViolation`. The target cannot authorise a change
+   whose blast radius exceeds its own declared ceiling.
+4. **Forbidden list.** If the change description matches any entry in
+   `target.autonomy.self_evolution_scope.forbidden`, raise
+   `ForbiddenEvolution`. Entries that explicitly exempt co-signed paths
+   (e.g. "Add new teaching topics without a valid Peer Review co-sign
+   from Sentinel") are skipped when a `co_signer` is present; the
+   UnauthorisedCoSign check below then verifies that the co-sign is
+   actually valid.
+5. **Co-signer policy freshness.** Read the co-signer's Mirror. Check
+   that `co_signer.comprehension_contract.pre_registered_policies`
+   contains an entry for the action class (or the generic
+   `graduation_cosign` class for capability adds) with
+   `freshness: current`. If not, raise `UnauthorisedCoSign`.
+6. **Write.** Compute `pre_state_hash` (sha256 of the YAML file, first
+   16 chars). Apply the change via the semantic DSL. Compute
+   `post_state_hash`. Append to the target's `autonomy.evolution_log`
+   with actor, co_signer, and both hashes. Write the updated Mirror
+   to the `state/mirrors/` overlay (v1.7.0 Fix 5 — never to
+   `colony/mirrors/`, which remains the read-only baseline).
+7. **Emit.** Record a `mirror.updated` event via `record_event`.
 
 The caller never bypasses this sequence because it cannot write to the
-Mirror directly — the substrate owns Mirror storage.
+Mirror directly — the substrate owns Mirror storage. Any adapter that
+skips step 3, 4, or 5 to satisfy a test is violating the Comprehension
+Contract.
 
 ## Two substrates, two implementations
 

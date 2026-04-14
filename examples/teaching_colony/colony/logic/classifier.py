@@ -112,9 +112,18 @@ def classify_action(action: dict, context: dict) -> Classification:
     action_class = action.get('class', 'unknown')
     actor_trust_tier = context.get('actor_trust_tier', 'Observing')
 
-    blast_radius = action.get('blast_radius') or ACTION_BLAST_RADIUS.get(
-        action_class, 'Local'
-    )
+    # Fix 6 — gate caller-supplied blast_radius.
+    # If the action class is in ACTION_BLAST_RADIUS, the table wins
+    # regardless of what the caller passes. Callers cannot downgrade
+    # the blast radius of a known action class (the §7 Comprehension
+    # Contract property "callers cannot classify their own actions").
+    # Caller override only applies for action classes the table does
+    # not know about — in which case we still prefer the over-report
+    # default of 'Local' if nothing is supplied.
+    if action_class in ACTION_BLAST_RADIUS:
+        blast_radius = ACTION_BLAST_RADIUS[action_class]
+    else:
+        blast_radius = action.get('blast_radius') or 'Local'
 
     # Step 1 — Constitutional
     if action_class in CONSTITUTIONAL_ACTIONS:

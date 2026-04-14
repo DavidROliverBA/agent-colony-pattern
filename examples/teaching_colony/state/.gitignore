@@ -4,3 +4,6 @@ colony-snapshot.yaml
 graduation-checklists/
 kb/*.md
 !kb/beekeeping.md
+# v1.7.0 Fix 5 — Mirror writes land in state/mirrors/ as overlays.
+# These are runtime state, not part of the committed example.
+mirrors/

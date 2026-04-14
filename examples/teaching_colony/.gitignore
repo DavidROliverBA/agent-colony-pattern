@@ -1,0 +1,5 @@
+# Python bytecode — never commit
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/

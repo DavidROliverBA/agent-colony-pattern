@@ -67,13 +67,20 @@ def test_dispatch_teacher_beekeeping(adapter: ManagedAgentsAdapter) -> None:
 
 def test_dispatch_teacher_agent_colony(adapter: ManagedAgentsAdapter) -> None:
     result = adapter.dispatch_agent(
-        "teacher", {"task": "teach", "topic": "agent-colony-pattern"}
+        "teacher", {"topic": "agent-colony-pattern", "question": "what is it?"}
     )
     assert result["mock"] is True
+    # v1.7.0: the Agent Colony answer must use the beekeeping metaphor
+    # AND reference the Mirror — that's the substance of the graduation claim.
+    answer_lower = result["answer"].lower()
+    assert "mirror" in answer_lower, (
+        "Agent Colony answer must mention Mirror — see §7 graduation"
+    )
     assert (
-        "bees" in result["answer"].lower()
-        or "hive" in result["answer"].lower()
-        or "beehive" in result["answer"].lower()
+        "bees" in answer_lower
+        or "hive" in answer_lower
+        or "beehive" in answer_lower
+        or "bee colony" in answer_lower
     )
 
 
@@ -86,16 +93,21 @@ def test_dispatch_librarian_curate(adapter: ManagedAgentsAdapter) -> None:
 
 
 def test_dispatch_librarian_coverage(adapter: ManagedAgentsAdapter) -> None:
-    result = adapter.dispatch_agent("librarian", {"task": "compute_coverage"})
+    # v1.7.0: driver uses `action` key, not `task`, for coverage
+    result = adapter.dispatch_agent(
+        "librarian", {"action": "compute_coverage", "topic": "agent-colony-pattern"}
+    )
     assert "agent-colony-pattern" in result["topics"]
-    assert result["topics"]["agent-colony-pattern"]["docs"] == 5
+    assert result["topics"]["agent-colony-pattern"]["docs"] == 7
+    assert result.get("coverage_score", 0) > 0.5
 
 
 def test_dispatch_librarian_propose_capability(
     adapter: ManagedAgentsAdapter,
 ) -> None:
     result = adapter.dispatch_agent("librarian", {"task": "propose_capability"})
-    assert result["agent_id"] == "teacher"
+    # v1.7.0: the canonical agent id is the long form `teacher-agent`
+    assert result["agent_id"] == "teacher-agent"
     assert result["capability"] == "teach_agent_colony_pattern"
 
 
@@ -216,17 +228,22 @@ def test_live_update_mirror_xfail(live_adapter: ManagedAgentsAdapter) -> None:
     pytest.xfail("Gap — update_mirror live path pending Sub-agent D")
 
 
-def test_live_write_kb_xfail(live_adapter: ManagedAgentsAdapter) -> None:
-    with pytest.raises(NotImplementedError):
-        live_adapter.write_kb(
-            topic="beekeeping", content="x", provenance="y"
-        )
-    pytest.xfail("Gap — write_kb live path pending Sub-agent D")
+def test_live_write_kb_is_local(live_adapter: ManagedAgentsAdapter) -> None:
+    """v1.7.0: write_kb is now a local-file op regardless of mode — matches
+    the Claude Code substrate. The mock/live distinction only applies to
+    dispatch_agent and update_mirror (live), which still require API calls.
+    """
+    live_adapter.write_kb(topic="beekeeping", content="x", provenance="y")
+    slug_path = live_adapter.kb_dir / "beekeeping.md"
+    assert slug_path.exists()
 
 
-def test_live_co_sign_xfail(live_adapter: ManagedAgentsAdapter) -> None:
-    with pytest.raises(NotImplementedError):
-        live_adapter.co_sign(
-            "capability_graduation", "librarian", "sentinel"
-        )
-    pytest.xfail("Gap — co_sign live path pending Sub-agent D")
+def test_live_co_sign_is_local_policy(live_adapter: ManagedAgentsAdapter) -> None:
+    """v1.7.0: co_sign is colony policy, not a Managed Agents API call —
+    it works in both mock and live mode and emits cosign.granted.
+    """
+    sig = live_adapter.co_sign(
+        "graduation_cosign", "librarian-agent", "sentinel-agent"
+    )
+    assert sig.granted is True
+    assert sig.action_class == "graduation_cosign"

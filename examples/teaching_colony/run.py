@@ -70,14 +70,23 @@ def load_adapter(substrate: str, mock: bool) -> SubstrateContract:
 
 
 def reset_state(state_dir: str) -> None:
-    """Wipe runtime state but keep seeded files (managed by .gitignore)."""
+    """Wipe runtime state but keep seeded files (managed by .gitignore).
+
+    v1.7.0 Fix 5 — also wipes state/mirrors/ (the overlay where Mirror
+    updates now live). This is what makes --reset actually idempotent
+    across runs: you can run the example, inspect state/, run --reset,
+    run again, and the observable state will be identical. In v1.6.x
+    the Mirror pollution in colony/mirrors/ meant repeated runs grew
+    the evolution_log monotonically.
+    """
     for name in ("events.jsonl", "colony-snapshot.yaml"):
         p = os.path.join(state_dir, name)
         if os.path.exists(p):
             os.remove(p)
-    grad = os.path.join(state_dir, "graduation-checklists")
-    if os.path.isdir(grad):
-        shutil.rmtree(grad)
+    for subdir in ("graduation-checklists", "mirrors", "kb"):
+        d = os.path.join(state_dir, subdir)
+        if os.path.isdir(d):
+            shutil.rmtree(d)
 
 
 def now() -> str:
@@ -157,11 +166,8 @@ def run_lifecycle(adapter: SubstrateContract) -> dict:
             content=learning.get("kb_content", f"[seed for cycle {cycle}]"),
             provenance=f"corpus/pattern/{corpus_file}",
         )
-        emit(
-            "kb_write",
-            "librarian-agent",
-            {"topic": "agent-colony-pattern", "provenance": corpus_file},
-        )
+        # v1.7.0 Fix 4: the adapter's write_kb emits 'kb.written' itself.
+        # The driver no longer emits a duplicate 'kb_write' event.
 
     # 4. Detect — Equilibrium checks overlap, Librarian computes coverage
     equilibrium_result = adapter.dispatch_agent("equilibrium-agent", {"action": "scan"})
@@ -216,22 +222,15 @@ def run_lifecycle(adapter: SubstrateContract) -> dict:
         actor="librarian-agent",
         co_signer="sentinel-agent",
     )
-    emit(
-        "cosign",
-        "sentinel-agent",
-        {
-            "action_class": signature.action_class,
-            "granted": signature.granted,
-            "reason": signature.reason,
-        },
-    )
+    # v1.7.0 Fix 4: the adapter's co_sign emits 'cosign.granted' itself.
+    # The driver no longer emits a duplicate 'cosign' event.
 
     # 7. Acquire — Teacher's Mirror is updated with the new capability
     if signature.granted:
         audit = adapter.update_mirror(
             agent_id="teacher-agent",
             changes={
-                "capability_add": {
+                "add_capability": {
                     "name": "teach_agent_colony_pattern",
                     "description": "Teach the Agent Colony pattern using beekeeping as a metaphor.",
                     "maturity": "experimental",
@@ -239,15 +238,8 @@ def run_lifecycle(adapter: SubstrateContract) -> dict:
             },
             co_signer="sentinel-agent",
         )
-        emit(
-            "mirror_update",
-            "teacher-agent",
-            {
-                "action": audit.action,
-                "pre": audit.pre_state_hash,
-                "post": audit.post_state_hash,
-            },
-        )
+        # v1.7.0 Fix 4: the adapter's update_mirror emits 'mirror.updated'
+        # itself. The driver no longer emits a duplicate 'mirror_update' event.
         summary["capability_changes"].append(
             {
                 "agent": "teacher-agent",

@@ -38,18 +38,12 @@ autonomy:
     allowed:
     - Improve answer phrasing heuristics
     forbidden:
-    - "Add new teaching topics autonomously \u2014 must go through graduation"
+    - "Add new teaching topics without a valid Peer Review co-sign from Sentinel"
     - Write to the colony knowledge base
   evolution_budget:
     max_self_updates_before_redesign: 3
     security_upgrades_exempt: true
-  evolution_log:
-  - action: update_mirror
-    actor: teacher-agent
-    co_signer: sentinel-agent
-    pre_state_hash: ad21cc56127f77c6
-    timestamp: '2026-04-14T09:42:18.825698+00:00'
-    post_state_hash: 5883d4619018eb0c
+  evolution_log: []
 security:
   threat_model:
   - "Answer fabrication \u2014 teaching topics that are not in the KB"
@@ -96,7 +90,11 @@ comprehension_contract:
   trust_tier: Observing
   pre_registered_policies: []
   audit_rate: 1.0
-  blast_radius_ceiling: Inter-agent
+  # v1.7.0: ceiling raised from Inter-agent to Colony-wide so graduation
+  # (which is a Colony-wide action by default per §7.4) can succeed under
+  # a valid Peer Review co-sign. Day-to-day operations remain Local
+  # /Inter-agent; the ceiling is the MAXIMUM permitted, not the norm.
+  blast_radius_ceiling: Colony-wide
   classifier_version: '1.0'
 nfrs:
   inherited:
@@ -127,7 +125,3 @@ valuation:
     last_sign_off: '2026-04-14'
     sign_off_count: 1
     outstanding_challenges: 0
-capability_add:
-  name: teach_agent_colony_pattern
-  description: Teach the Agent Colony pattern using beekeeping as a metaphor.
-  maturity: experimental

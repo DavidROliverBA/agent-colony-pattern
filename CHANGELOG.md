@@ -5,6 +5,66 @@ All notable changes to the Agent Colony Pattern are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] — 2026-04-14
+
+### Honest Teaching Colony — response to external review
+
+v1.7.0 is a correctness release for the Teaching Colony example. It responds to an external review ([`examples/teaching_colony/docs/review-2026-04-14.md`](examples/teaching_colony/docs/review-2026-04-14.md)) which found six concrete bugs in v1.6.x and described the v1.6.x example as *"a 4,300-line artefact whose headline demonstration doesn't hold up under a single run-and-inspect"*. Every finding is addressed.
+
+### What was broken in v1.6.x
+
+1. **The mock dispatch path was dead code.** `run.py` called the adapter with one input shape; the adapter's canned responses keyed on a different shape. Both Teacher dispatches returned `{ok: True}`. The README's headline claim — "Teacher answers a question it could not have answered at boot time" — was false.
+2. **The capability addition landed in the wrong place in the Mirror.** The driver passed `{"capability_add": {...}}` and the adapter's deep-merge wrote a new top-level YAML key instead of appending to `capabilities.capabilities[]`. A reader who followed the README's instruction to `cat colony/mirrors/teacher-agent.yaml` saw Teacher still only teaching beekeeping.
+3. **The Comprehension Contract was not enforced anywhere.** `substrate-contract.md` promised `update_mirror` would check `blast_radius_ceiling`, `self_evolution_scope.forbidden`, and co-signer policy freshness. None of those checks existed in the adapter. The demonstration the §7 contract was supposed to make — that governance *bites* — was ceremonial.
+4. **The event stream was duplicated.** Driver emitted `kb_write`/`cosign`/`mirror_update`; adapter emitted `kb.written`/`cosign.granted`/`mirror.updated`. Same logical actions, two names each.
+5. **Mirror writes polluted git-tracked files.** The adapter wrote to `colony/mirrors/`, so every run left `teacher-agent.yaml` modified in the reader's working copy.
+6. **The classifier accepted caller-supplied `blast_radius` overrides.** A confused or malicious caller could downgrade a Colony-wide action to Local.
+
+### What v1.7.0 changes
+
+**Fix 6 — Classifier gate.** For any action class in `ACTION_BLAST_RADIUS`, the table wins regardless of caller input. Caller override only applies to action classes the table doesn't know. Closes the §7 property "callers cannot classify their own actions".
+
+**Fix 2 — Semantic change DSL.** `update_mirror` now accepts `{add_capability: {...}}`, `{remove_capability: "name"}`, `{patch: {...}}` as explicit semantic instructions. The adapter interprets these as operations on `capabilities.capabilities[]`, not as literal YAML keys. Unrecognised top-level keys fall through to deep-merge for backwards compatibility.
+
+**Fix 1 — Wire the mock dispatch path.** `_mock_response` normalises the agent id (strips `-agent` suffix) and keys on the actual input shape the lifecycle driver sends. The canned beekeeping and Agent Colony answers now fire. Their texts include the words "worker" and "Mirror" respectively — the words the new end-to-end test asserts against.
+
+**Fix 3 — Comprehension Contract enforcement in `update_mirror`.** Adapters now perform six checks before writing: co-signer presence, classifier invocation, blast-radius-ceiling check, forbidden-list check, co-signer policy freshness, and only then hash-merge-write. Each check raises a specific `ContractViolation` subclass (`BlastRadiusViolation`, `ForbiddenEvolution`, `UnauthorisedCoSign`). Four new tests in `tests/test_contract_enforcement.py` provoke each check in turn. Teacher's `forbidden` list wording and `blast_radius_ceiling` were updated so the happy-path graduation succeeds under valid Peer Review co-sign — the previous wording contradicted the demo.
+
+**Fix 4 — Single event ownership.** Adapters own adapter-internal events (`kb.written`, `mirror.updated`, `cosign.granted`, `dispatch.complete`). The driver stopped emitting duplicates (`kb_write`, `cosign`, `mirror_update`). Both substrates now emit the same event types in the same order for the same lifecycle — which is what makes the portability parity tests *finally* viable.
+
+**Fix 5 — Mirror writes land in `state/mirrors/`.** `colony/mirrors/` is read-only-at-rest. Both adapters prefer a `state/mirrors/<agent>.yaml` overlay when reading and always write to the overlay. `--reset` wipes `state/mirrors/` along with events and checklists. Running the example no longer pollutes git-tracked files.
+
+### New tests (the v1.7.0 testing innovation)
+
+- **`tests/test_walkthrough.py`** — end-to-end test that runs the lifecycle driver and asserts observable properties of `state/events.jsonl` and the Teacher Mirror. Seven assertions covering the README's walkthrough promises: beekeeping answer contains "worker"; Agent Colony answer contains "Mirror"; Teacher has both capabilities under `capabilities.capabilities[]`; no floating `capability_add` key; classification event with `review_regime: Peer Review`; `cosign.granted` event with `granted: True`; `mirror.updated` event with differing pre/post hashes. **This test is the mechanism that prevents tests-vs-demo drift in future releases.**
+- **`tests/test_contract_enforcement.py`** — five tests: happy-path graduation succeeds; `BlastRadiusViolation` raised when ceiling is exceeded; `ForbiddenEvolution` raised when the forbidden list names the change; `UnauthorisedCoSign` raised when co-signer has no matching pre-registered policy; `UnauthorisedCoSign` raised when `co_signer` is empty.
+
+### Portability parity — v1.6.x skips become v1.7.0 passes
+
+The two portability tests that were marked `skip` in v1.6.x — `test_event_log_types_match` and `test_teacher_mirror_final_state_matches` — now pass. Both substrates produce byte-identical event sequences and Mirror final states in mock mode. The 42-vs-22 event-count gap from v1.6.1's honest note is gone: both substrates now emit 22 events (the adapter-owned set).
+
+### Other changes
+
+- `examples/teaching_colony/docs/review-2026-04-14.md` — the external review preserved verbatim as the before-state that v1.7.0 corrects.
+- `examples/teaching_colony/colony/corpus/README.md` — new snapshot note explaining why the corpus is a copy (not a symlink), what it contains, how to refresh it, and what the snapshot date is.
+- `examples/teaching_colony/substrate-contract.md` — the enforcement paragraph is rewritten to name the six checks, and the change DSL gets its own section. The "Event Memory queries are a specialised form of `read_kb` in every substrate we tried" claim (which was aspirational — neither adapter implemented it) is replaced with an honest statement that direct JSONL scans are fine for v1.7.0 and that a v2 substrate with a real event store may want to add `read_event` back.
+- `CHANGELOG.md`, `CITATION.cff`, repo-root `README.md` — v1.7.0.
+
+### Known gaps after v1.7.0
+
+- Live-mode Managed Agents `dispatch_agent` and `update_mirror` still raise `NotImplementedError` (2 xfails in the test suite). These require the Managed Agents research-preview allowlist and real API calls — v1.7.x or v1.8+. Mock-mode portability parity is fully achieved.
+- The Managed Agents live-mode `write_kb` and `co_sign` were previously xfailed but v1.7.0 turns them into colony-policy operations that work in both modes (KB writes are local file ops; co-sign is pre-registered-policy lookup). These two xfails are removed and replaced with positive tests.
+
+### Verification
+
+```
+36 passed, 2 xfailed in 0.74s
+```
+
+The 2 xfails are the remaining live-mode `dispatch_agent` and `update_mirror` operations — honest future work. Everything else is green.
+
+---
+
 ## [1.6.1] — 2026-04-14
 
 ### Added
