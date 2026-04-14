@@ -1,5 +1,7 @@
 # Equilibrium Playground
 
+> **Audience lens:** Operator — you are looking at colony health in a dashboard, with knobs to adjust. You don't need to read the specification to use this. If you want to see how the mechanisms work on disk, that is the Beekeeper lens — see [`../hello-colony/`](../hello-colony/) and [`../hello-colony-runtime/`](../hello-colony-runtime/).
+
 A self-contained browser visualisation of the Agent Colony Equilibrium System. No build step, no server required — open `index.html` in any browser.
 
 ## How to open

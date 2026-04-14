@@ -1,10 +1,12 @@
 # Hello-Colony Live Runtime
 
+> **Audience lens:** Beekeeper — you are watching the mechanisms execute. If you want the dashboard view instead, open [`../equilibrium-playground/`](../equilibrium-playground/) (Operator lens).
+
 A deterministic Python simulation demonstrating the Agent Colony pattern working as code. No LLM calls. No external services. All events are scripted from the hello-colony example data.
 
 ## What this is
 
-The runtime loads the hello-colony agent YAML files, validates them against the v0.1 Agent Mirror schema, and simulates four colony events: agent registration, equilibrium check, security patch co-sign, and graduation checklist query. Everything is deterministic — the same input always produces the same output.
+The runtime loads the hello-colony agent YAML files, validates them against the v0.2.0 Agent Mirror schema, and simulates four colony events: agent registration, equilibrium check, security patch co-sign, and graduation checklist query. Everything is deterministic — the same input always produces the same output.
 
 This is not a full Agent Colony implementation. It is a Level 1 demonstration that shows the data structures working and the event logic running.
 

@@ -1,5 +1,7 @@
 # Hello Colony — A Worked Example
 
+> **Audience lens:** Beekeeper — you are reading Mirror files, graduation checklists, and colony snapshots. If you are not yet a Beekeeper, start with the [examples README](../README.md) or the [*It takes a village*](../../knowledge-base/writings/2026-04-12-it-takes-a-village.md) Newcomer introduction.
+
 This directory contains a minimal worked example of the Agent Colony pattern. It demonstrates how five agents work together as a coherent colony, each described by a filled Agent Mirror YAML file.
 
 This is a fictional example, not a running system. It exists to make the abstract specification concrete — to show what the pattern looks like in practice, what internally consistent cross-references between agents look like, and how self-evolution is recorded.

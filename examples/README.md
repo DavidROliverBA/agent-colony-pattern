@@ -1,14 +1,32 @@
 # Examples
 
-This directory contains example implementations and demonstrations of the Agent Colony pattern.
+This directory contains example implementations and demonstrations of the Agent Colony pattern. Each example is pitched at a specific audience lens (see Principle 7 in the specification — *Accessibility through abstraction*).
+
+## Lens map
+
+Which example should you start with? It depends on which lens you are currently at. Lenses are sequential — most people traverse Newcomer → Observer → Operator → Beekeeper → Architect — but you can drop in at whichever depth you need.
+
+| Your lens | Where to start | What you'll see |
+|-----------|----------------|------------------|
+| **Newcomer** | [*It takes a village*](../knowledge-base/writings/2026-04-12-it-takes-a-village.md) | The metaphor. No jargon, no mechanisms. |
+| **Observer** | (no repo artefact — invisibility is the point) | If you're an Observer, you don't need the examples at all. |
+| **Operator** | [`equilibrium-playground/`](equilibrium-playground/) | A dashboard view of colony health. Open in a browser, no setup. |
+| **Beekeeper** | [`hello-colony/`](hello-colony/) then [`hello-colony-runtime/`](hello-colony-runtime/) | The mechanisms on disk (YAML Mirrors, graduation checklists) and the runtime that operates on them. |
+| **Architect** | [`../specification.md`](../specification.md) | The substrate. Return here once you've seen the mechanisms run. |
+
+The canonical artefacts mapped to each lens are defined in `specification.md` §1 (Audience Lenses). This repository's conformance claim against Principle 7 is exactly this mapping.
 
 ## hello-colony
+
+**Audience lens:** Beekeeper
 
 **[hello-colony/](hello-colony/)** — The canonical worked example. Five agents defined with full Agent Mirror YAML files: registry-agent, equilibrium-agent, sentinel-agent, chronicler-agent, and domain-agent-finance. Includes a pre/post-evolution pair (registry-agent v1.0 and v1.1) and a colony snapshot.
 
 In v1.3.0, all six agent definitions were extended with Comprehension Contract fields (trust tier, NFRs, valuation, critical path position) and a graduation checklist for the finance agent's v1.0→v1.1 path.
 
 ## hello-colony-runtime
+
+**Audience lens:** Beekeeper
 
 **[hello-colony-runtime/](hello-colony-runtime/)** — A deterministic Python simulation demonstrating the Agent Colony pattern working as code. Loads the hello-colony agent YAML files, validates them against the v0.2.0 schema, and simulates four colony events: bootstrap, equilibrium check, security patch, and graduation query. No LLM calls.
 
@@ -20,6 +38,8 @@ python runtime.py
 
 ## equilibrium-playground
 
+**Audience lens:** Operator
+
 **[equilibrium-playground/](equilibrium-playground/)** — A self-contained browser visualisation of the Equilibrium System. An overlap matrix heatmap with threshold sliders, add/remove agent controls, and an inject-workload button that simulates capability accretion. No build step — just open `index.html`.
 
 ```bash
@@ -27,5 +47,7 @@ open equilibrium-playground/index.html
 ```
 
 ## demonstration-options
+
+**Audience lens:** Architect
 
 **[demonstration-options.md](demonstration-options.md)** — Design memo of ten options for building visual demonstrations of the pattern, with purpose-fit matrix and three recommended combinations at different ambition levels.
