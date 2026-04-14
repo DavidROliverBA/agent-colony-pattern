@@ -101,7 +101,16 @@ A summary table listing all six agents, their capabilities, and any capability c
 
 ```bash
 # The append-only event log — every colony event, in order
-cat state/events.jsonl | python -m json.tool
+cat state/events.jsonl | python3 -m json.tool
+
+# Summary of event types
+python3 -c "
+import json
+from collections import Counter
+c = Counter(json.loads(l)['type'] for l in open('state/events.jsonl'))
+for t, n in sorted(c.items()): print(f'  {n:3d}  {t}')
+print('total:', sum(c.values()))
+"
 
 # The updated Teacher Mirror — evolution_log has a new entry
 cat colony/mirrors/teacher-agent.yaml
@@ -114,7 +123,9 @@ cat state/graduation-checklists/*.yaml
 ls state/kb/
 ```
 
-You should find a `graduation.approved` event near the end of `events.jsonl`, a `mirror.updated` event with non-empty `pre_state_hash` and `post_state_hash` fields, and a new entry in Teacher's `autonomy.evolution_log`.
+On the Claude Code substrate you should see ~42 events covering 14 unique event types, including `graduation_checklist` (the checklist being generated), `cosign.granted` (Sentinel's co-signature), `mirror.updated` with non-empty `pre_state_hash` and `post_state_hash` fields in its payload, and a new entry in Teacher's `autonomy.evolution_log`. The exact numbers may drift as the adapter evolves; the key thing is that all three — the checklist, the co-signature, and the Mirror update with hashes — appear in order.
+
+> **Known follow-up (v1.7+):** the Claude Code adapter writes Mirror updates back to `colony/mirrors/` which is git-tracked. Running the example locally will therefore leave `teacher-agent.yaml` modified in your working copy. Run `git restore examples/teaching_colony/colony/mirrors/teacher-agent.yaml` to revert before committing anything else. The proper fix — moving Mirror writes to `state/` or making the adapter copy-on-write — is tracked for v1.7+.
 
 ### Run 2 — reset and re-run to verify determinism
 
@@ -145,12 +156,16 @@ This is the portability claim made concrete. The identical six Agent Mirrors, th
 
 The same summary table, the same capability change on Teacher, the same co-signer. The underlying Python code in `substrates/managed_agents/adapter.py` is structurally different from `substrates/claude_code/adapter.py` — different imports, different class, different mock response plumbing — but the observable *graduation* is identical. That is Principle 2 (*Identity over implementation*) and Principle 4 (*Longevity by design*) in running code for the first time.
 
-**One thing you will notice is different — the raw event count.** At v1.6.0, Claude Code emits roughly twice as many events as Managed Agents for the same lifecycle. This is not noise; it is the known gap documented in [`substrates/managed_agents/gaps.md`](substrates/managed_agents/gaps.md). The Managed Agents mock does not emit `dispatch.complete` events, its mock `update_mirror` is a no-op (so no `mirror.updated` event with hashes is written), and its mock `write_kb` is also a no-op. Consequently:
+**One thing you will notice is different — the raw event count.** Claude Code emits about 42 events; Managed Agents emits about 22. The 20-event difference is not noise. The Claude Code adapter emits additional events from inside its own operations — `dispatch.complete` for every agent dispatch, `mirror.updated` on every mirror write, `kb.written` on every KB entry, `cosign.granted` when Sentinel signs — on top of the 22 events the substrate-independent lifecycle driver emits. The Managed Agents adapter's mock operations are currently no-ops for `update_mirror`, `write_kb`, and `co_sign` (no side effects, no events), and it does not emit a `dispatch.complete` event from `dispatch_agent`. So you see only the 22 driver events.
 
-- Teacher's Mirror on disk is **not** updated on a Managed Agents mock run — the graduation event is recorded but the state change is not persisted. If you `cat colony/mirrors/teacher-agent.yaml` after a Managed Agents run, it looks unchanged.
+The driver events on their own are enough to observe the graduation: both substrates emit `classification`, `cosign`, `graduation_checklist`, `mirror_update`, and the capability-change summary. The adapter-internal events are observability richness, not the graduation proof.
+
+**Consequences of the Managed Agents no-op mocks at v1.6.1:**
+
+- Teacher's Mirror on disk is **not** updated on a Managed Agents mock run. The graduation event is recorded in `events.jsonl` but the state change to the YAML file is not persisted. If you `cat colony/mirrors/teacher-agent.yaml` after a Managed Agents run, it looks unchanged.
 - The `state/kb/` directory is not populated by Managed Agents mock writes.
 
-This is why the portability parity tests for full event-log sequence and Mirror final-state equality are marked `skip` in v1.6.0 with a reason pointing at `gaps.md`. The v1.6.0 portability claim rests on the parts that *can* be asserted today: the same six Mirrors load on both substrates, the Structural Classifier is byte-identical across them, both complete their mock lifecycles end-to-end without raising, and both record the same observable graduation in their event logs. Full parity — meaning byte-for-byte event sequences and byte-for-byte Mirror final states — is a v1.7+ deliverable.
+This is why the portability parity tests for full event-log sequence and Mirror final-state equality are marked `skip` in v1.6.x with a reason pointing at `gaps.md`. The v1.6.x portability claim rests on the parts that *can* be asserted today: the same six Mirrors load on both substrates, the Structural Classifier is byte-identical across them, both complete their mock lifecycles end-to-end without raising, and both record the same observable graduation in their driver event logs. Full parity — meaning byte-for-byte event sequences and byte-for-byte Mirror final states — is a v1.7+ deliverable.
 
 This is the honest version of the portability claim. If you see it and think "wait, Claude Code has 42 events and Managed Agents has 22, that's not the same colony running" — you are correct to notice, and the example does not hide it.
 
