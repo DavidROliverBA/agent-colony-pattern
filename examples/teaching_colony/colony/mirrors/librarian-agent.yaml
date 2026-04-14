@@ -1,0 +1,139 @@
+identity:
+  name: librarian-agent
+  version: "1.0.0"
+  purpose: "Curates the colony knowledge base by reading the corpus, extracting concepts, and proposing capability growth for domain agents."
+  owner: teaching-colony-domain
+  lineage:
+    - version: "1.0.0"
+      timestamp: "2026-04-14T00:00:00Z"
+      what_changed: "Initial release for the Teaching Colony example."
+      why: "Bootstrap a proposer of capability growth into the colony."
+      triggered_by: human
+
+capabilities:
+  capabilities:
+    - name: read_corpus
+      description: "Read raw documents from the colony corpus directory."
+      maturity: beta
+    - name: extract_concepts
+      description: "Extract named concepts from corpus documents."
+      maturity: beta
+    - name: write_kb
+      description: "Write a topic entry to the colony knowledge base."
+      maturity: beta
+    - name: compute_coverage
+      description: "Compute a 0..1 coverage score of a topic across the corpus."
+      maturity: beta
+    - name: propose_capability
+      description: "Propose a new capability for a domain agent, backed by coverage evidence."
+      maturity: experimental
+  contracts:
+    input_schema: "local://teaching-colony/schemas/librarian-request-v1.json"
+    output_schema: "local://teaching-colony/schemas/librarian-response-v1.json"
+    sla:
+      availability: "99.5%"
+      p99_latency_ms: 300
+    error_behaviours:
+      - "Missing corpus file returns 404"
+      - "Invalid topic returns 400"
+  dependencies:
+    - registry-agent
+    - chronicler-agent
+  protocols:
+    - MCP
+
+autonomy:
+  autonomy_level: supervised
+  self_evolution_scope:
+    allowed:
+      - "Tune concept extraction heuristics"
+      - "Expand supported corpus file types"
+    forbidden:
+      - "Modify domain agent Mirrors directly — only propose"
+      - "Write outside the colony knowledge base"
+  evolution_budget:
+    max_self_updates_before_redesign: 3
+    security_upgrades_exempt: true
+  evolution_log: []
+
+security:
+  threat_model:
+    - "Corpus poisoning — accepting a tampered corpus file and writing false concepts to the KB"
+    - "Capability proposal flood — overwhelming the graduation review queue"
+  detection_capabilities:
+    - "Corpus file hash verification before read"
+    - "Proposal rate limiting"
+  escalation_process:
+    trigger: "Hash mismatch on corpus read or proposal rate > 5/minute"
+    notify:
+      - sentinel-agent
+    preauthorised_security_upgrades: true
+  last_security_upgrade:
+    date: "2026-04-14"
+    description: "Initial deployment — no prior upgrades."
+  security_dependencies:
+    - sentinel-agent
+
+lifecycle:
+  lifecycle_stage: deployed
+  birth_date: "2026-04-14T00:00:00Z"
+  last_active: "2026-04-14T00:00:00Z"
+  health_status: healthy
+  retirement_criteria:
+    - "Corpus curation no longer required"
+    - "Successor librarian promoted"
+
+relationships:
+  overlap_map:
+    - agent_name: teacher-agent
+      overlap_score: 0.18
+      assessment: review-needed
+      justification: "Both agents touch the KB. Librarian writes, Teacher reads — drift plausible if Teacher starts writing."
+  collaborators:
+    - registry-agent
+    - chronicler-agent
+    - teacher-agent
+  consumers:
+    - teacher-agent
+  critical_path:
+    structural: false
+    dynamic: false
+    structural_justification: "L3 domain agent. Colony operates without it; Librarian is a proposer of capability growth but not structurally load-bearing."
+
+comprehension_contract:
+  trust_tier: Observing
+  pre_registered_policies: []
+  audit_rate: 1.0
+  blast_radius_ceiling: Inter-agent
+  classifier_version: "1.0"
+
+nfrs:
+  inherited:
+    - id: colony-event-logging
+      source: constitutional_memory
+      version: "2026-04-14"
+  specific:
+    availability_target: "99.5%"
+    latency_p99_ms: 300
+    max_throughput_rps: 20
+    data_classification:
+      - internal
+    compliance: []
+
+valuation:
+  self:
+    nfr_compliance_rate: 1.0
+    last_evaluated: "2026-04-14"
+    evaluation_schedule_met: true
+  peer:
+    score: null
+    interaction_count: 0
+    calibration_status: under-calibrated
+  audit:
+    disagreement_rate: null
+    sample_count: 0
+    last_audit: null
+  human:
+    last_sign_off: "2026-04-14"
+    sign_off_count: 1
+    outstanding_challenges: 0

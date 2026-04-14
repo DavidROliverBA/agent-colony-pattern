@@ -1,0 +1,6 @@
+# Ignore runtime state except seeded initial files
+events.jsonl
+colony-snapshot.yaml
+graduation-checklists/
+kb/*.md
+!kb/beekeeping.md

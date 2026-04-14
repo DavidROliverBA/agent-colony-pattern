@@ -1,0 +1,143 @@
+identity:
+  name: sentinel-agent
+  version: "1.0.0"
+  purpose: "Immune system root — co-signs graduation events and security upgrades for the colony."
+  owner: teaching-colony-core
+  lineage:
+    - version: "1.0.0"
+      timestamp: "2026-04-14T00:00:00Z"
+      what_changed: "Initial release for the Teaching Colony example."
+      why: "Bootstrap the colony with an immune system from cycle 1."
+      triggered_by: human
+
+capabilities:
+  capabilities:
+    - name: cosign_graduation
+      description: "Co-sign a capability addition proposed by Librarian."
+      maturity: stable
+    - name: cosign_security_patch
+      description: "Co-sign a security upgrade under preauthorised policy."
+      maturity: stable
+    - name: anomaly_scan
+      description: "Scan Event Memory for anomalies and escalate."
+      maturity: stable
+  contracts:
+    input_schema: "local://teaching-colony/schemas/sentinel-request-v1.json"
+    output_schema: "local://teaching-colony/schemas/sentinel-response-v1.json"
+    sla:
+      availability: "99.9%"
+      p99_latency_ms: 300
+    error_behaviours:
+      - "Unknown action class returns 400 with explanation"
+      - "Stale pre-registered policy returns 409"
+  dependencies:
+    - registry-agent
+    - chronicler-agent
+  protocols:
+    - MCP
+
+autonomy:
+  autonomy_level: supervised
+  self_evolution_scope:
+    allowed:
+      - "Tune anomaly detection thresholds within approved ranges"
+    forbidden:
+      - "Grant co-signatures outside pre-registered policies"
+      - "Modify its own trust tier"
+  evolution_budget:
+    max_self_updates_before_redesign: 3
+    security_upgrades_exempt: true
+  evolution_log: []
+
+security:
+  threat_model:
+    - "Sentinel compromise — most consequential failure mode in the colony"
+    - "Co-sign forgery — attacker impersonates Sentinel to approve malicious actions"
+  detection_capabilities:
+    - "Mutual signature on every co-sign"
+    - "Cross-check against pre-registered policy freshness"
+  escalation_process:
+    trigger: "Any stale-policy co-sign attempt or signature mismatch"
+    notify:
+      - colony-core-team
+    preauthorised_security_upgrades: true
+  last_security_upgrade:
+    date: "2026-04-14"
+    description: "Initial deployment — no prior upgrades."
+  security_dependencies: []
+
+lifecycle:
+  lifecycle_stage: deployed
+  birth_date: "2026-04-14T00:00:00Z"
+  last_active: "2026-04-14T00:00:00Z"
+  health_status: healthy
+  retirement_criteria:
+    - "Colony retirement"
+    - "Successor immune-system agent promoted with verified overlap"
+
+relationships:
+  overlap_map:
+    - agent_name: equilibrium-agent
+      overlap_score: 0.04
+      assessment: healthy
+      justification: "Equilibrium proposes; Sentinel co-signs. No functional overlap."
+  collaborators:
+    - registry-agent
+    - chronicler-agent
+    - equilibrium-agent
+  consumers:
+    - registry-agent
+    - librarian-agent
+    - teacher-agent
+  critical_path:
+    structural: true
+    dynamic: false
+    structural_justification: "Immune system root. No graduation or security co-sign is possible without Sentinel."
+
+comprehension_contract:
+  trust_tier: Bounded
+  pre_registered_policies:
+    - policy_id: graduation-cosign-p001
+      action_class: graduation_cosign
+      blast_radius: Colony-wide
+      reviewed_date: "2026-04-14"
+      freshness: current
+    - policy_id: security-cosign-p001
+      action_class: patch_application_cosign
+      blast_radius: Colony-wide
+      reviewed_date: "2026-04-14"
+      freshness: current
+  audit_rate: 0.10
+  blast_radius_ceiling: Boundary-crossing
+  classifier_version: "1.0"
+
+nfrs:
+  inherited:
+    - id: colony-event-logging
+      source: constitutional_memory
+      version: "2026-04-14"
+  specific:
+    availability_target: "99.9%"
+    latency_p99_ms: 300
+    max_throughput_rps: 50
+    data_classification:
+      - internal
+    compliance: []
+
+valuation:
+  self:
+    nfr_compliance_rate: 1.0
+    last_evaluated: "2026-04-14"
+    evaluation_schedule_met: true
+  peer:
+    score: null
+    interaction_count: 0
+    calibration_status: under-calibrated
+  audit:
+    disagreement_rate: null
+    sample_count: 0
+    last_audit: null
+  human:
+    last_sign_off: "2026-04-14"
+    sign_off_count: 1
+    outstanding_challenges: 0

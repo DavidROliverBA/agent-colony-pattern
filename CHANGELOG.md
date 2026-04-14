@@ -5,6 +5,32 @@ All notable changes to the Agent Colony Pattern are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] — 2026-04-14
+
+### Added
+- **`examples/teaching_colony/`** — a six-agent substrate-portable Agent Colony that teaches the Agent Colony pattern, using beekeeping as the running pedagogical example. Six agents (Registry, Chronicler, Equilibrium, Sentinel, Librarian, Teacher), a colony knowledge base, a structural classifier, a graduation checklist generator, and a CLI lifecycle driver (`run.py`).
+- **`examples/teaching_colony/contract.py`** — `SubstrateContract` ABC defining the eight operations L4 owes L1–L3: `dispatch_agent`, `read_mirror`, `update_mirror`, `record_event`, `read_kb`, `write_kb`, `co_sign`, `classify_action`. This is the first time the substrate contract is formalised in code.
+- **`examples/teaching_colony/substrates/claude_code/`** — Claude Code substrate adapter, working in mock mode. Implements all eight contract operations with deep-merge-and-hash mirror updates, JSONL event logging, and a deterministic mock dispatcher. Unit tests plus a full lifecycle test.
+- **`examples/teaching_colony/substrates/managed_agents/`** — Managed Agents API substrate adapter scaffolding. Mock-mode dispatch, co-sign, classify and event-log writes are working; live-mode operations are gated behind `NotImplementedError` pending v1.7+. Includes `api-research.md` — the first honest adequacy report of a real substrate against the Agent Colony contract.
+- **First running exercise of the Comprehension Contract (§7)** — Librarian detects KB coverage crossing a threshold, proposes Teacher acquire a new capability, the structural classifier fires with the trust-tier × blast-radius review regime, Sentinel co-signs, Teacher's Mirror is updated with an append-only audit trail including pre/post state hashes. Until v1.6.0 §7 had only ever been described on paper.
+- **`examples/teaching_colony/tests/test_portability.py`** — cross-substrate portability test. Asserts (unconditionally) that classifier output is substrate-independent; that Claude Code completes the minimal lifecycle end to end in mock mode; and that Managed Agents completes every mock-implemented operation. Full event-sequence and Teacher-Mirror parity tests are skipped in v1.6.0 with a reason pointing at `gaps.md` — live-mode parity is v1.7+.
+- **Lens-mapped READMEs** at `examples/teaching_colony/`, each substrate subdirectory, and the repository-level `examples/README.md` — every level names its audience lens (Beekeeper) and the Principle 7 framing.
+
+### Changed
+- **`examples/README.md`** — added teaching-colony to the lens map and the example list; Beekeeper row now points to hello-colony → hello-colony-runtime → teaching-colony.
+- **`README.md`** — version v1.5.0 → v1.6.0; Examples row updated to mention teaching-colony; Status section rewritten for v1.6.0; roadmap entry added for v1.6.0; v1.6+ renamed v1.7+; citation line updated.
+- **`CITATION.cff`** — version v1.6.0, date 2026-04-14.
+
+### Why
+
+Principle 2 (*Identity over implementation*) and Principle 4 (*Longevity by design*) were paper claims until v1.6.0. The teaching colony demonstrates both in running code for the first time: the *same* colony, with the *same* six Agent Mirrors and the *same* structural classifier, runs behind two substrate contracts that differ in almost every implementation detail. The Comprehension Contract (§7) had been fully specified in v1.4.0 but had never done real work — v1.6.0 shows the classifier firing, the co-sign being issued, and the append-only audit trail being written as a graduation actually happens. The teaching mission is Principle 7 (*Accessibility through abstraction*) in action: the colony's purpose is to help other people learn the pattern, and the beekeeping metaphor serves as the running pedagogical example throughout the lifecycle — a worker Librarian foraging the KB corpus, a Sentinel guarding the hive entrance, a queen-less colony that decides together. Beekeeping is the metaphor the Newcomer can hold; the substrate contract is what the Architect argues about; the same colony serves both lenses.
+
+### Known gap
+
+The Managed Agents substrate adapter ships with mock-mode fully working — dispatch, co-sign, classify, read/write of the local event log — and all live-mode operations gated behind `NotImplementedError`. The mock `update_mirror` returns a zeroed `AuditEntry` without persisting the change, and the mock `write_kb` is a no-op. Consequently the portability parity tests for full event-sequence equality and Teacher-Mirror final-state equality are *skipped* in v1.6.0 with a reason pointing at [`examples/teaching_colony/substrates/managed_agents/gaps.md`](examples/teaching_colony/substrates/managed_agents/gaps.md) — the honest adequacy report documenting which contract operations the Managed Agents API can and cannot support. Live-mode completion is targeted for v1.7+.
+
+---
+
 ## [1.5.0] — 2026-04-14
 
 ### Added

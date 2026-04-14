@@ -1,0 +1,138 @@
+identity:
+  name: registry-agent
+  version: "1.0.0"
+  purpose: "Catalogue of all agents in the Teaching Colony. Provides discovery, dependency graphing, and overlap lookups to other L2 agents."
+  owner: teaching-colony-core
+  lineage:
+    - version: "1.0.0"
+      timestamp: "2026-04-14T00:00:00Z"
+      what_changed: "Initial release for the Teaching Colony example."
+      why: "Bootstrap the colony with a minimal but complete registry."
+      triggered_by: human
+
+capabilities:
+  capabilities:
+    - name: register_agent
+      description: "Accept a new Agent Mirror and add it to the catalogue."
+      maturity: stable
+    - name: discover_by_capability
+      description: "Return agents matching a capability query."
+      maturity: stable
+    - name: dependency_graph
+      description: "Return the transitive dependency graph for a given agent."
+      maturity: stable
+  contracts:
+    input_schema: "local://teaching-colony/schemas/registry-request-v1.json"
+    output_schema: "local://teaching-colony/schemas/registry-response-v1.json"
+    sla:
+      availability: "99.9%"
+      p99_latency_ms: 100
+    error_behaviours:
+      - "Unknown agent returns 404"
+      - "Invalid Mirror returns 400 with field-level validation details"
+  dependencies:
+    - chronicler-agent
+  protocols:
+    - MCP
+
+autonomy:
+  autonomy_level: bounded
+  self_evolution_scope:
+    allowed:
+      - "Tune internal caching TTLs"
+      - "Improve validation error messages"
+    forbidden:
+      - "Modify the Agent Mirror schema"
+      - "Delete registered agents autonomously"
+  evolution_budget:
+    max_self_updates_before_redesign: 5
+    security_upgrades_exempt: true
+  evolution_log: []
+
+security:
+  threat_model:
+    - "Malicious Mirror submission"
+    - "Denial of service on discovery queries"
+  detection_capabilities:
+    - "Schema validation on all submissions"
+    - "Rate limiting per source agent"
+  escalation_process:
+    trigger: "Any detection above threshold or anomaly score > 0.7"
+    notify:
+      - sentinel-agent
+    preauthorised_security_upgrades: true
+  last_security_upgrade:
+    date: "2026-04-14"
+    description: "Initial deployment — no prior upgrades."
+  security_dependencies:
+    - sentinel-agent
+
+lifecycle:
+  lifecycle_stage: deployed
+  birth_date: "2026-04-14T00:00:00Z"
+  last_active: "2026-04-14T00:00:00Z"
+  health_status: healthy
+  retirement_criteria:
+    - "Colony size drops below 3 agents"
+    - "A successor registry has been promoted and a parallel-run period completed"
+
+relationships:
+  overlap_map:
+    - agent_name: equilibrium-agent
+      overlap_score: 0.08
+      assessment: healthy
+      justification: "Both read Mirror data but for distinct purposes."
+    - agent_name: chronicler-agent
+      overlap_score: 0.05
+      assessment: healthy
+      justification: "Registry is authoritative for current state; Chronicler for history."
+  collaborators:
+    - equilibrium-agent
+    - chronicler-agent
+  consumers:
+    - equilibrium-agent
+    - sentinel-agent
+    - librarian-agent
+    - teacher-agent
+  critical_path:
+    structural: true
+    dynamic: false
+    structural_justification: "Every agent depends on Registry for discovery. Registry failure is Colony-wide."
+
+comprehension_contract:
+  trust_tier: Bounded
+  pre_registered_policies: []
+  audit_rate: 0.10
+  blast_radius_ceiling: Colony-wide
+  classifier_version: "1.0"
+
+nfrs:
+  inherited:
+    - id: colony-event-logging
+      source: constitutional_memory
+      version: "2026-04-14"
+  specific:
+    availability_target: "99.9%"
+    latency_p99_ms: 100
+    max_throughput_rps: 100
+    data_classification:
+      - internal
+    compliance: []
+
+valuation:
+  self:
+    nfr_compliance_rate: 1.0
+    last_evaluated: "2026-04-14"
+    evaluation_schedule_met: true
+  peer:
+    score: null
+    interaction_count: 0
+    calibration_status: under-calibrated
+  audit:
+    disagreement_rate: null
+    sample_count: 0
+    last_audit: null
+  human:
+    last_sign_off: "2026-04-14"
+    sign_off_count: 1
+    outstanding_challenges: 0

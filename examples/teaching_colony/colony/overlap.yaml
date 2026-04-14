@@ -1,0 +1,14 @@
+overlap_matrix:
+  - pair: [librarian-agent, teacher-agent]
+    overlap_score: 0.18
+    status: watch
+    notes: "Both agents touch the KB; drift plausible"
+  - pair: [registry-agent, equilibrium-agent]
+    overlap_score: 0.08
+    status: healthy
+  - pair: [registry-agent, chronicler-agent]
+    overlap_score: 0.05
+    status: healthy
+  - pair: [equilibrium-agent, sentinel-agent]
+    overlap_score: 0.04
+    status: healthy

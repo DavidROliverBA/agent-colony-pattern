@@ -1,0 +1,131 @@
+identity:
+  name: equilibrium-agent
+  version: "1.0.0"
+  purpose: "Detects role overlap between colony agents and proposes rebalancing."
+  owner: teaching-colony-core
+  lineage:
+    - version: "1.0.0"
+      timestamp: "2026-04-14T00:00:00Z"
+      what_changed: "Initial release for the Teaching Colony example."
+      why: "Bootstrap overlap analysis from cycle 1."
+      triggered_by: human
+
+capabilities:
+  capabilities:
+    - name: compute_overlap
+      description: "Compute pairwise capability overlap scores across the colony."
+      maturity: stable
+    - name: propose_rebalance
+      description: "Propose capability moves when overlap exceeds 0.25."
+      maturity: stable
+  contracts:
+    input_schema: "local://teaching-colony/schemas/equilibrium-request-v1.json"
+    output_schema: "local://teaching-colony/schemas/equilibrium-response-v1.json"
+    sla:
+      availability: "99.0%"
+      p99_latency_ms: 500
+    error_behaviours:
+      - "Missing Mirror for an agent returns 404"
+  dependencies:
+    - registry-agent
+    - chronicler-agent
+  protocols:
+    - MCP
+
+autonomy:
+  autonomy_level: bounded
+  self_evolution_scope:
+    allowed:
+      - "Tune overlap scoring weights within pre-approved ranges"
+      - "Add new similarity metrics"
+    forbidden:
+      - "Execute rebalance moves autonomously — Equilibrium proposes, Sentinel co-signs"
+  evolution_budget:
+    max_self_updates_before_redesign: 5
+    security_upgrades_exempt: true
+  evolution_log: []
+
+security:
+  threat_model:
+    - "Proposal flood — generating noisy rebalance proposals to degrade colony focus"
+    - "Scoring bias — tuning weights to favour one agent over another"
+  detection_capabilities:
+    - "Proposal rate limiting"
+    - "Weight-change audit trail"
+  escalation_process:
+    trigger: "Proposal rate exceeds 10/minute or weight change outside approved range"
+    notify:
+      - sentinel-agent
+    preauthorised_security_upgrades: true
+  last_security_upgrade:
+    date: "2026-04-14"
+    description: "Initial deployment — no prior upgrades."
+  security_dependencies:
+    - sentinel-agent
+
+lifecycle:
+  lifecycle_stage: deployed
+  birth_date: "2026-04-14T00:00:00Z"
+  last_active: "2026-04-14T00:00:00Z"
+  health_status: healthy
+  retirement_criteria:
+    - "Colony size drops below 4 agents"
+
+relationships:
+  overlap_map:
+    - agent_name: registry-agent
+      overlap_score: 0.08
+      assessment: healthy
+      justification: "Both read Mirror data but for distinct purposes."
+    - agent_name: sentinel-agent
+      overlap_score: 0.04
+      assessment: healthy
+      justification: "Equilibrium proposes; Sentinel co-signs. No functional overlap."
+  collaborators:
+    - registry-agent
+    - chronicler-agent
+    - sentinel-agent
+  consumers:
+    - sentinel-agent
+  critical_path:
+    structural: true
+    dynamic: false
+    structural_justification: "Overlap analysis is required before any capability graduation. Without Equilibrium, the colony drifts."
+
+comprehension_contract:
+  trust_tier: Bounded
+  pre_registered_policies: []
+  audit_rate: 0.10
+  blast_radius_ceiling: Colony-wide
+  classifier_version: "1.0"
+
+nfrs:
+  inherited:
+    - id: colony-event-logging
+      source: constitutional_memory
+      version: "2026-04-14"
+  specific:
+    availability_target: "99.0%"
+    latency_p99_ms: 500
+    max_throughput_rps: 10
+    data_classification:
+      - internal
+    compliance: []
+
+valuation:
+  self:
+    nfr_compliance_rate: 1.0
+    last_evaluated: "2026-04-14"
+    evaluation_schedule_met: true
+  peer:
+    score: null
+    interaction_count: 0
+    calibration_status: under-calibrated
+  audit:
+    disagreement_rate: null
+    sample_count: 0
+    last_audit: null
+  human:
+    last_sign_off: "2026-04-14"
+    sign_off_count: 1
+    outstanding_challenges: 0

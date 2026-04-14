@@ -1,0 +1,133 @@
+identity:
+  name: teacher-agent
+  version: 1.0.0
+  purpose: Teaches the Agent Colony pattern using beekeeping as the running example.
+    Ships with beekeeping only; the Agent Colony capability is acquired through a
+    graduation event.
+  owner: teaching-colony-domain
+  lineage:
+  - version: 1.0.0
+    timestamp: '2026-04-14T00:00:00Z'
+    what_changed: "Initial release for the Teaching Colony example \u2014 beekeeping\
+      \ only."
+    why: Bootstrap the canonical graduation demonstration.
+    triggered_by: human
+capabilities:
+  capabilities:
+  - name: teach_beekeeping
+    description: Answer questions about beekeeping using the seeded KB entry.
+    maturity: stable
+  contracts:
+    input_schema: local://teaching-colony/schemas/teacher-request-v1.json
+    output_schema: local://teaching-colony/schemas/teacher-response-v1.json
+    sla:
+      availability: 99.5%
+      p99_latency_ms: 500
+    error_behaviours:
+    - Unknown topic returns a polite 'not taught yet' response with suggested corpus
+      files
+  dependencies:
+  - registry-agent
+  - chronicler-agent
+  - librarian-agent
+  protocols:
+  - MCP
+autonomy:
+  autonomy_level: supervised
+  self_evolution_scope:
+    allowed:
+    - Improve answer phrasing heuristics
+    forbidden:
+    - "Add new teaching topics autonomously \u2014 must go through graduation"
+    - Write to the colony knowledge base
+  evolution_budget:
+    max_self_updates_before_redesign: 3
+    security_upgrades_exempt: true
+  evolution_log:
+  - action: update_mirror
+    actor: teacher-agent
+    co_signer: sentinel-agent
+    pre_state_hash: ad21cc56127f77c6
+    timestamp: '2026-04-14T09:42:18.825698+00:00'
+    post_state_hash: 5883d4619018eb0c
+security:
+  threat_model:
+  - "Answer fabrication \u2014 teaching topics that are not in the KB"
+  - "KB leakage \u2014 exposing KB content beyond the colony boundary"
+  detection_capabilities:
+  - "Answer-to-KB provenance check \u2014 every answer cites a KB entry"
+  - Consumer identity verification before answering
+  escalation_process:
+    trigger: Answer produced without a KB citation, or consumer outside colony
+    notify:
+    - sentinel-agent
+    preauthorised_security_upgrades: true
+  last_security_upgrade:
+    date: '2026-04-14'
+    description: "Initial deployment \u2014 no prior upgrades."
+  security_dependencies:
+  - sentinel-agent
+lifecycle:
+  lifecycle_stage: deployed
+  birth_date: '2026-04-14T00:00:00Z'
+  last_active: '2026-04-14T00:00:00Z'
+  health_status: healthy
+  retirement_criteria:
+  - Colony no longer needs a teaching agent
+  - Successor teacher promoted with broader topic coverage
+relationships:
+  overlap_map:
+  - agent_name: librarian-agent
+    overlap_score: 0.18
+    assessment: review-needed
+    justification: "Both agents touch the KB. Teacher reads, Librarian writes \u2014\
+      \ drift plausible if Teacher starts writing."
+  collaborators:
+  - librarian-agent
+  - registry-agent
+  - chronicler-agent
+  consumers: []
+  critical_path:
+    structural: false
+    dynamic: false
+    structural_justification: L3 domain agent. Colony operates without it; Teacher
+      is the demonstration consumer of capability growth.
+comprehension_contract:
+  trust_tier: Observing
+  pre_registered_policies: []
+  audit_rate: 1.0
+  blast_radius_ceiling: Inter-agent
+  classifier_version: '1.0'
+nfrs:
+  inherited:
+  - id: colony-event-logging
+    source: constitutional_memory
+    version: '2026-04-14'
+  specific:
+    availability_target: 99.5%
+    latency_p99_ms: 500
+    max_throughput_rps: 10
+    data_classification:
+    - internal
+    compliance: []
+valuation:
+  self:
+    nfr_compliance_rate: 1.0
+    last_evaluated: '2026-04-14'
+    evaluation_schedule_met: true
+  peer:
+    score: null
+    interaction_count: 0
+    calibration_status: under-calibrated
+  audit:
+    disagreement_rate: null
+    sample_count: 0
+    last_audit: null
+  human:
+    last_sign_off: '2026-04-14'
+    sign_off_count: 1
+    outstanding_challenges: 0
+capability_add:
+  name: teach_agent_colony_pattern
+  description: Teach the Agent Colony pattern using beekeeping as a metaphor.
+  maturity: experimental

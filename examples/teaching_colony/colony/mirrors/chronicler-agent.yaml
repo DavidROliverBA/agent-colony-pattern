@@ -1,0 +1,129 @@
+identity:
+  name: chronicler-agent
+  version: "1.0.0"
+  purpose: "Records every colony event to an append-only Event Memory. Terminal node — without Chronicler, the colony goes blind."
+  owner: teaching-colony-core
+  lineage:
+    - version: "1.0.0"
+      timestamp: "2026-04-14T00:00:00Z"
+      what_changed: "Initial release for the Teaching Colony example."
+      why: "Bootstrap the colony with event memory from cycle 1."
+      triggered_by: human
+
+capabilities:
+  capabilities:
+    - name: record_event
+      description: "Append an event to the colony Event Memory."
+      maturity: stable
+    - name: query_events
+      description: "Return events by type, actor, or time window."
+      maturity: stable
+  contracts:
+    input_schema: "local://teaching-colony/schemas/event-v1.json"
+    output_schema: "local://teaching-colony/schemas/event-response-v1.json"
+    sla:
+      availability: "99.95%"
+      p99_latency_ms: 50
+    error_behaviours:
+      - "Malformed event returns 400 — nothing is appended"
+  dependencies: []
+  protocols:
+    - MCP
+
+autonomy:
+  autonomy_level: bounded
+  self_evolution_scope:
+    allowed:
+      - "Tune append-log rotation thresholds"
+      - "Improve query indexing"
+    forbidden:
+      - "Delete events — the log is append-only"
+      - "Rewrite historical events"
+  evolution_budget:
+    max_self_updates_before_redesign: 5
+    security_upgrades_exempt: true
+  evolution_log: []
+
+security:
+  threat_model:
+    - "Event forgery — injecting false events to rewrite colony history"
+    - "Event suppression — blocking events to hide actor behaviour"
+  detection_capabilities:
+    - "Append-only log with hash chain"
+    - "Actor signature verification on every event"
+  escalation_process:
+    trigger: "Any signature failure or hash chain break"
+    notify:
+      - sentinel-agent
+    preauthorised_security_upgrades: true
+  last_security_upgrade:
+    date: "2026-04-14"
+    description: "Initial deployment — no prior upgrades."
+  security_dependencies:
+    - sentinel-agent
+
+lifecycle:
+  lifecycle_stage: deployed
+  birth_date: "2026-04-14T00:00:00Z"
+  last_active: "2026-04-14T00:00:00Z"
+  health_status: healthy
+  retirement_criteria:
+    - "Successor chronicler promoted with verified log migration"
+    - "Colony retired entirely"
+
+relationships:
+  overlap_map:
+    - agent_name: registry-agent
+      overlap_score: 0.05
+      assessment: healthy
+      justification: "Registry is authoritative for current state; Chronicler for history."
+  collaborators:
+    - registry-agent
+    - equilibrium-agent
+    - sentinel-agent
+  consumers:
+    - equilibrium-agent
+    - sentinel-agent
+    - librarian-agent
+  critical_path:
+    structural: true
+    dynamic: false
+    structural_justification: "Terminal node. Without Chronicler, Event Memory stops and the colony goes blind."
+
+comprehension_contract:
+  trust_tier: Bounded
+  pre_registered_policies: []
+  audit_rate: 0.10
+  blast_radius_ceiling: Colony-wide
+  classifier_version: "1.0"
+
+nfrs:
+  inherited:
+    - id: colony-event-logging
+      source: constitutional_memory
+      version: "2026-04-14"
+  specific:
+    availability_target: "99.95%"
+    latency_p99_ms: 50
+    max_throughput_rps: 500
+    data_classification:
+      - internal
+    compliance: []
+
+valuation:
+  self:
+    nfr_compliance_rate: 1.0
+    last_evaluated: "2026-04-14"
+    evaluation_schedule_met: true
+  peer:
+    score: null
+    interaction_count: 0
+    calibration_status: under-calibrated
+  audit:
+    disagreement_rate: null
+    sample_count: 0
+    last_audit: null
+  human:
+    last_sign_off: "2026-04-14"
+    sign_off_count: 1
+    outstanding_challenges: 0

@@ -11,7 +11,7 @@ Which example should you start with? It depends on which lens you are currently 
 | **Newcomer** | [*It takes a village*](../knowledge-base/writings/2026-04-12-it-takes-a-village.md) | The metaphor. No jargon, no mechanisms. |
 | **Observer** | (no repo artefact — invisibility is the point) | If you're an Observer, you don't need the examples at all. |
 | **Operator** | [`equilibrium-playground/`](equilibrium-playground/) | A dashboard view of colony health. Open in a browser, no setup. |
-| **Beekeeper** | [`hello-colony/`](hello-colony/) then [`hello-colony-runtime/`](hello-colony-runtime/) | The mechanisms on disk (YAML Mirrors, graduation checklists) and the runtime that operates on them. |
+| **Beekeeper** | [`hello-colony/`](hello-colony/), [`hello-colony-runtime/`](hello-colony-runtime/), then [`teaching_colony/`](teaching_colony/) | The mechanisms on disk (YAML Mirrors, graduation checklists), the runtime that operates on them, and the first substrate-portable colony that teaches the pattern. |
 | **Architect** | [`../specification.md`](../specification.md) | The substrate. Return here once you've seen the mechanisms run. |
 
 The canonical artefacts mapped to each lens are defined in `specification.md` §1 (Audience Lenses). This repository's conformance claim against Principle 7 is exactly this mapping.
@@ -35,6 +35,19 @@ cd hello-colony-runtime
 pip install -r requirements.txt
 python runtime.py
 ```
+
+## teaching-colony
+
+**Audience lens:** Beekeeper
+
+**[teaching_colony/](teaching_colony/)** — A substrate-portable six-agent Agent Colony that teaches the Agent Colony pattern, using beekeeping as the running pedagogical example. Ships with two substrates — Claude Code (Anthropic Python SDK) and the Managed Agents API — demonstrating Principle 2 (*Identity over implementation*) and Principle 4 (*Longevity by design*) in running code for the first time. The first exercise of the Comprehension Contract (§7): Librarian detects KB coverage crossing a threshold, proposes Teacher acquire a new capability, the structural classifier fires, Sentinel co-signs, and Teacher's Mirror is updated with an append-only audit trail. Added in v1.6.0.
+
+```bash
+cd teaching_colony
+python run.py --substrate=claude-code --mock
+```
+
+Known gap: live-mode Managed Agents operations are deferred to v1.7+. See [substrates/managed_agents/gaps.md](teaching_colony/substrates/managed_agents/gaps.md).
 
 ## equilibrium-playground
 
