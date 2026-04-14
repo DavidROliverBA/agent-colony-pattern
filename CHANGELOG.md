@@ -5,6 +5,33 @@ All notable changes to the Agent Colony Pattern are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.1] — 2026-04-14
+
+### Added
+- **`examples/teaching_colony/docs/design-spec.md`** — copy of the working design spec from the author's vault, now committed in the public repo so readers have the Architect-lens view of the example. Includes provenance header.
+- **`examples/teaching_colony/docs/implementation-plan.md`** — copy of the implementation plan that produced v1.6.0, including the five-sub-agent parallel execution strategy, write-scope boundaries, and coordination rules.
+- **`examples/teaching_colony/README.md`** — a complete "How to use this example" walkthrough with three progressive run scenarios: (1) first run on Claude Code to see the full lifecycle; (2) reset and re-run to verify determinism; (3) run on Managed Agents to see the portability claim concretely. Each scenario states what to run, what to expect, where to look, and how to verify. The walkthrough is honest about the event-count difference between substrates (Claude Code ~42, Managed Agents ~22) and points at `gaps.md` for the known reason.
+
+### Changed
+- `examples/teaching_colony/README.md` — replaced the thin "How to run" section with the three-scenario walkthrough, replaced the broken vault-path links to spec/plan with links to the newly-committed copies under `docs/`, and fixed the `substrates/claude-code/` → `substrates/claude_code/` link (and similarly for managed_agents).
+- `examples/teaching_colony/substrates/claude_code/README.md` — added a "Design context" line pointing at the design spec and implementation plan under `../../docs/`.
+- `examples/teaching_colony/substrates/managed_agents/README.md` — same.
+- `README.md` at repo root — version badge v1.6.0 → v1.6.1.
+- `CITATION.cff` — version v1.6.1.
+
+### Why
+
+Two things were missing from v1.6.0 that a first-time reader would immediately notice. First, the Architect-lens artefacts — the design spec and the implementation plan — lived only in the author's private vault. The example claimed to serve all five lenses but the Architect lens was a broken link. Copying both documents into `examples/teaching_colony/docs/` closes that gap. Second, the top-level README had the commands but not a walkthrough — a reader had no guided way to actually *use* the example, see what it produces, and check that the graduation actually happened. The three-scenario walkthrough gives a clean path: first run to see the lifecycle, second run to verify determinism, third run to see portability concretely. This is a docs-only patch; no code changes.
+
+### No code changes
+
+- Adapters unchanged
+- Colony definition unchanged
+- Tests unchanged (26 passed, 2 skipped, 4 xfailed — identical to v1.6.0)
+- No version bump to any dependency
+
+---
+
 ## [1.6.0] — 2026-04-14
 
 ### Added

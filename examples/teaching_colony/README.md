@@ -48,36 +48,124 @@ classification, Sentinel co-signature, audit entry.
 | librarian-agent | L3 | Observing | Reads the corpus, writes KB entries, proposes capability growth |
 | teacher-agent | L3 | Observing | Teaches from the KB (beekeeping at boot; Agent Colony pattern after graduation) |
 
-## How to run
+## How to use this example
 
-Install dependencies:
+This is a walkthrough aimed at someone who has just cloned the repository and wants to see the example actually run. It takes three progressive runs to see everything the example demonstrates. None of them require an Anthropic API key — all three use mock mode.
+
+### Prerequisites
+
+- Python 3.10 or newer
+- About 50 MB of disk (the corpus is a copy of this repository's main pattern documents)
+
+### Setup (one-off)
+
+From the repository root:
 
 ```bash
+cd examples/teaching_colony
 pip install -r requirements.txt
 ```
 
-Run against the Claude Code substrate (offline mock mode):
+That installs `anthropic`, `pyyaml`, `jsonschema`, and `pytest`. No API key, no network, no build step.
+
+### Run 1 — see the whole lifecycle on Claude Code
 
 ```bash
-python run.py --substrate=claude-code --mock
+python run.py --substrate=claude-code --mock --reset
 ```
 
-Run against the Managed Agents substrate:
+`--reset` wipes `state/` so you always start from a known baseline. `--mock` means no real Claude API calls — the adapter uses canned deterministic responses so you can see the full lifecycle offline.
+
+**What happens:**
+
+1. The six agents are registered from their YAML Mirrors in `colony/mirrors/`
+2. Teacher answers a baseline beekeeping question using the seeded KB entry
+3. Librarian reads the pattern corpus and curates new KB entries
+4. Librarian computes coverage and proposes that Teacher acquire `teach_agent_colony_pattern`
+5. The Structural Classifier fires — the review regime formula short-circuits to `Peer Review` because a capability addition is a Novel action class (§7.4)
+6. A graduation checklist is generated in `state/graduation-checklists/`
+7. Sentinel co-signs the graduation
+8. Teacher's Mirror is updated with an append-only audit entry containing pre/post state hashes and a rollback window
+9. Teacher answers a new Agent Colony pattern question it could not have answered at boot time
+10. A colony snapshot is written
+
+**What to expect on stdout:**
+
+A summary table listing all six agents, their capabilities, and any capability changes that happened during the run. The last line should read:
+
+```
+- teacher-agent acquired 'teach_agent_colony_pattern' (co-signed by sentinel-agent)
+```
+
+**What to inspect after the run:**
 
 ```bash
-python run.py --substrate=managed-agents
+# The append-only event log — every colony event, in order
+cat state/events.jsonl | python -m json.tool
+
+# The updated Teacher Mirror — evolution_log has a new entry
+cat colony/mirrors/teacher-agent.yaml
+
+# The graduation checklist that gated the capability addition
+ls state/graduation-checklists/
+cat state/graduation-checklists/*.yaml
+
+# What the colony now knows about the pattern
+ls state/kb/
 ```
 
-Reset runtime state (wipes events, snapshots, graduation checklists):
+You should find a `graduation.approved` event near the end of `events.jsonl`, a `mirror.updated` event with non-empty `pre_state_hash` and `post_state_hash` fields, and a new entry in Teacher's `autonomy.evolution_log`.
+
+### Run 2 — reset and re-run to verify determinism
 
 ```bash
-python run.py --substrate=claude-code --reset --mock
+python run.py --substrate=claude-code --mock --reset
 ```
+
+Same command, run again. The whole point of mock mode is determinism: given the same corpus and the same Mirrors, the colony should produce the same observable events (excluding timestamps and hashes derived from timestamps). This run is how you verify that.
+
+**What to check:**
+
+```bash
+# Count events — should match Run 1 exactly
+wc -l state/events.jsonl
+```
+
+You should see the same number of events as Run 1 (currently around 42 on Claude Code — the exact number will drift as the adapter evolves but must stay the same across two runs of the same substrate), the same event types in the same order, and the same Teacher capability change. Timestamps will differ. The determinism is what makes the pattern testable — live runs can be replayed, graduations can be audited after the fact, and regressions are detectable.
+
+### Run 3 — same colony on the Managed Agents substrate
+
+```bash
+python run.py --substrate=managed-agents --mock --reset
+```
+
+This is the portability claim made concrete. The identical six Agent Mirrors, the identical classifier, the identical graduation logic, the identical corpus — now orchestrated by a completely different substrate adapter.
+
+**What to expect:**
+
+The same summary table, the same capability change on Teacher, the same co-signer. The underlying Python code in `substrates/managed_agents/adapter.py` is structurally different from `substrates/claude_code/adapter.py` — different imports, different class, different mock response plumbing — but the observable *graduation* is identical. That is Principle 2 (*Identity over implementation*) and Principle 4 (*Longevity by design*) in running code for the first time.
+
+**One thing you will notice is different — the raw event count.** At v1.6.0, Claude Code emits roughly twice as many events as Managed Agents for the same lifecycle. This is not noise; it is the known gap documented in [`substrates/managed_agents/gaps.md`](substrates/managed_agents/gaps.md). The Managed Agents mock does not emit `dispatch.complete` events, its mock `update_mirror` is a no-op (so no `mirror.updated` event with hashes is written), and its mock `write_kb` is also a no-op. Consequently:
+
+- Teacher's Mirror on disk is **not** updated on a Managed Agents mock run — the graduation event is recorded but the state change is not persisted. If you `cat colony/mirrors/teacher-agent.yaml` after a Managed Agents run, it looks unchanged.
+- The `state/kb/` directory is not populated by Managed Agents mock writes.
+
+This is why the portability parity tests for full event-log sequence and Mirror final-state equality are marked `skip` in v1.6.0 with a reason pointing at `gaps.md`. The v1.6.0 portability claim rests on the parts that *can* be asserted today: the same six Mirrors load on both substrates, the Structural Classifier is byte-identical across them, both complete their mock lifecycles end-to-end without raising, and both record the same observable graduation in their event logs. Full parity — meaning byte-for-byte event sequences and byte-for-byte Mirror final states — is a v1.7+ deliverable.
+
+This is the honest version of the portability claim. If you see it and think "wait, Claude Code has 42 events and Managed Agents has 22, that's not the same colony running" — you are correct to notice, and the example does not hide it.
+
+### What to do next
+
+- Open the [design spec](docs/design-spec.md) to see how this example was scoped
+- Open the [implementation plan](docs/implementation-plan.md) to see how five parallel sub-agents built it
+- Read the [Claude Code adapter README](substrates/claude_code/README.md) to see the contract-operation mapping
+- Read the [Managed Agents adapter README](substrates/managed_agents/README.md) and the [adequacy report](substrates/managed_agents/gaps.md) to see the honest substrate research
+- Run `pytest examples/teaching_colony/ -v` from the repository root to see the full test suite (26 passed, 2 skipped, 4 xfailed is expected at v1.6.0)
 
 ## Substrates
 
-- [Claude Code](substrates/claude-code/README.md)
-- [Managed Agents API](substrates/managed-agents/README.md)
+- [Claude Code](substrates/claude_code/README.md) — local Python, Anthropic SDK, filesystem state
+- [Managed Agents API](substrates/managed_agents/README.md) — Anthropic Managed Agents (live mode is v1.7+; mock mode is v1.6.0)
 
 ## Known limitations
 
@@ -90,10 +178,14 @@ python run.py --substrate=claude-code --reset --mock
   production colony would version this table and treat changes as
   Colony-wide events themselves.
 
-## Spec and plan
+## Design artefacts
 
-- [Design spec](../../../BA-DavidOliver-ObsidianVault/docs/superpowers/specs/2026-04-14-teaching-colony-design.md)
-- [Implementation plan](../../../BA-DavidOliver-ObsidianVault/docs/superpowers/plans/2026-04-14-teaching-colony-implementation.md)
+The working documents that produced this example are in [`docs/`](docs/):
+
+- [**Design spec**](docs/design-spec.md) — the scope, motivation, substrate contract, agent composition, lifecycle, and deferrals. Read this first if you want to understand *why* the example looks the way it does.
+- [**Implementation plan**](docs/implementation-plan.md) — the five-sub-agent parallel execution strategy that actually built v1.6.0. Includes write-scope boundaries, coordination rules, research risks, and rollback plan. Read this if you want to see how the example was built and what coordination issues were resolved during the merge.
+
+These are the Architect-lens artefacts for the example. The top-level [`specification.md`](../../specification.md) and [`thesis.md`](../../thesis.md) are the Architect-lens artefacts for the pattern as a whole.
 
 ## Portability test
 

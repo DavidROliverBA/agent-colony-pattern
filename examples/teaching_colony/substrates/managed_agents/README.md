@@ -1,6 +1,8 @@
 # Managed Agents API Substrate Adapter
 
 > **Audience lens:** Beekeeper — you are reading the mechanism. If you're an Operator or Newcomer, start at [../../README.md](../../README.md) or run the example in mock mode.
+>
+> **Design context (Architect lens):** see [`../../docs/design-spec.md`](../../docs/design-spec.md) for why this adapter exists and [`../../docs/implementation-plan.md`](../../docs/implementation-plan.md) for how it was scoped, including the research risk that was acknowledged upfront.
 
 > **v1.6.0 status:** mock-mode fully working; live-mode implementation deferred to v1.7+. See [gaps.md](gaps.md) for the honest adequacy report.
 

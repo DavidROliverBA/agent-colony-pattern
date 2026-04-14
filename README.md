@@ -6,7 +6,7 @@ The Agent Colony is an architectural pattern for building self-governing ecosyst
 
 > 📖 **New here? Start with the lay-audience article:** [*It takes a village — the Agent Colony definition*](https://medium.com/@davidroliver/it-takes-a-village-the-agent-colony-definition-32b9bd714bb8) on Medium (16 min read). It explains the pattern using the metaphor of a village, with no jargon. The text is also preserved in [`knowledge-base/writings/`](knowledge-base/writings/2026-04-12-it-takes-a-village.md).
 
-Current version: **v1.6.0** · [What's new](CHANGELOG.md) · [Latest release](https://github.com/DavidROliverBA/agent-colony-pattern/releases/latest)
+Current version: **v1.6.1** · [What's new](CHANGELOG.md) · [Latest release](https://github.com/DavidROliverBA/agent-colony-pattern/releases/latest)
 
 ## What's in this repository
 
@@ -109,7 +109,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide, including how the pap
 
 If you reference this work, please cite:
 
-> Oliver, D. (2026). *The Agent Colony: A Pattern Language for Self-Governing AI Agent Ecosystems* (v1.6.0). https://github.com/DavidROliverBA/agent-colony-pattern
+> Oliver, D. (2026). *The Agent Colony: A Pattern Language for Self-Governing AI Agent Ecosystems* (v1.6.1). https://github.com/DavidROliverBA/agent-colony-pattern
 
 Machine-readable citation metadata is in [`CITATION.cff`](CITATION.cff).
 
