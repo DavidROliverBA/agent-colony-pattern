@@ -6,7 +6,7 @@ The Agent Colony is an architectural pattern for building self-governing ecosyst
 
 > 📖 **New here? Start with the lay-audience article:** [*It takes a village — the Agent Colony definition*](https://medium.com/@davidroliver/it-takes-a-village-the-agent-colony-definition-32b9bd714bb8) on Medium (16 min read). It explains the pattern using the metaphor of a village, with no jargon. The text is also preserved in [`knowledge-base/writings/`](knowledge-base/writings/2026-04-12-it-takes-a-village.md).
 
-Current version: **v1.7.0** · [What's new](CHANGELOG.md) · [Latest release](https://github.com/DavidROliverBA/agent-colony-pattern/releases/latest)
+Current version: **v1.8.0** · [What's new](CHANGELOG.md) · [Latest release](https://github.com/DavidROliverBA/agent-colony-pattern/releases/latest)
 
 ## What's in this repository
 
@@ -72,7 +72,7 @@ See the [thesis paper](thesis.md) for the full analysis and the literature revie
 
 ## Status
 
-**v1.6.0** — First substrate-portable example in the repository: [`examples/teaching_colony/`](examples/teaching_colony/), a six-agent Agent Colony that teaches the pattern using beekeeping as its running pedagogical example. Ships with two substrates — Claude Code (Anthropic Python SDK) and the Managed Agents API — behind a common `SubstrateContract` ABC defining the eight operations L4 owes L1–L3. This is the first time Principle 2 (*Identity over implementation*) and Principle 4 (*Longevity by design*) are demonstrated in running code, and the first time the Comprehension Contract (§7) is exercised end to end: Librarian detects coverage crossing a threshold, proposes Teacher acquire a new capability, the structural classifier fires, Sentinel co-signs, Teacher's Mirror is updated with an append-only audit trail. Known gap: live-mode Managed Agents operations are scaffolding only and are deferred to v1.7+ — see [`examples/teaching_colony/substrates/managed_agents/gaps.md`](examples/teaching_colony/substrates/managed_agents/gaps.md) for the honest adequacy report. The pattern is still **practically untested at production scale** — no full LLM-backed reference implementation at colony size exists yet.
+**v1.8.0** — First release where the Teaching Colony runs on real Claude. Adds an interactive REPL ([`examples/teaching_colony/chat.py`](examples/teaching_colony/chat.py)) with an `ask` command that dispatches the Teacher agent to a real Claude Sonnet call and returns a live answer grounded in the seeded beekeeping primer. Fills in the Claude Code substrate's live-mode `dispatch_agent` path with Anthropic prompt caching (repeat dispatches of the same agent pay ~10% of the system-prompt cost), model tiering (Sonnet for Teacher/Librarian, Haiku for the four supervisory agents), and prose-vs-JSON prompt discipline. Introduces a session token budget (`TEACHING_COLONY_TOKEN_BUDGET`, default 500,000) with an 80% warning and a 100% hard stop. **This is the first release of the pattern that costs money to use** — roughly $2-5 for a full default-budget session with the recommended model mix. Research walks and capability graduation are deferred to v1.9+. v1.7.0's scripted mock-mode walkthrough remains as the free mechanism-demo smoke test. 72 mock-mode tests passing, 3 live-mode tests gated behind `pytest -m live` + `ANTHROPIC_API_KEY`, 2 xfails unchanged from v1.7 (live-mode Managed Agents). The pattern is still **practically untested at production scale** — v1.8 is the foundation for v2.0 but not the reference implementation itself.
 
 **Roadmap:**
 
@@ -89,8 +89,12 @@ See the [thesis paper](thesis.md) for the full analysis and the literature revie
 | v1.4.0 | ✅ released 2026-04-13 | Comprehension Contract formalised as §7 of specification; review regime formula; 14 sub-sections; two new conformance anti-patterns |
 | v1.5.0 | ✅ released 2026-04-14 | Principle 7 Accessibility Through Abstraction; audience-lens model; lens-traversal diagram; lens-inversion anti-pattern |
 | v1.6.0 | ✅ released 2026-04-14 | Teaching Colony — first substrate-portable example; first exercise of Comprehension Contract in running code; Claude Code + Managed Agents substrates |
-| v1.7+ | planned | Live-mode Managed Agents substrate completion; Newcomer/Observer companion diagrams; peer feedback incorporation |
-| v2.0 | planned | First LLM-backed reference implementation; empirical threshold calibration |
+| v1.6.1 | ✅ released 2026-04-14 | Teaching Colony docs — design spec + implementation plan exposed in public repo; three-scenario walkthrough in the README |
+| v1.7.0 | ✅ released 2026-04-14 | Honest Teaching Colony — six fixes from external review (mock dispatch, change DSL, §7 enforcement, event ownership, Mirror overlay, classifier gate); new end-to-end walkthrough test |
+| v1.8.0 | ✅ released 2026-04-14 | Teaching Colony runs on real Claude — interactive REPL, live-mode dispatch, prompt caching, model tiering, session budget; first release that costs money to use |
+| v1.9.0 | planned | Research walks — `fetch_url` tool with hop budget, `research` command, background concurrent walks, G3 graduation |
+| v2.0.0 | planned | Full interactive Teaching Colony — remaining commands, session persistence, cost enforcement, v2 reference implementation |
+| v2.1+ | planned | Live-mode Managed Agents substrate completion; Newcomer/Observer companion diagrams; peer feedback incorporation |
 | v3.0 | planned | Standards engagement — A2A, AAIF, NIST, AGNTCY |
 
 ## Contributing
@@ -109,7 +113,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide, including how the pap
 
 If you reference this work, please cite:
 
-> Oliver, D. (2026). *The Agent Colony: A Pattern Language for Self-Governing AI Agent Ecosystems* (v1.7.0). https://github.com/DavidROliverBA/agent-colony-pattern
+> Oliver, D. (2026). *The Agent Colony: A Pattern Language for Self-Governing AI Agent Ecosystems* (v1.8.0). https://github.com/DavidROliverBA/agent-colony-pattern
 
 Machine-readable citation metadata is in [`CITATION.cff`](CITATION.cff).
 

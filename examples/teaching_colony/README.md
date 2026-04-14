@@ -50,12 +50,19 @@ classification, Sentinel co-signature, audit entry.
 
 ## How to use this example
 
-This is a walkthrough aimed at someone who has just cloned the repository and wants to see the example actually run. It takes three progressive runs to see everything the example demonstrates. None of them require an Anthropic API key — all three use mock mode.
+Two ways in, depending on whether you want to see the mechanism or talk to it.
+
+**The scripted walkthrough (v1.7.0)** is three runs of `run.py` that execute a fixed 9-step lifecycle in mock mode. It exists to demonstrate the substrate contract, the Comprehension Contract enforcement, and the portability claim. It does not involve real Claude calls — it's a verifiable smoke test of the mechanism.
+
+**The interactive REPL (v1.8.0, new)** is `chat.py` — a long-running session that dispatches real Claude API calls through the same substrate. Type `ask <question>`, get a real answer grounded in the colony's knowledge base, watch the token budget count down. No research walks yet (that's v1.9), just the "one agent answers questions" slice.
+
+Which one to start with depends on what you want to learn. The scripted walkthrough is cheaper (no tokens), takes 30 seconds, and answers "does this pattern actually work as described". The REPL is slower, costs real money, and answers "what does this actually feel like as a user." Both are worth running.
 
 ### Prerequisites
 
 - Python 3.10 or newer
 - About 50 MB of disk (the corpus is a copy of this repository's main pattern documents)
+- For the interactive REPL in live mode: `ANTHROPIC_API_KEY` env var set
 
 ### Setup (one-off)
 
@@ -66,7 +73,83 @@ cd examples/teaching_colony
 pip install -r requirements.txt
 ```
 
-That installs `anthropic`, `pyyaml`, `jsonschema`, and `pytest`. No API key, no network, no build step.
+That installs `anthropic`, `pyyaml`, `jsonschema`, and `pytest`. No network or build step for the scripted walkthrough. For the live REPL, set `ANTHROPIC_API_KEY` in your environment too.
+
+## Interactive REPL — v1.8.0
+
+**This is the first release that costs money to use.** Running `chat.py` in live mode makes real Claude API calls. Each `ask` question costs roughly 1,000–3,000 tokens (~1-3 pennies at Sonnet pricing, less with caching on repeat calls). A full afternoon of exploration against the default 500,000 token budget costs around $5. The scripted walkthrough remains free.
+
+### Start an interactive session
+
+```bash
+# Offline, no API calls, no cost. Good for trying the REPL mechanics.
+python -m examples.teaching_colony.chat --mock
+
+# Live mode. Requires ANTHROPIC_API_KEY. Costs real tokens.
+python -m examples.teaching_colony.chat
+
+# Tighter budget for cost discipline (overrides the default 500,000).
+TEACHING_COLONY_TOKEN_BUDGET=50000 python -m examples.teaching_colony.chat
+
+# Reset state and start fresh.
+python -m examples.teaching_colony.chat --reset
+```
+
+### What the REPL can do in v1.8.0
+
+- `ask <question>` — dispatch Teacher with your question + the best-matching KB snippet, get a real Claude answer
+- `help` — show the command list
+- `quit` (or `q`, `exit`) — graceful shutdown, state persists
+- budget display after every dispatch, with warning at 80% and hard stop at 100%
+- prompt caching on repeated dispatches (second call shows `[500 from cache]` in the budget line)
+
+### What v1.8.0 does NOT support — coming in v1.9+
+
+- `research "<topic>" from <url>` — Librarian walks the web for a new topic
+- `status` / `cancel research` — track and control running research walks
+- `knows <topic>` — report KB coverage
+- `capabilities` — list what Teacher can currently teach
+- Background concurrent research tasks
+- Capability graduation triggered by research
+
+These are all sketched in the v2.0 design spec. v1.8.0 ships the REPL foundation and the real-Claude dispatch path; v1.9.0 will add the tool system and research walks.
+
+### Token budget — the primary cost control
+
+The session budget defaults to 500,000 tokens. Override it by:
+
+```bash
+# Environment variable (preferred)
+export TEACHING_COLONY_TOKEN_BUDGET=200000
+
+# Per-invocation
+TEACHING_COLONY_TOKEN_BUDGET=100000 python -m examples.teaching_colony.chat
+
+# Command-line flag (overrides env var)
+python -m examples.teaching_colony.chat --budget 50000
+```
+
+The budget tracks all four Anthropic usage counters (input, output, cache-creation, cache-read) and prints a one-line status after every dispatch. At 80% the REPL warns. At 100% the REPL refuses new `ask` dispatches with a message pointing at the env var.
+
+### Cost in practice
+
+Default model tiering: `claude-sonnet-4-6` for Teacher and Librarian (the agents that need real pedagogical quality), `claude-haiku-4-5-20251001` for the four supervisory agents (Registry, Chronicler, Equilibrium, Sentinel). v1.8.0 only actively dispatches Teacher (via `ask`), so Sonnet is the dominant cost. Prompt caching pays off after the second `ask` — the agent's Mirror stays the same across a session, so the system prompt is cached once and repeat-charged at ~10% of its original cost.
+
+Rough envelope:
+
+| Pattern | Tokens | Approx cost |
+|---|---|---|
+| Banner + one ask in mock mode | 0 | 0p |
+| Banner + one ask in live mode (cold cache) | ~3,500 | ~1p |
+| Each additional ask in the same session (warm cache) | ~1,200 | ~0.4p |
+| 30-question session | ~40,000 | ~15p |
+| Full 500,000 default budget consumed | 500,000 | ~$2-5 depending on model mix |
+
+---
+
+## Scripted walkthrough — v1.7.0
+
+The scripted walkthrough below is the v1.7.0 mechanism demo. It still works and is still worth running to see the pattern execute end-to-end in mock mode without any cost.
 
 ### Run 1 — see the whole lifecycle on Claude Code
 

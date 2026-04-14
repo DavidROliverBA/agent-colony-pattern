@@ -5,6 +5,57 @@ All notable changes to the Agent Colony Pattern are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] — 2026-04-14
+
+### Teaching Colony runs on real Claude for the first time
+
+v1.8.0 is the first increment of the Teaching Colony's interactive v2.x arc. It adds a long-running REPL (`chat.py`) and fills in the Claude Code adapter's live-mode dispatch path with real Anthropic API calls, prompt caching, and model tiering. After v1.8.0 ships, a reader can type `ask what do you know about beekeeping` at a colony prompt and receive a real Claude-generated answer grounded in the seeded primer.
+
+**This is the first release of the Agent Colony pattern that costs money to use.** The README's Teaching Colony section explains the cost envelope in detail: roughly $2-5 for a full default-budget session (500,000 tokens) with the recommended model tiering.
+
+### Added
+
+- **`examples/teaching_colony/chat.py`** — asyncio-based interactive REPL. Commands in v1.8.0: `ask <question>`, `help`, `quit`. Forward-looking commands (`research`, `status`, `cancel`, `knows`, `capabilities`) are routed helpfully to a "coming in v1.9+" message.
+- **Live-mode `ClaudeCodeAdapter.dispatch_agent`** — fills in the `_real_dispatch` method with:
+  - **Prompt caching** via `cache_control: {"type": "ephemeral"}` on the agent's Mirror system prompt. Repeat dispatches of the same agent within 5 minutes pay ~10% of the system-prompt cost.
+  - **Model tiering** via the new `AGENT_MODELS` dict — `claude-sonnet-4-6` for Teacher/Librarian (real reasoning), `claude-haiku-4-5-20251001` for the four supervisory agents (structured decisions).
+  - **Prose-vs-JSON system prompts** — Teacher and Librarian get flexible pedagogical prompts; Registry, Chronicler, Equilibrium, and Sentinel get JSON-strict prompts with explicit schemas and a one-retry fallback for malformed responses.
+  - **`last_response_usage`** attribute exposed so tests can inspect the cache-hit state directly.
+- **`examples/teaching_colony/colony/logic/budget.py`** — `Budget` class tracking all four Anthropic usage counters (input, output, cache-creation, cache-read). Warning threshold at 80%, hard stop at 100%. `TEACHING_COLONY_TOKEN_BUDGET` env var with safe fallback to 500,000 on invalid values.
+- **`examples/teaching_colony/tests/test_budget.py`** — 27 unit tests covering construction, env var parsing, usage recording, thresholds, and formatting. Over-tested relative to the class's size because a subtle off-by-one in these checks would silently allow overspend.
+- **`examples/teaching_colony/tests/test_repl_smoke.py`** — 9 subprocess tests that run `chat.py` in mock mode and verify: banner renders, help lists commands, `ask beekeeping` fires the canned "worker" answer, unknown commands route helpfully without traceback, empty lines are ignored, budget overrides work via both env var and `--budget` flag, ask+quit produces a final budget line.
+- **`examples/teaching_colony/tests/test_live_dispatch.py`** — 3 gated tests that actually call Claude: teacher dispatch with real beekeeping content; prompt cache hit on the second dispatch (directly verifies `cache_read_input_tokens > 0`); sentinel dispatch returns parseable JSON. Gated behind `@pytest.mark.live` and `ANTHROPIC_API_KEY` — never run in default CI.
+- **`examples/teaching_colony/pytest.ini`** — registers the `live` marker so `pytest -m "not live"` skips the gated tests cleanly.
+- **Interactive-mode section in `examples/teaching_colony/README.md`** — prerequisites, start commands, command list, v1.9+ deferrals, budget override instructions, cost table.
+
+### Changed
+
+- **`examples/teaching_colony/substrates/claude_code/adapter.py`** — `ClaudeCodeAdapter.__init__` accepts an optional `budget: Budget` parameter. `_real_dispatch` completely rewritten for v1.8.0 requirements. New module-level constants `AGENT_MODELS` and `PROSE_AGENTS`.
+- **`examples/teaching_colony/README.md`** — restructured to cover both the scripted v1.7 walkthrough and the new v1.8 interactive REPL side-by-side. The scripted walkthrough is preserved unchanged under a "Scripted walkthrough — v1.7.0" section.
+- **`CHANGELOG.md`, `CITATION.cff`, repo-root `README.md`** — v1.8.0.
+
+### Test results
+
+```
+72 passed, 3 deselected (live tests), 2 xfailed
+```
+
+The 3 deselected are the live Claude-API tests (run with `pytest -m live` and `ANTHROPIC_API_KEY` set). The 2 xfails are unchanged from v1.7.0 — live-mode Managed Agents `dispatch_agent` and `update_mirror`, still v1.x+ future work.
+
+### Known gaps after v1.8.0
+
+- The REPL uses a single-shot "pick the best KB entry and send it" retrieval, not real RAG. Fine while the KB has one entry; revisit when v1.9's research walks start adding more.
+- `ask` dispatches to Teacher only. It cannot yet dispatch to other agents by name. `ask sentinel co-sign this` kind of syntax is v2.0.
+- Tokens-used display is updated only after a dispatch completes, not mid-stream. Streaming responses would give a live counter but that's v2.0 polish.
+- No research walks yet. `research`, `status`, `cancel`, `knows`, `capabilities` are all v1.9+.
+- Managed Agents substrate live-mode `dispatch_agent` and `update_mirror` still raise `NotImplementedError` (2 xfails). Requires research-preview allowlist.
+
+### Why increment v1.8 rather than shipping the whole v2.0 arc at once
+
+The review at v1.7.0 — where a whole example went out with the central claim false on the happy path — is still fresh. Shipping live-mode dispatch on its own means I can verify it works against a real model before layering research walks on top, and it means the roadmap moves by one rung (from "v2.0 planned" to "v1.8 shipped, v1.9 planned"). Each increment is its own commit-test-tag-release cycle. v1.9 adds research walks; v2.0 adds the full command set and session persistence.
+
+---
+
 ## [1.7.0] — 2026-04-14
 
 ### Honest Teaching Colony — response to external review

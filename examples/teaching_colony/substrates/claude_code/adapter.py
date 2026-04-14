@@ -203,6 +203,23 @@ def _apply_changes(mirror_data: dict, changes: dict) -> dict:
     return out
 
 
+#: v1.8.0 model tiering map — Sonnet for reasoning agents, Haiku for supervisors.
+#: Teacher and Librarian do the work that needs real pedagogical quality; the
+#: four L1/L2 agents return small structured JSON decisions and don't need
+#: the more expensive model. See the v1.8 spec for the cost rationale.
+AGENT_MODELS: dict[str, str] = {
+    "teacher-agent":     "claude-sonnet-4-6",
+    "librarian-agent":   "claude-sonnet-4-6",
+    "registry-agent":    "claude-haiku-4-5-20251001",
+    "chronicler-agent":  "claude-haiku-4-5-20251001",
+    "equilibrium-agent": "claude-haiku-4-5-20251001",
+    "sentinel-agent":    "claude-haiku-4-5-20251001",
+}
+
+#: Supervisory agents return strict JSON; Teacher/Librarian return prose.
+PROSE_AGENTS: set[str] = {"teacher-agent", "librarian-agent"}
+
+
 class ClaudeCodeAdapter(SubstrateContract):
     """Claude Code substrate implementation of SubstrateContract."""
 
@@ -211,11 +228,13 @@ class ClaudeCodeAdapter(SubstrateContract):
         repo_root: Path,
         mock: bool = False,
         model: str = "claude-haiku-4-5-20251001",
+        budget: object = None,
     ) -> None:
         self.repo_root = Path(repo_root)
         self.mock = mock
         self.model = model
         self.substrate_name = "claude-code"
+        self.budget = budget  # optional Budget — None in mock/offline tests
 
         self.colony_dir = self.repo_root / "colony"
         self.mirrors_dir = self.colony_dir / "mirrors"  # baseline (read-only)
@@ -229,6 +248,7 @@ class ClaudeCodeAdapter(SubstrateContract):
         self.kb_dir.mkdir(parents=True, exist_ok=True)
 
         self._client = None  # lazily constructed in non-mock dispatch
+        self.last_response_usage: dict | None = None  # exposed for tests
 
     # ---------------------------------------------------------------- dispatch
 
@@ -254,40 +274,185 @@ class ClaudeCodeAdapter(SubstrateContract):
         )
         return output
 
+    # ---------------------------------------------------------------- system prompts
+    #
+    # v1.8.0 splits the system prompt style by agent role. Teacher and
+    # Librarian get a prose-friendly prompt because their outputs ARE the
+    # user-facing product of the colony. Registry, Chronicler, Equilibrium,
+    # and Sentinel get JSON-strict prompts because their outputs are
+    # structured decisions consumed by other agents or the driver.
+
+    def _build_system_prompt(self, mirror: Mirror) -> str:
+        data = mirror.data or {}
+        identity = data.get("identity", {}) or {}
+        purpose = identity.get("purpose", "") or data.get("purpose", "")
+        caps_section = data.get("capabilities", {})
+        if isinstance(caps_section, dict):
+            caps_list = caps_section.get("capabilities", []) or []
+        else:
+            caps_list = list(caps_section) if caps_section else []
+
+        def _cap_line(c):
+            if isinstance(c, dict):
+                return f"  - {c.get('name', '?')}: {c.get('description', '')}"
+            return f"  - {c}"
+
+        caps_text = "\n".join(_cap_line(c) for c in caps_list) or "  (none declared)"
+
+        cc = data.get("comprehension_contract", {}) or {}
+        trust_tier = cc.get("trust_tier", "Observing")
+
+        # Discover current KB topics so agents know what the colony has.
+        kb_topics: list[str] = []
+        if self.kb_dir.exists():
+            for md in sorted(self.kb_dir.glob("*.md")):
+                kb_topics.append(md.stem)
+        kb_text = ", ".join(kb_topics) or "(none)"
+
+        header = (
+            f"You are {identity.get('name', mirror.agent_id)}, "
+            f"a {mirror.agent_id} in an Agent Colony.\n\n"
+            f"Your purpose: {purpose}\n\n"
+            f"Your capabilities:\n{caps_text}\n\n"
+            f"Your trust tier: {trust_tier}\n\n"
+            f"The colony knowledge base currently contains entries on: {kb_text}\n\n"
+        )
+
+        if mirror.agent_id in PROSE_AGENTS:
+            tail = (
+                "You will receive a task request as JSON. Respond with a "
+                "structured answer in the format requested. If the task asks "
+                "you to teach a topic you do not yet have a capability for, "
+                "say so explicitly and suggest that the user run "
+                "`research \"<topic>\" from <url>` (a feature coming in v1.9)."
+            )
+        else:
+            tail = (
+                "You will receive a request as JSON. You MUST respond with "
+                "ONLY a valid JSON object matching the schema appropriate to "
+                "your role. No prose. No markdown fences. No explanation. If "
+                "the request is ambiguous or malformed, return "
+                '{"error": "...", "reason": "..."}.'
+            )
+
+        return header + tail
+
     def _real_dispatch(self, mirror: Mirror, input: dict) -> dict:  # pragma: no cover
+        """Live-mode dispatch: real Claude API call with prompt caching and
+        model tiering.
+
+        This path is exercised by the live-mode test suite and by the REPL.
+        It is not executed in the default mock-mode tests (hence the pragma).
+        """
         if self._client is None:
             from anthropic import Anthropic  # local import to keep mock offline
 
             self._client = Anthropic()
 
-        data = mirror.data or {}
-        identity = data.get("identity", {})
-        capabilities = data.get("capabilities", [])
-        purpose = data.get("purpose", "")
-        trust_tier = data.get("autonomy", {}).get("trust_tier", "unknown")
+        system_prompt = self._build_system_prompt(mirror)
+        model = AGENT_MODELS.get(mirror.agent_id, self.model)
 
-        system = (
-            f"You are {identity.get('name', mirror.agent_id)}, "
-            f"role={identity.get('role', mirror.agent_id)}, trust_tier={trust_tier}.\n"
-            f"Purpose: {purpose}\n"
-            f"Capabilities: {', '.join(capabilities) if capabilities else '(none declared)'}\n"
-            "Respond with a single JSON object matching the task contract."
-        )
-        user = json.dumps(input, default=str)
+        # Anthropic prompt caching: mark the system block as ephemeral so
+        # repeat dispatches of the SAME agent pay only ~10% of the
+        # system-prompt cost. The cache lives ~5 minutes.
+        system_blocks = [
+            {
+                "type": "text",
+                "text": system_prompt,
+                "cache_control": {"type": "ephemeral"},
+            }
+        ]
+
+        user_message = json.dumps(input, default=str)
 
         resp = self._client.messages.create(
-            model=self.model,
-            max_tokens=1024,
-            system=system,
-            messages=[{"role": "user", "content": user}],
+            model=model,
+            max_tokens=2048,
+            system=system_blocks,
+            messages=[{"role": "user", "content": user_message}],
         )
+
+        # Record the usage block for tests and the REPL budget display.
+        usage = getattr(resp, "usage", None)
+        if usage is not None:
+            self.last_response_usage = {
+                "input_tokens": getattr(usage, "input_tokens", 0) or 0,
+                "output_tokens": getattr(usage, "output_tokens", 0) or 0,
+                "cache_creation_input_tokens": getattr(
+                    usage, "cache_creation_input_tokens", 0
+                ) or 0,
+                "cache_read_input_tokens": getattr(
+                    usage, "cache_read_input_tokens", 0
+                ) or 0,
+                "model": model,
+            }
+            # Accumulate into the budget if one is attached.
+            if self.budget is not None:
+                try:
+                    self.budget.record(usage)
+                except Exception:
+                    pass  # budget is best-effort; never break dispatch
+
+        # Extract the text response.
         text = "".join(
-            getattr(block, "text", "") for block in resp.content if getattr(block, "type", "") == "text"
+            getattr(block, "text", "")
+            for block in resp.content
+            if getattr(block, "type", "") == "text"
         )
+
+        # For prose agents, return the answer directly inside a small dict.
+        # For JSON agents, try to parse; retry once with a reminder if it
+        # fails, fall back to a structured error.
+        if mirror.agent_id in PROSE_AGENTS:
+            return {
+                "answer": text.strip(),
+                "topic": input.get("topic", ""),
+                "tokens": self.last_response_usage.get("input_tokens", 0)
+                + self.last_response_usage.get("output_tokens", 0)
+                if self.last_response_usage
+                else 0,
+                "mock": False,
+                "model": model,
+            }
+
+        # JSON-strict agents: try to parse
         try:
-            return json.loads(text)
+            return json.loads(text.strip())
         except json.JSONDecodeError:
-            return {"raw": text}
+            # One retry with an explicit reminder
+            retry_msg = (
+                "Your previous response was not valid JSON. "
+                "Return ONLY a JSON object, no prose, no markdown fences."
+            )
+            resp2 = self._client.messages.create(
+                model=model,
+                max_tokens=1024,
+                system=system_blocks,
+                messages=[
+                    {"role": "user", "content": user_message},
+                    {"role": "assistant", "content": text},
+                    {"role": "user", "content": retry_msg},
+                ],
+            )
+            usage2 = getattr(resp2, "usage", None)
+            if usage2 is not None and self.budget is not None:
+                try:
+                    self.budget.record(usage2)
+                except Exception:
+                    pass
+            text2 = "".join(
+                getattr(block, "text", "")
+                for block in resp2.content
+                if getattr(block, "type", "") == "text"
+            )
+            try:
+                return json.loads(text2.strip())
+            except json.JSONDecodeError:
+                return {
+                    "error": "malformed_response",
+                    "reason": "agent did not return valid JSON after retry",
+                    "raw": text2[:500],
+                }
 
     def _mock_response(self, agent_id: str, input: dict) -> dict:
         """Deterministic mock dispatcher.
