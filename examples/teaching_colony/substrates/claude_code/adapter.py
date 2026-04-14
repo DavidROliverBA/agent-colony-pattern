@@ -132,6 +132,15 @@ def _hash_state(data: Any) -> str:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
 
 
+#: The only keys _apply_changes accepts at the top level. Anything else
+#: raises — v1.8.1 closure of the DSL dual-key bypass flagged in review.
+#: Prior v1.7/v1.8 code accepted unknown keys and fell through to a
+#: backwards-compat deep-merge, which silently turned the legacy
+#: ``capability_add`` key (the exact v1.6.x bug the DSL was meant to kill)
+#: into a literal YAML write that bypassed §7 enforcement. Closed now.
+KNOWN_DSL_KEYS: set[str] = {"add_capability", "remove_capability", "patch"}
+
+
 def _apply_changes(mirror_data: dict, changes: dict) -> dict:
     """Apply a semantic change DSL to a Mirror dict.
 
@@ -143,18 +152,36 @@ def _apply_changes(mirror_data: dict, changes: dict) -> dict:
     - ``remove_capability``: "<name>"  removes a capability by name from
       ``capabilities.capabilities[]``.
     - ``patch``: {arbitrary subset}  deep-merges the patch onto the mirror
-      (the old v1.6.x behaviour, preserved for anything that is not a
-      named semantic operation).
+      (the old v1.6.x behaviour, kept only under this explicit key).
 
-    Any other top-level key in ``changes`` that is NOT one of the three
-    above is treated as a literal patch (deep-merged) for backwards
-    compatibility. This is the minimum change that removes the v1.6.x
-    ``capability_add`` bug while not breaking existing callers that pass
-    simple field updates.
+    **Any other top-level key raises ValueError.** v1.7/v1.8 accepted
+    unknown keys and silently deep-merged them for "backwards
+    compatibility", which re-introduced the v1.6.x bug: a caller passing
+    ``capability_add`` (legacy name) bypassed the DSL entirely and the
+    new key ended up as a literal top-level YAML field in the Mirror. The
+    Comprehension Contract enforcement ran successfully against a
+    ``mirror_patch`` classification instead of ``mirror_capability_add``,
+    the forbidden-list keyword match missed, and the demo reverted to
+    its v1.6.x failure mode. v1.8.1 closes this by rejecting unknown
+    DSL keys at the gate. Callers must migrate to the correct key names.
 
     Returns a new dict — mirror_data is not mutated in place.
     """
     out = dict(mirror_data)  # shallow; _deep_merge will do the deep work
+
+    # v1.8.1: reject unknown DSL keys up front. No backwards-compat
+    # fallthrough. See KNOWN_DSL_KEYS for the allowed set.
+    for key in (changes or {}).keys():
+        if key not in KNOWN_DSL_KEYS:
+            suggestion = ""
+            if key.lower() in ("capability_add", "capabilityadd", "capabilities_add"):
+                suggestion = " Did you mean 'add_capability'?"
+            elif key.lower() in ("capability_remove", "capabilityremove", "capabilities_remove"):
+                suggestion = " Did you mean 'remove_capability'?"
+            raise ValueError(
+                f"Unknown change DSL key: {key!r}. "
+                f"Allowed keys: {sorted(KNOWN_DSL_KEYS)}.{suggestion}"
+            )
 
     for key, value in (changes or {}).items():
         if key == "add_capability":
@@ -193,12 +220,6 @@ def _apply_changes(mirror_data: dict, changes: dict) -> dict:
             if not isinstance(value, dict):
                 raise ValueError("patch requires a dict value")
             out = _deep_merge(out, value)
-
-        else:
-            # Backwards-compat: treat unknown top-level keys as literal patch
-            # entries (v1.6.x behaviour). Emit a warning comment in the
-            # evolution log downstream would be ideal; for now we just merge.
-            out = _deep_merge(out, {key: value})
 
     return out
 

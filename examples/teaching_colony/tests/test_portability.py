@@ -207,16 +207,16 @@ def _run_minimal_lifecycle(adapter: Any) -> dict:
     observed["cosign_granted"] = sig.granted
 
     # 6. Apply the mirror update (append, don't replace)
-    existing = _capability_list(adapter.read_mirror("teacher").data)
-    merged = list(existing) + [
-        {
-            "name": proposal.get("capability", "teach_agent_colony_pattern"),
-            "maturity": "nascent",
-        }
-    ]
+    # v1.8.1: use the add_capability DSL (the pre-merged nested-dict form
+    # is rejected by the stricter DSL gate in _apply_changes).
     adapter.update_mirror(
         "teacher",
-        {"capabilities": {"capabilities": merged}},
+        {
+            "add_capability": {
+                "name": proposal.get("capability", "teach_agent_colony_pattern"),
+                "maturity": "nascent",
+            }
+        },
         co_signer="sentinel",
     )
 
@@ -259,13 +259,10 @@ def _ma_persists_mirror_updates() -> bool:
         root = _seed_colony_root(Path(td) / "probe")
         adapter = ManagedAgentsAdapter(repo_root=root, mock=True)
         before = _capability_names(adapter.read_mirror("teacher").data)
-        merged = list(_capability_list(adapter.read_mirror("teacher").data)) + [
-            {"name": "_probe_cap", "maturity": "nascent"}
-        ]
         try:
             adapter.update_mirror(
                 "teacher",
-                {"capabilities": {"capabilities": merged}},
+                {"add_capability": {"name": "_probe_cap", "maturity": "nascent"}},
                 co_signer="sentinel",
             )
         except NotImplementedError:

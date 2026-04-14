@@ -90,14 +90,12 @@ def test_write_and_read_kb(colony_root: Path) -> None:
 
 def test_update_mirror_records_audit_and_hashes(colony_root: Path) -> None:
     adapter = ClaudeCodeAdapter(repo_root=colony_root, mock=True)
-    # Read current capabilities (schema dict form) and append one.
-    current_list = _capability_list(adapter.read_mirror("teacher").data)
-    merged = list(current_list) + [
-        {"name": "teach_agent_colony_pattern", "maturity": "nascent"}
-    ]
+    # v1.8.1: use the add_capability DSL (the legacy capability_add key
+    # and the literal {capabilities: {capabilities: [...]}} form are now
+    # rejected by the stricter DSL gate in _apply_changes).
     audit = adapter.update_mirror(
         "teacher",
-        {"capabilities": {"capabilities": merged}},
+        {"add_capability": {"name": "teach_agent_colony_pattern", "maturity": "nascent"}},
         co_signer="sentinel",
     )
     assert audit.pre_state_hash
@@ -189,14 +187,10 @@ def _run_inline_lifecycle(adapter: ClaudeCodeAdapter) -> None:
     )
     assert sig.granted
 
-    # 5. Apply mirror update — append, don't replace (schema section form)
-    existing = _capability_list(adapter.read_mirror(proposal["agent_id"]).data)
-    merged_caps = list(existing) + [
-        {"name": proposal["capability"], "maturity": "nascent"}
-    ]
+    # 5. Apply mirror update via the semantic DSL (v1.8.1)
     adapter.update_mirror(
         proposal["agent_id"],
-        {"capabilities": {"capabilities": merged_caps}},
+        {"add_capability": {"name": proposal["capability"], "maturity": "nascent"}},
         co_signer="sentinel",
     )
 

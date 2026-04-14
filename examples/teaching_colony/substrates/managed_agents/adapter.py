@@ -465,7 +465,21 @@ class ManagedAgentsAdapter(SubstrateContract):
                 except Exception:
                     existing = {}
 
-            # Inline minimal change DSL — matches Claude Code's _apply_changes
+            # Inline minimal change DSL — matches Claude Code's _apply_changes.
+            # v1.8.1: reject unknown keys up front. The backwards-compat
+            # fallthrough silently re-introduced the v1.6.x bug via the
+            # legacy ``capability_add`` key. Closed now on both substrates.
+            _KNOWN_DSL = {"add_capability", "remove_capability", "patch"}
+            for _k in (changes or {}).keys():
+                if _k not in _KNOWN_DSL:
+                    suggestion = ""
+                    if _k.lower() in ("capability_add", "capabilityadd"):
+                        suggestion = " Did you mean 'add_capability'?"
+                    raise ValueError(
+                        f"Unknown change DSL key: {_k!r}. "
+                        f"Allowed keys: {sorted(_KNOWN_DSL)}.{suggestion}"
+                    )
+
             merged = dict(existing)
             for key, value in (changes or {}).items():
                 if key == "add_capability":
@@ -491,12 +505,13 @@ class ManagedAgentsAdapter(SubstrateContract):
                             c for c in caps_section.get("capabilities", [])
                             if not (isinstance(c, dict) and c.get("name") == name)
                         ]
-                else:
-                    # Fallback: treat as literal patch (deep-merge top level).
-                    if isinstance(value, dict) and isinstance(merged.get(key), dict):
-                        merged[key] = {**merged[key], **value}
-                    else:
-                        merged[key] = value
+                elif key == "patch":
+                    if isinstance(value, dict):
+                        for pk, pv in value.items():
+                            if isinstance(pv, dict) and isinstance(merged.get(pk), dict):
+                                merged[pk] = {**merged[pk], **pv}
+                            else:
+                                merged[pk] = pv
 
             def _hash(d: dict) -> str:
                 payload = yaml.safe_dump(d, sort_keys=True, default_flow_style=False)

@@ -139,9 +139,11 @@ def test_read_mirror_missing_returns_empty(
 def test_update_mirror_mock_returns_audit(
     adapter: ManagedAgentsAdapter,
 ) -> None:
+    # v1.8.1: use add_capability DSL (the stricter gate rejects the
+    # pre-DSL flat list form).
     audit = adapter.update_mirror(
         "teacher",
-        {"capabilities": ["teach_agent_colony_pattern"]},
+        {"add_capability": {"name": "teach_agent_colony_pattern", "maturity": "nascent"}},
         co_signer="sentinel",
     )
     assert audit.action == "update_mirror"

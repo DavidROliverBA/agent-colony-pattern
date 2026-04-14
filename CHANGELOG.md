@@ -5,6 +5,53 @@ All notable changes to the Agent Colony Pattern are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.1] — 2026-04-14
+
+### DSL dual-key bypass closed — §7 enforcement hardened
+
+v1.8.1 closes a latent bypass in the semantic change DSL that the external review of v1.8.0 flagged. Before this patch, `_apply_changes` had a backwards-compat fallthrough that silently deep-merged any unknown top-level key as a literal YAML patch. A caller passing the legacy `capability_add` name (singular — the v1.6.x bug key) bypassed the DSL entirely: the change was classified as `mirror_patch` (Local blast radius), the blast-radius-ceiling check passed trivially, the forbidden-list keyword match missed, and the new capability ended up as a floating top-level YAML stanza. The exact v1.6.x failure mode the DSL was meant to kill.
+
+v1.8.1 replaces the fallthrough with a hard whitelist.
+
+### Changed
+
+- **`examples/teaching_colony/substrates/claude_code/adapter.py`** — `_apply_changes` now raises `ValueError` for any top-level key not in the `KNOWN_DSL_KEYS` set (`{"add_capability", "remove_capability", "patch"}`). Legacy names that look like DSL keys get a "did you mean …" hint in the exception message.
+- **`examples/teaching_colony/substrates/managed_agents/adapter.py`** — same check in the Managed Agents adapter's mock-mode inline DSL handler. Both substrates reject unknown keys identically.
+- **`examples/teaching_colony/tests/test_contract_enforcement.py`** — four new regression tests:
+  - `test_legacy_capability_add_key_is_rejected` — provokes the exact v1.6.x bypass from the review
+  - `test_random_unknown_dsl_key_is_rejected` — generalises to any non-DSL key
+  - `test_patch_key_still_works_for_legitimate_literal_updates` — confirms the explicit `patch` escape hatch survives
+  - `test_mixed_dsl_and_legacy_key_rejects_entire_change` — atomic gate: a mix of valid and invalid keys rejects the whole change before any mutation
+
+### Existing tests migrated
+
+Four tests were using the pre-DSL nested-dict form `{"capabilities": {"capabilities": [...]}}` to update capabilities. That form was unknown to the DSL and used to fall through to deep-merge — now it raises. Migrated to the semantic `add_capability` key:
+
+- `substrates/claude_code/tests/test_cycle.py::test_update_mirror_records_audit_and_hashes`
+- `substrates/claude_code/tests/test_cycle.py::test_full_lifecycle_mock` (inline lifecycle)
+- `substrates/managed_agents/tests/test_cycle.py::test_update_mirror_mock_returns_audit`
+- `tests/test_portability.py::_run_lifecycle` + `_ma_persists_mirror_updates` probe
+
+### Test results
+
+```
+76 passed, 3 deselected (live), 2 xfailed
+```
+
+Four more tests than v1.8.0 (the new regression suite). Every pre-existing mock-mode test still green. The live tests and Managed Agents xfails are unchanged.
+
+### Why this was a real bug and not just a style preference
+
+The §7 Comprehension Contract has three structural invariants (closed action enum, co-sign, append-only audit log). v1.7.0 made them real in `update_mirror` — but the enforcement ran against a *classified* action class, and classification came from `_change_action_class` which inferred from the DSL keys. Unknown keys fell through to `mirror_patch`, which had a default blast radius of `Local`, which any agent's ceiling trivially accepts, which meant the forbidden-list check also missed because its keyword matching relied on DSL-aware descriptions. The review's exact words: *"the Comprehension Contract enforcement can still be fully bypassed by a caller using the legacy key name."*
+
+v1.8.1 removes the conditional. The enforcement story no longer has a qualifier.
+
+### Why ship this as v1.8.1 rather than fold it into v1.9
+
+The review landed after v1.8.0 shipped and after v1.8.0's memory was written. Folding this into v1.9 would mean releasing v1.8 with a known governance hole for however long v1.9 takes. That repeats the v1.6.x failure mode. Tiny targeted patch, ship now, keep v1.9 a clean increment.
+
+---
+
 ## [1.8.0] — 2026-04-14
 
 ### Teaching Colony runs on real Claude for the first time
