@@ -5,6 +5,30 @@ All notable changes to the Agent Colony Pattern are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] — 2026-04-14
+
+### Added
+- **Principle 7 — Accessibility through abstraction** added to the core set in `manifesto.md`, `thesis.md` §3, `specification.md` §1, and `README.md`. The principle states that the colony must be understandable at every audience's depth, no deeper; complexity is an investment paid once upfront so that each audience sees only what it needs. Corollary: *ease is earned* — the simple surface is the output of hard substrate work, not the absence of it.
+- **`specification.md` §1 — Audience Lenses** — new subsection of §1 Definition and Core Principles, parallel in shape to Scales of Application. Defines the canonical realisation of Principle 7 as a five-lens model: Newcomer → Observer → Operator → Beekeeper → Architect. Each lens has a canonical artefact in this repository. Lenses are a *view* over the full colony, not a *configuration* that simplifies it — all mechanisms are present and enforced at every lens. Sequential by default with re-entry always possible; pacing can compress; artefact mapping is required for conformance; lenses can be collapsed or split per context.
+- **`specification.md` §8.5.1** — one new conformance anti-pattern: **lens inversion** (forcing low-depth audiences to read high-depth artefacts to use the colony at all).
+- **`diagrams/lens-traversal.svg`** — new diagram visually representing the five sequential lenses, their canonical artefacts, and the re-entry arrow from any lens back to Newcomer.
+
+### Changed
+- **`README.md`** — six principles → seven; version badge v1.4.0 → v1.5.0; roadmap entry added for v1.5.0; status section rewritten; citation line updated.
+- **`CITATION.cff`** — version v1.5.0, date 2026-04-14.
+- **`manifesto.md`** — "Six Principles" heading → "Seven Principles"; new Principle 7 section added with the beekeeper framing and the ease-is-earned corollary.
+- **`thesis.md`** — "Six Principles" heading → "Seven Principles"; new Principle 7 subsection added to §3.
+
+### Why
+
+Principle 7 formalises what the pattern had always been doing implicitly. The repository already has artefacts pitched at different depths — the village article on Medium, the equilibrium playground, the hello-colony-runtime, the specification, the thesis — but until v1.5.0 this stratification was ad-hoc. Naming the lenses makes it explicit, testable, and conformance-relevant. The beekeeper analogy captures the correct disposition: most people understand what a beehive is and what the queen bee does, but will never understand the processes, jobs, and roles all the bees perform unless they become beekeepers. Most audiences for an Agent Colony need a metaphor and an outcome, not a mechanism. Forcing them to read the specification to benefit from the pattern was a violation of a principle that had not yet been named.
+
+### Known gap
+
+The existing six mechanism diagrams (four-layer architecture, equilibrium system, maturity model, agent mirror, memory cycle, evolutionary context) are pitched at the Beekeeper/Architect level. By Principle 7's own test, the Newcomer and Observer lenses are under-served in diagram form — they would need companion "village-level" visual explanations that do not yet exist. This is deferred to v1.6+ rather than shipping v1.5.0 pretending the existing diagrams already serve all five lenses.
+
+---
+
 ## [1.4.0] — 2026-04-13
 
 ### Added

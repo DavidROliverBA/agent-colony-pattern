@@ -157,7 +157,7 @@ An **Agent Colony** is an architectural pattern for building self-governing ecos
 
 It is not a framework, a platform, or a product. It is a pattern — like microservices or event-driven architecture — that can be implemented in any technology, on any infrastructure, by any organisation.
 
-## Six Principles
+## Seven Principles
 
 **Principle 1: Coexistence, not control.**
 
@@ -210,6 +210,14 @@ _Rationale:_ Security imposed from outside the colony creates an adversarial rel
 _Implications:_ Every agent carries a security posture in its Agent Mirror. The colony maintains an Immune System layer — Sentinel, Response Coordinator, and Patch agents — that operates on different timescales and with different authority than governance. One corollary is explicit: security upgrades are always preauthorised. An agent that needs to patch a vulnerability does not wait for a governance cycle. Improving security posture is always a sufficient reason to self-upgrade, regardless of lifecycle stage or evolution budget. An agent that cannot improve its own security is a liability to the colony.
 
 Preauthorisation is not unconditional. It is bounded by three invariants. First, a closed enum of preauthorised actions — patch application, dependency update, credential rotation, certificate renewal, signature update, self-quarantine. Nothing outside the enum is preauthorised; anything else follows the normal governance path. Second, a second-party co-sign by the Immune System — every preauthorised action requires a signature from the Sentinel or Patch Agent, depending on the action class. A single compromised agent cannot self-authorise; it needs collusion across the L1/L2 boundary, which raises the attack cost. Third, an append-only audit log the acting agent cannot redact, with a bounded rollback window. An action that cannot be rolled back is not preauthorised; it is escalated. The canonical attack — a compromised agent classifying exfiltration as a "security upgrade" — fails at the enum (exfiltration is not in the list), at the co-sign (the Immune System refuses), and at the log (the action is recorded and reversible). The specification gives the full formulation.
+
+**Principle 7: Accessibility through abstraction.**
+
+_Statement:_ The colony must be understandable at every audience's depth, no deeper. Complexity is an investment paid once, upfront, so that each audience sees only what it needs.
+
+_Rationale:_ The previous six principles describe how the colony *works*; they say nothing about how the colony *presents itself*. In practice, this gap forces every audience to read the specification to benefit from the pattern — an unreasonable demand that collapses the colony's accessibility to the small set of people willing to read several hundred pages of architecture. The beekeeper analogy captures the correct disposition: most people understand what a beehive is and what the queen bee does, but will never understand the processes, jobs, and roles all the bees perform unless they become beekeepers. The same must be true of an Agent Colony. Most audiences need a metaphor and an outcome, not a mechanism.
+
+_Implications:_ An implementation claiming conformance to Principle 7 must define a set of *audience lenses* — canonical perspectives through which different audiences encounter the colony — and map an artefact to each lens. The specification names five sequential lenses as the default: Newcomer (the metaphor), Observer (the outcome), Operator (the dashboard), Beekeeper (the mechanism), and Architect (the substrate). Lenses are traversed sequentially and most audiences stop at Observer. Re-entry is always possible: anyone meeting an unfamiliar colony is briefly a Newcomer again, regardless of their role elsewhere. Pacing compresses: a colony can be instantiated in an afternoon, so the traversal may take days, not decades. Crucially, lenses are a *view* over the full colony, not a *configuration* that simplifies it — all mechanisms are present and enforced at every lens. An implementation that turned mechanisms off for the Newcomer lens would be violating Principle 6 (mutual defence), not fulfilling Principle 7. The corollary of Principle 7 is therefore: *ease is earned*. The simple surface is the output of hard substrate work, not the absence of it.
 
 ## Scales of Application
 

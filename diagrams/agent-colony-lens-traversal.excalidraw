@@ -1,0 +1,83 @@
+{
+  "type": "excalidraw",
+  "version": 2,
+  "source": "https://github.com/DavidROliverBA/agent-colony-pattern",
+  "elements": [
+    {
+      "type": "text",
+      "version": 1,
+      "versionNonce": 1,
+      "isDeleted": false,
+      "id": "title",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "strokeStyle": "solid",
+      "roughness": 0,
+      "opacity": 100,
+      "angle": 0,
+      "x": 240,
+      "y": 20,
+      "strokeColor": "#0f172a",
+      "backgroundColor": "transparent",
+      "width": 920,
+      "height": 36,
+      "seed": 1,
+      "groupIds": [],
+      "frameId": null,
+      "roundness": null,
+      "boundElements": [],
+      "updated": 1,
+      "link": null,
+      "locked": false,
+      "fontSize": 28,
+      "fontFamily": 1,
+      "text": "Audience Lenses — Sequential Traversal",
+      "textAlign": "center",
+      "verticalAlign": "top",
+      "containerId": null,
+      "originalText": "Audience Lenses — Sequential Traversal",
+      "lineHeight": 1.25,
+      "baseline": 26
+    },
+    {
+      "type": "rectangle", "version": 1, "versionNonce": 2, "isDeleted": false,
+      "id": "lens-newcomer", "fillStyle": "solid", "strokeWidth": 2, "strokeStyle": "solid",
+      "roughness": 0, "opacity": 100, "angle": 0, "x": 40, "y": 130, "width": 240, "height": 200,
+      "strokeColor": "#c2410c", "backgroundColor": "#fed7aa", "seed": 2, "groupIds": [],
+      "frameId": null, "roundness": {"type": 3}, "boundElements": [], "updated": 1, "link": null, "locked": false
+    },
+    {
+      "type": "rectangle", "version": 1, "versionNonce": 3, "isDeleted": false,
+      "id": "lens-observer", "fillStyle": "solid", "strokeWidth": 2, "strokeStyle": "solid",
+      "roughness": 0, "opacity": 100, "angle": 0, "x": 300, "y": 130, "width": 240, "height": 200,
+      "strokeColor": "#047857", "backgroundColor": "#a7f3d0", "seed": 3, "groupIds": [],
+      "frameId": null, "roundness": {"type": 3}, "boundElements": [], "updated": 1, "link": null, "locked": false
+    },
+    {
+      "type": "rectangle", "version": 1, "versionNonce": 4, "isDeleted": false,
+      "id": "lens-operator", "fillStyle": "solid", "strokeWidth": 2, "strokeStyle": "solid",
+      "roughness": 0, "opacity": 100, "angle": 0, "x": 560, "y": 130, "width": 240, "height": 200,
+      "strokeColor": "#047857", "backgroundColor": "#86efac", "seed": 4, "groupIds": [],
+      "frameId": null, "roundness": {"type": 3}, "boundElements": [], "updated": 1, "link": null, "locked": false
+    },
+    {
+      "type": "rectangle", "version": 1, "versionNonce": 5, "isDeleted": false,
+      "id": "lens-beekeeper", "fillStyle": "solid", "strokeWidth": 2, "strokeStyle": "solid",
+      "roughness": 0, "opacity": 100, "angle": 0, "x": 820, "y": 130, "width": 240, "height": 200,
+      "strokeColor": "#6d28d9", "backgroundColor": "#ddd6fe", "seed": 5, "groupIds": [],
+      "frameId": null, "roundness": {"type": 3}, "boundElements": [], "updated": 1, "link": null, "locked": false
+    },
+    {
+      "type": "rectangle", "version": 1, "versionNonce": 6, "isDeleted": false,
+      "id": "lens-architect", "fillStyle": "solid", "strokeWidth": 2, "strokeStyle": "solid",
+      "roughness": 0, "opacity": 100, "angle": 0, "x": 1080, "y": 130, "width": 280, "height": 200,
+      "strokeColor": "#1e40af", "backgroundColor": "#93c5fd", "seed": 6, "groupIds": [],
+      "frameId": null, "roundness": {"type": 3}, "boundElements": [], "updated": 1, "link": null, "locked": false
+    }
+  ],
+  "appState": {
+    "gridSize": null,
+    "viewBackgroundColor": "#ffffff"
+  },
+  "files": {}
+}

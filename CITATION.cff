@@ -5,8 +5,8 @@ type: software
 authors:
   - family-names: Oliver
     given-names: David
-version: "1.4.0"
-date-released: 2026-04-13
+version: "1.5.0"
+date-released: 2026-04-14
 url: "https://github.com/DavidROliverBA/agent-colony-pattern"
 license: CC-BY-4.0
 keywords:
@@ -21,5 +21,6 @@ abstract: >
   A universal architectural pattern for self-governing ecosystems of autonomous
   AI agents that persist beyond projects, evolve across technology generations,
   and coexist with human organisations through defined boundaries. The work
-  includes six principles, the Agent Mirror identity standard, and analysis of
-  six gaps in current standards.
+  includes seven principles (including accessibility through abstraction and
+  the audience-lens model), the Agent Mirror identity standard, and analysis
+  of six gaps in current standards.

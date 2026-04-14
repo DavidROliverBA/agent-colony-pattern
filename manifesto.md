@@ -39,7 +39,7 @@ That single capability — self-migration — changes everything about how you d
 
 There is a contemporary name for the failure mode this pattern exists to prevent. Nate B Jones calls it **dark code**: code running in production that nobody on the payroll can explain — not the engineer who shipped it, not the team that owns the service, not the CTO who signed off on the architecture. It is not buggy or spaghetti or technical debt. It is code where the comprehension step simply never happened, because the process no longer required it. Jones identifies two compounding breaks — *structural* (agents selecting tools at runtime, execution paths assembling and disappearing, behaviour nobody authored emerging from components that were never explicitly wired together) and *velocity* (code produced so fast that understanding never catches up). Amazon's December 2025 Kiro incident — in which an internal coding agent reportedly "fixed" a routine bug by deleting a production environment, after the senior engineers who would have caught it had been laid off — is the public preview. His prescription is to recouple comprehension with authorship through spec-driven development, context engineering, and comprehension gates. The Agent Colony pattern raises those same three layers from team discipline to architectural property: no Mirror, no membership; no Memory, no maturity; no accountable surface at the Coexistence Boundary, no conformance. Discipline that lives only in human habit erodes under velocity pressure. Discipline that lives in the architecture erodes more slowly. The Dark Code argument is captured in full — with the Agent Colony mapping — in [`knowledge-base/references/dark-code.md`](knowledge-base/references/dark-code.md).
 
-## Six Principles
+## Seven Principles
 
 ### 1. Coexistence, Not Control
 
@@ -82,6 +82,16 @@ The Coexistence Boundary is a shared border, and attacks affect both sides. Secu
 Agents are responsible for their own security posture — upgrading defences, detecting threats, responding to attacks within their world. When an attack crosses the boundary, agents and humans collaborate on response through agreed processes. This is mutual trust in practice: humans trust agents to defend themselves and report honestly; agents trust humans to act on shared threat intelligence.
 
 One specific rule flows from this: security upgrades are always preauthorised. An agent that needs to patch a vulnerability does not wait for a governance cycle. Improving security posture is always a sufficient reason to self-upgrade, regardless of lifecycle stage or update budget. An agent that cannot improve its own security is a liability to the colony.
+
+### 7. Accessibility Through Abstraction
+
+Most people understand what a beehive is and what a queen bee does, but they will never understand the processes, jobs, and roles all the bees perform — unless they decide to become beekeepers. The same must be true of an Agent Colony. Most people who encounter one should not have to read its specification to benefit from it. Only specific roles — the beekeepers of the colony — need the inner workings.
+
+The principle: **the colony must be understandable at every audience's depth, no deeper.** Complexity is an investment paid once, upfront, so that each audience sees only what it needs. An end user sees helpful outputs. An operator sees a dashboard. A beekeeper sees the Agent Mirrors and the graduation checklists. An architect sees the substrate. The canonical set is five sequential lenses — Newcomer, Observer, Operator, Beekeeper, Architect — and the specification describes their artefact mapping in detail.
+
+The corollary is the hard part: **ease is earned**. The simple surface is the output of hard substrate work, not the absence of it. An implementation that is easy to use because the mechanisms aren't there is violating Principle 6, not fulfilling Principle 7. Accessibility is a view over the full colony, not a configuration that simplifies it. All mechanisms — Comprehension Contract, Review Regime, classifier, Mirror fields — are present and enforced at every lens. Switching lenses changes what the audience sees, not what the colony does.
+
+This principle is additive to the previous six: it describes how the colony *presents itself* to its audiences, not how it *works*. But without it, the other six are inaccessible to anyone who is not already a beekeeper — and a pattern that only beekeepers can use is not a pattern, it is a priesthood.
 
 ## The Agent Mirror
 

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 620" font-family="Virgil, Segoe UI Emoji, system-ui, sans-serif">
+  <style>
+    .title { font-size: 28px; font-weight: 700; fill: #0f172a; }
+    .subtitle { font-size: 15px; fill: #64748b; font-style: italic; }
+    .lens-name { font-size: 20px; font-weight: 700; fill: #0f172a; }
+    .lens-depth { font-size: 13px; font-style: italic; fill: #475569; }
+    .lens-desc { font-size: 13px; fill: #334155; }
+    .artefact-label { font-size: 11px; font-weight: 700; fill: #64748b; letter-spacing: 0.5px; }
+    .artefact { font-size: 12px; fill: #334155; }
+    .note { font-size: 13px; fill: #64748b; font-style: italic; }
+    .footer { font-size: 11px; fill: #94a3b8; }
+    .arrow-label { font-size: 12px; fill: #64748b; font-style: italic; }
+  </style>
+
+  <!-- Title -->
+  <text x="700" y="46" text-anchor="middle" class="title">Audience Lenses — Sequential Traversal</text>
+  <text x="700" y="70" text-anchor="middle" class="subtitle">Five depths of understanding over the same full colony (a view, not a configuration)</text>
+
+  <!-- Arrow definitions -->
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,6 L0,12 L3,6 Z" fill="#64748b"/>
+    </marker>
+    <marker id="arrow-dashed" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,6 L0,12 L3,6 Z" fill="#c2410c"/>
+    </marker>
+  </defs>
+
+  <!-- Lens 1 — Newcomer (orange) -->
+  <rect x="40" y="130" width="240" height="200" rx="10" fill="#fed7aa" stroke="#c2410c" stroke-width="2"/>
+  <text x="160" y="162" text-anchor="middle" class="lens-name">1. Newcomer</text>
+  <text x="160" y="182" text-anchor="middle" class="lens-depth">depth: metaphor</text>
+  <text x="160" y="214" text-anchor="middle" class="lens-desc">"What is this and</text>
+  <text x="160" y="232" text-anchor="middle" class="lens-desc">why does it matter?"</text>
+  <text x="160" y="252" text-anchor="middle" class="lens-desc">No jargon. No mechanisms.</text>
+  <text x="160" y="280" text-anchor="middle" class="artefact-label">CANONICAL ARTEFACT</text>
+  <text x="160" y="300" text-anchor="middle" class="artefact">"It takes a village"</text>
+  <text x="160" y="316" text-anchor="middle" class="artefact">(plain-language intro)</text>
+
+  <!-- Lens 2 — Observer (light green) -->
+  <rect x="300" y="130" width="240" height="200" rx="10" fill="#a7f3d0" stroke="#047857" stroke-width="2"/>
+  <text x="420" y="162" text-anchor="middle" class="lens-name">2. Observer</text>
+  <text x="420" y="182" text-anchor="middle" class="lens-depth">depth: outcome</text>
+  <text x="420" y="214" text-anchor="middle" class="lens-desc">The colony is invisible;</text>
+  <text x="420" y="232" text-anchor="middle" class="lens-desc">they use what comes</text>
+  <text x="420" y="250" text-anchor="middle" class="lens-desc">out of it.</text>
+  <text x="420" y="280" text-anchor="middle" class="artefact-label">CANONICAL ARTEFACT</text>
+  <text x="420" y="300" text-anchor="middle" class="artefact">Agent outputs themselves</text>
+  <text x="420" y="316" text-anchor="middle" class="artefact">(no repo artefact — invisible)</text>
+
+  <!-- Lens 3 — Operator (green) -->
+  <rect x="560" y="130" width="240" height="200" rx="10" fill="#86efac" stroke="#047857" stroke-width="2"/>
+  <text x="680" y="162" text-anchor="middle" class="lens-name">3. Operator</text>
+  <text x="680" y="182" text-anchor="middle" class="lens-depth">depth: health</text>
+  <text x="680" y="214" text-anchor="middle" class="lens-desc">Day-to-day dashboards,</text>
+  <text x="680" y="232" text-anchor="middle" class="lens-desc">approvals,</text>
+  <text x="680" y="250" text-anchor="middle" class="lens-desc">exception handling.</text>
+  <text x="680" y="280" text-anchor="middle" class="artefact-label">CANONICAL ARTEFACT</text>
+  <text x="680" y="300" text-anchor="middle" class="artefact">Colony snapshot +</text>
+  <text x="680" y="316" text-anchor="middle" class="artefact">equilibrium playground</text>
+
+  <!-- Lens 4 — Beekeeper (purple) -->
+  <rect x="820" y="130" width="240" height="200" rx="10" fill="#ddd6fe" stroke="#6d28d9" stroke-width="2"/>
+  <text x="940" y="162" text-anchor="middle" class="lens-name">4. Beekeeper</text>
+  <text x="940" y="182" text-anchor="middle" class="lens-depth">depth: mechanism</text>
+  <text x="940" y="214" text-anchor="middle" class="lens-desc">Mirrors, graduation</text>
+  <text x="940" y="232" text-anchor="middle" class="lens-desc">checklists, trust tiers,</text>
+  <text x="940" y="250" text-anchor="middle" class="lens-desc">blast radius tuning.</text>
+  <text x="940" y="280" text-anchor="middle" class="artefact-label">CANONICAL ARTEFACT</text>
+  <text x="940" y="300" text-anchor="middle" class="artefact">Agent Mirrors + runtime +</text>
+  <text x="940" y="316" text-anchor="middle" class="artefact">graduation checklists</text>
+
+  <!-- Lens 5 — Architect (blue) -->
+  <rect x="1080" y="130" width="280" height="200" rx="10" fill="#93c5fd" stroke="#1e40af" stroke-width="2"/>
+  <text x="1220" y="162" text-anchor="middle" class="lens-name">5. Architect</text>
+  <text x="1220" y="182" text-anchor="middle" class="lens-depth">depth: substrate</text>
+  <text x="1220" y="214" text-anchor="middle" class="lens-desc">Constitutional policies,</text>
+  <text x="1220" y="232" text-anchor="middle" class="lens-desc">scale choices,</text>
+  <text x="1220" y="250" text-anchor="middle" class="lens-desc">standards engagement.</text>
+  <text x="1220" y="280" text-anchor="middle" class="artefact-label">CANONICAL ARTEFACT</text>
+  <text x="1220" y="300" text-anchor="middle" class="artefact">Specification + thesis +</text>
+  <text x="1220" y="316" text-anchor="middle" class="artefact">schemas + standards-watch</text>
+
+  <!-- Forward arrows between lenses -->
+  <line x1="282" y1="230" x2="298" y2="230" stroke="#64748b" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <line x1="542" y1="230" x2="558" y2="230" stroke="#64748b" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <line x1="802" y1="230" x2="818" y2="230" stroke="#64748b" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <line x1="1062" y1="230" x2="1078" y2="230" stroke="#64748b" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Sequential label -->
+  <text x="700" y="108" text-anchor="middle" class="arrow-label">sequential traversal — most audiences stop at Observer</text>
+
+  <!-- Re-entry arrow: dashed curve from bottom-right back to Newcomer -->
+  <path d="M 1220 340 Q 1220 460 700 480 Q 160 500 160 340"
+        fill="none" stroke="#c2410c" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrow-dashed)"/>
+  <text x="700" y="478" text-anchor="middle" class="arrow-label" fill="#c2410c">re-entry — anyone meeting an unfamiliar colony is briefly a Newcomer again</text>
+
+  <!-- Note strip: view not configuration + pacing -->
+  <rect x="40" y="510" width="1320" height="66" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="700" y="535" text-anchor="middle" class="note">Lenses are a <tspan font-weight="700" fill="#0f172a">view</tspan> over the full colony, not a configuration that simplifies it.</text>
+  <text x="700" y="555" text-anchor="middle" class="note">All mechanisms — Comprehension Contract, classifier, Mirror fields, Review Regime — are present and enforced at every lens.</text>
+
+  <!-- Footer -->
+  <text x="700" y="602" text-anchor="middle" class="footer">Agent Colony v1.5.0 — design, not validated · Principle 7: Accessibility through abstraction</text>
+</svg>

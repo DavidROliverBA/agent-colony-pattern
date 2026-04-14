@@ -6,7 +6,7 @@ The Agent Colony is an architectural pattern for building self-governing ecosyst
 
 > 📖 **New here? Start with the lay-audience article:** [*It takes a village — the Agent Colony definition*](https://medium.com/@davidroliver/it-takes-a-village-the-agent-colony-definition-32b9bd714bb8) on Medium (16 min read). It explains the pattern using the metaphor of a village, with no jargon. The text is also preserved in [`knowledge-base/writings/`](knowledge-base/writings/2026-04-12-it-takes-a-village.md).
 
-Current version: **v1.4.0** · [What's new](CHANGELOG.md) · [Latest release](https://github.com/DavidROliverBA/agent-colony-pattern/releases/latest)
+Current version: **v1.5.0** · [What's new](CHANGELOG.md) · [Latest release](https://github.com/DavidROliverBA/agent-colony-pattern/releases/latest)
 
 ## What's in this repository
 
@@ -35,7 +35,7 @@ If you only have ten minutes: open `examples/hello-colony/colony-snapshot.yaml` 
 
 Every paradigm shift in distributed systems has changed the unit of independent work and the way populations of those units are governed. Monoliths, SOA, microservices — each answered the question differently. AI agents are the next answer, but agents add three things that did not exist before: autonomy, self-evolution, and lifecycle identity. Building agent ecosystems with the patterns we used for services will repeat every mistake we made before, plus new ones we have not seen yet. The Agent Colony is a pattern language for doing it differently.
 
-## The six principles
+## The seven principles
 
 1. **Coexistence, not control** — agents and humans share a border, not a chain of command
 2. **Identity over implementation** — what an agent *is* matters more than how it is built
@@ -43,8 +43,11 @@ Every paradigm shift in distributed systems has changed the unit of independent 
 4. **Longevity by design** — the colony outlives any technology generation
 5. **Earned autonomy** — self-governance is earned through demonstrated trustworthiness
 6. **Mutual defence** — security is collaborative, not imposed
+7. **Accessibility through abstraction** — the colony is understandable at every audience's depth, no deeper
 
 Principle 6 has a corollary: **security upgrades are preauthorised** — an agent improving its own security does not wait for a governance cycle. v1.1.1 strengthened this with three invariants (closed action enum, Immune System co-sign, append-only audit log with bounded rollback). See the specification for the full contract and `registry-agent.v1.1.yaml` for a worked example showing the fields on disk.
+
+Principle 7 has a corollary: **ease is earned** — the simple surface is the output of hard substrate work, not the absence of it. v1.5.0 introduced the audience-lens model as the canonical realisation: five sequential lenses (Newcomer → Observer → Operator → Beekeeper → Architect), each served by a specific artefact, over the same full colony. Lenses are a view, not a configuration. All mechanisms are present and enforced at every lens.
 
 ## Scales of application
 
@@ -69,7 +72,7 @@ See the [thesis paper](thesis.md) for the full analysis and the literature revie
 
 ## Status
 
-**v1.4.0** — Comprehension Contract formalised as §7 of the specification. The mechanism is now fully described across 14 sub-sections: from the dark code problem (Jones 2026) through the review regime formula, the classifier as Constitutional, NFRs in the Mirror, multi-perspective valuation, the Graduation Checklist, and false comprehension artefacts / micro-misalignment (IndyDevDan 2026). Two new conformance anti-patterns added. The pattern is still **practically untested at production scale** — no full LLM-backed reference implementation exists yet.
+**v1.5.0** — Principle 7 (*Accessibility through abstraction*) added to the core set, with the audience-lens model as its canonical realisation. Five sequential lenses — Newcomer, Observer, Operator, Beekeeper, Architect — each served by a specific artefact in this repository. Lenses are a *view* over the full colony, not a configuration that simplifies it. One new conformance anti-pattern added (lens inversion). One new diagram (lens-traversal) covers the model visually. A known gap is flagged: the existing mechanism diagrams are pitched at the Beekeeper/Architect level and Newcomer/Observer companion diagrams are deferred to v1.6+. The pattern is still **practically untested at production scale** — no full LLM-backed reference implementation exists yet.
 
 **Roadmap:**
 
@@ -84,7 +87,8 @@ See the [thesis paper](thesis.md) for the full analysis and the literature revie
 | v1.2.2 | ✅ released 2026-04-13 | Dark code reference (Jones 2026); IndyDevDan six ideas + §7.14 False Comprehension Artefacts |
 | v1.3.0 | ✅ released 2026-04-13 | Comprehension Contract Mirror fields; schema v0.2.0; graduation checklist; live runtime; equilibrium playground |
 | v1.4.0 | ✅ released 2026-04-13 | Comprehension Contract formalised as §7 of specification; review regime formula; 14 sub-sections; two new conformance anti-patterns |
-| v1.5+ | planned | Peer feedback incorporation from public review |
+| v1.5.0 | ✅ released 2026-04-14 | Principle 7 Accessibility Through Abstraction; audience-lens model; lens-traversal diagram; lens-inversion anti-pattern |
+| v1.6+ | planned | Newcomer/Observer companion diagrams; peer feedback incorporation |
 | v2.0 | planned | First LLM-backed reference implementation; empirical threshold calibration |
 | v3.0 | planned | Standards engagement — A2A, AAIF, NIST, AGNTCY |
 
@@ -104,7 +108,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide, including how the pap
 
 If you reference this work, please cite:
 
-> Oliver, D. (2026). *The Agent Colony: A Pattern Language for Self-Governing AI Agent Ecosystems* (v1.4.0). https://github.com/DavidROliverBA/agent-colony-pattern
+> Oliver, D. (2026). *The Agent Colony: A Pattern Language for Self-Governing AI Agent Ecosystems* (v1.5.0). https://github.com/DavidROliverBA/agent-colony-pattern
 
 Machine-readable citation metadata is in [`CITATION.cff`](CITATION.cff).
 

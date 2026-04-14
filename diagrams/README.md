@@ -1,6 +1,6 @@
 # Diagrams
 
-Six SVG diagrams rendered from the Excalidraw source files in this directory. They illustrate the Agent Colony pattern and are referenced inline from `thesis.md` and `manifesto.md`.
+Seven SVG diagrams rendered from the Excalidraw source files in this directory. They illustrate the Agent Colony pattern and are referenced inline from `thesis.md` and `manifesto.md`.
 
 ## The set
 
@@ -12,6 +12,9 @@ Six SVG diagrams rendered from the Excalidraw source files in this directory. Th
 | [`agent-colony-equilibrium.svg`](agent-colony-equilibrium.svg) | The Equilibrium System — consolidation vs fragmentation pressure with three detection indices |
 | [`agent-colony-memory-cycle.svg`](agent-colony-memory-cycle.svg) | The Colony Memory reflection cycle — six nodes on a circle showing how events become constitutional rules |
 | [`agent-colony-maturity-model.svg`](agent-colony-maturity-model.svg) | The Earned Autonomy maturity model — three independent progressions with trust gates |
+| [`agent-colony-lens-traversal.svg`](agent-colony-lens-traversal.svg) | The audience-lens model — five sequential lenses (Newcomer → Observer → Operator → Beekeeper → Architect) with canonical artefacts and the re-entry curve. Added v1.5.0 alongside Principle 7 (Accessibility through abstraction). |
+
+**Note on v1.5.0:** The existing six mechanism diagrams are pitched at the Beekeeper/Architect depth (Principle 7 terminology). Newcomer/Observer companion diagrams — "village-level" visual explanations of the same mechanisms — are a known gap deferred to v1.6+.
 
 ## Shared colour palette
 
@@ -37,7 +40,7 @@ Colours carry meaning across the diagrams. A single legend for the whole set:
 
 ## Version status
 
-Every diagram carries a footer stamp: `Agent Colony v1.1.x — design, not validated`. This is deliberate. The pattern is v1 conceptual work, not backed by a reference implementation. The footer exists to prevent the common misreading that these diagrams describe a real running system.
+Every diagram carries a footer stamp — currently `Agent Colony v1.5.0 — design, not validated` on new diagrams and `v1.1.x` on the original six. This is deliberate. The pattern is v1 conceptual work, not backed by a reference implementation. The footer exists to prevent the common misreading that these diagrams describe a real running system.
 
 ## Editing the sources
 

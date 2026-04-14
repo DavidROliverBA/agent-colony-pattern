@@ -1,8 +1,8 @@
-# Agent Colony — Design Specification v1.4.0
+# Agent Colony — Design Specification v1.5.0
 
 **Author:** David Oliver
 **Date:** 2026-04-11
-**Status:** v1.4.0 — Comprehension Contract integrated
+**Status:** v1.5.0 — Accessibility Through Abstraction
 **Licence:** [CC BY 4.0](LICENSE) — you may share and adapt this work for any purpose, including commercially, provided you give appropriate credit.
 
 ---
@@ -32,7 +32,7 @@ What each shift added:
 - Microservices added **independent deployment** and team ownership
 - Agent Colonies add **autonomy, self-evolution, and lifecycle identity**
 
-### Six Principles
+### Seven Principles
 
 **1. Coexistence, not control**
 Agents live in their world; humans live in theirs. The boundary defines where one ends and the other begins. Effects that cross the boundary require a checkpoint. Everything within the agent world is self-governed.
@@ -51,6 +51,11 @@ The colony starts human-governed and earns self-governance through demonstrated 
 
 **6. Mutual defence**
 The boundary between agent and human worlds is a shared border, and attacks affect both sides. Agents are responsible for their own security posture — continuously upgrading defences, detecting threats, and responding to attacks within their world. When an attack crosses or threatens the boundary, agents and humans collaborate on response through agreed processes. This is built on mutual trust: humans trust agents to defend themselves and report honestly; agents trust humans to act on shared threat intelligence. Security is not a constraint imposed on the colony — it is a survival instinct built into every agent from birth.
+
+**7. Accessibility through abstraction**
+The colony must be understandable at every audience's depth, no deeper. Complexity is an investment paid once, upfront, so that each audience sees only what it needs. Most people who encounter a colony should not have to read its specification to benefit from it — just as most people who eat honey do not have to understand what a queen bee does. Only specific roles — the beekeepers of the colony — need the inner workings. The principle is additive to the previous six: it describes how the colony *presents itself* to its audiences, not how it *works*.
+
+**Corollary — ease is earned:** the simple surface is the output of hard substrate work, not the absence of it. An implementation that is easy to use because the mechanisms aren't there is violating Principle 6 (mutual defence), not fulfilling Principle 7. Accessibility is a view over the full colony, not a configuration that simplifies it. All mechanisms — Comprehension Contract, Review Regime formula, classifier, Mirror fields — are present and enforced at every audience lens. Switching lenses changes what the audience sees, not what the colony does. The canonical realisation of this principle is the audience-lenses model defined later in this section.
 
 **Security upgrade preauthorisation:** Improving security posture is always a sufficient reason to self-upgrade, regardless of lifecycle stage, update budget, or governance cycle. Security upgrades do not consume self-evolution allowances. An agent that cannot improve its own security is a liability to the colony.
 
@@ -81,6 +86,38 @@ The pattern is deliberately scale-adaptive. It applies to a 5-agent team, a 50-a
 | **Mutual Defence** | Patch agents manually; humans co-sign | Preauthorised enum + Immune System co-sign + audit log (as defined above) | Coordinated defence across colonies; shared threat intelligence |
 
 The table is not a maturity model — a 5-agent colony running the lightweight version is not "immature" relative to a 5,000-agent ecosystem. It is correctly scaled. Over-engineering a small colony with cryptographic federation is as much a pattern violation as under-engineering a large one with shared markdown. The principle stays. The mechanism adapts.
+
+### Audience Lenses
+
+Principle 7 (*Accessibility through abstraction*) requires an implementation to present itself at the depth its audience needs, and no deeper. The canonical realisation is the **audience-lens model**: a small, named set of perspectives through which different audiences encounter the colony. Each lens is served by a specific artefact, and the lens model is *additive to* Scales of Application — it is orthogonal to colony size. A five-agent colony and a five-thousand-agent colony both have Newcomers, Observers, Operators, Beekeepers, and Architects.
+
+The lens model is explicitly a *view* rather than a *configuration*. Switching lenses changes what the audience sees, not what the colony does. All mechanisms — the Comprehension Contract, the Review Regime formula, the Structural Classifier, the Mirror fields, the Trust Ladder, the Equilibrium System — are present and enforced at every lens. An implementation that turned mechanisms off for the Newcomer lens would be violating Principle 6 (mutual defence), not fulfilling Principle 7.
+
+The canonical five lenses are:
+
+| # | Lens | Depth | What they see | Canonical artefact |
+|---|------|-------|---------------|--------------------|
+| 1 | **Newcomer** | Metaphor | "What is this and why does it matter" — no jargon, no mechanisms | A plain-language introduction using a running metaphor (the village, the beehive) |
+| 2 | **Observer** | Outcome | The colony is invisible; they use what comes out of it | The agents' outputs themselves — no repo artefact required, the invisibility is the point |
+| 3 | **Operator** | Health | Day-to-day dashboards, approvals, exception handling | A colony snapshot or live dashboard summarising population, equilibrium, and immune status |
+| 4 | **Beekeeper** | Mechanism | Agent Mirrors, graduation checklists, trust tiers, blast radius tuning | Agent Mirror files, graduation checklists, the Comprehension Contract chapter of the spec, runtime simulation |
+| 5 | **Architect** | Substrate | Constitutional policies, scale choices, standards engagement | The full specification, the thesis, the schemas, the standards-watch notes |
+
+**Key properties of the lens model:**
+
+- **Sequential by default.** The natural traversal is Newcomer → Observer → Operator → Beekeeper → Architect. Most people stop at Observer. A few become Operators. Fewer still become Beekeepers. Architects are rare by design.
+
+- **Re-entry is always possible.** Anyone encountering an unfamiliar colony is briefly a Newcomer again, regardless of their role elsewhere. A senior Architect at Organisation A is a Newcomer when they first meet Organisation B's colony. Lenses are depth-of-understanding markers, not permanent tenure assignments.
+
+- **Pacing can compress.** Traditional systems accrete over years, so lens traversal is often assumed to take seasons or careers. A colony can be instantiated in an afternoon, and the traversal from Newcomer to Beekeeper may happen over days rather than decades. The lens model is about *depth of understanding*, not *tenure*.
+
+- **Artefact mapping is required for conformance.** An implementation claiming Principle 7 conformance must name which artefact serves which lens. "We have a README" does not satisfy the Newcomer lens unless the README is written for someone with zero context. A link to the specification does not satisfy the Operator lens.
+
+- **Lenses can be collapsed or split.** Small colonies may collapse Operator and Beekeeper into a single role. Large ecosystems may split Architect into Colony Architect and Standards Architect. The canonical five are a default, not a constraint. What is required is that *some* set of lenses exist and that artefacts be mapped to them.
+
+This specification itself is a Beekeeper/Architect artefact. The canonical Newcomer artefact for this repository is the *It takes a village* introduction in `knowledge-base/writings/`. The canonical Operator artefact is the equilibrium playground in `examples/equilibrium-playground/`. The canonical Beekeeper artefact is the runtime simulation and Agent Mirror files in `examples/hello-colony/` and `examples/hello-colony-runtime/`. This mapping is itself the repository's conformance claim against Principle 7.
+
+**A known gap** — the existing mechanism diagrams (four-layer architecture, equilibrium system, maturity model, agent mirror, memory cycle, evolutionary context) are pitched at the Beekeeper/Architect level. By Principle 7's own test, the Newcomer and Observer lenses are under-served in diagram form — they would need companion "village-level" visual explanations that do not yet exist. This is named explicitly in the v1.5.0 release notes and targeted for v1.6+. Naming the gap is more honest than pretending the existing diagrams already serve all five lenses.
 
 ---
 
@@ -854,6 +891,9 @@ If agents act without generating a pre-action comprehension artefact, you have a
 **7. The Structural Classifier's rules are not in Constitutional Memory.**
 If the rules that determine blast radius and review regime are opaque, hardcoded, or inaccessible to challenge, you have relocated the comprehension gap into the governance mechanism itself. The classifier is the most load-bearing component of the Comprehension Contract; if it cannot be inspected, appealed, and refined through the colony's own epistemic processes, the contract has no foundation.
 
+**8. Lens inversion — low-depth audiences must read high-depth artefacts to use the colony.**
+If a Newcomer or Observer cannot benefit from the colony without first reading the specification, the Mirror schema, or the Comprehension Contract chapter, the implementation is violating Principle 7. Symptom: "it works, but you need to understand the Review Regime formula first." An implementation claiming conformance must name which artefact serves which lens and must produce any missing lens artefacts — not require audiences to compensate by reading a lens above their needs. A colony whose only surface is the specification does not have five lenses; it has one, and it is pitched too deep for most of its audiences.
+
 ### 8.5.2 Observable health signals
 
 These are things you can actually measure or observe — not value statements about what a good colony should be.
@@ -918,11 +958,11 @@ This is the failure mode most likely to matter in practice. The preauthorisation
 ### Three Outputs
 
 **1. The Agent Colony Manifesto**
-2,000–3,000 words. States the vision, the six principles, and the six gaps. Designed to be read in 15 minutes, shared widely, and provoke discussion.
+2,000–3,000 words. States the vision, the seven principles, and the six gaps. Designed to be read in 15 minutes, shared widely, and provoke discussion.
 
 Structure:
 - The evolutionary context (monoliths to SOA to microservices to Agent Colonies)
-- The six principles
+- The seven principles
 - The Agent Mirror (what it is, why it's needed)
 - The six gaps (named and briefly described, pointing to the spec)
 - A call to collaboration — v1 needs peer review and real-world testing
