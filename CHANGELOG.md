@@ -5,6 +5,59 @@ All notable changes to the Agent Colony Pattern are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.3] — 2026-04-15
+
+### Two viewer fallbacks for environments where the HTTP viewer is blocked
+
+v1.8.2's `--view` flag ships a tiny asyncio HTTP server on `127.0.0.1:8765`. On some corporate machines (Zscaler cloud proxies, managed Chrome, certain EDR products), the browser refuses connections to localhost even when the server is listening — `ERR_CONNECTION_REFUSED` is the browser or its proxy layer denying the connection at the network stack. v1.8.3 adds two escape hatches so the colony remains visually observable in those environments.
+
+Same wireframe. Same `viewer.html`. Same event stream from `state/events.jsonl`. Three different ways for the visualisation to reach a screen.
+
+### Added
+
+- **`--view-native`** — new flag on `chat.py`. Opens a native macOS WebKit window via `pywebview`. Events are pushed directly into the window's JavaScript context via `evaluate_js` — no HTTP, no browser, no corporate proxy. Uses the OS-level WebKit framework (`pyobjc-framework-WebKit`), which corporate browser policies don't govern. Requires `pip install pywebview`; fails with a clean one-line install hint if the package is missing.
+- **`--view-file`** — new flag on `chat.py`. Writes `state/live-view.html` to disk with the event stream embedded as a JavaScript constant. The file contains a `<meta http-equiv="refresh" content="2">` tag so the browser reloads it every 2 seconds. `chat.py` rewrites the file every 500ms in the background, so each refresh catches up. The browser opens via `file://` — zero network requests, no proxy involvement, works on any machine that can open an HTML file. Zero new dependencies (pure Python stdlib).
+- **`examples/teaching_colony/static_view.py`** — ~230 lines. Reads `viewer.html`, switches it into static mode (rewriting `data-view-mode="sse"` to `"static"`), replaces the `META_REFRESH_PLACEHOLDER` comment with a real `<meta http-equiv="refresh">` tag, and injects the embedded events as a `<script>` block before `</head>`. Separated into `build_snapshot()` (pure string) and `write_snapshot()` (file I/O) for testability. `periodic_snapshot()` is an async coroutine `chat.py` starts as a background task.
+- **`examples/teaching_colony/viewer_native.py`** — ~240 lines. Wraps `pywebview` with a lazy import that raises `NativeViewerError` if the package is missing. Opens the window, rewrites `viewer.html` into native mode, starts a background thread that tails `state/events.jsonl` and calls `window.evaluate_js('window.pushColonyEvent(...)')` for every new line. The REPL runs on a second background thread (Cocoa requires `webview.start()` on the main thread on macOS). Closing the window signals both threads to exit.
+- **Mode switch in `viewer.html`** — new `data-view-mode` attribute on `<body>`, values `"sse"` / `"native"` / `"static"`. A new `initViewMode()` dispatcher branches on the attribute: SSE mode opens `EventSource` as before; native mode shows a "waiting for first dispatch" banner and waits for Python to call `window.pushColonyEvent`; static mode reads `window.EMBEDDED_EVENTS` and replays them through the same handler. A new `window.pushColonyEvent(evt)` global is the unified entry point used by all three paths.
+- **22 new tests:**
+  - `tests/test_static_view.py` — 12 tests for `build_snapshot`, `write_snapshot`, and the event-reading helpers
+  - `tests/test_viewer_html_mode_switch.py` — 7 structural tests (default mode, placeholder presence, three-branch dispatcher, embedded constants, native branch not calling SSE)
+  - `tests/test_chat_view_file_flag.py` — 3 subprocess end-to-end tests: `--view-file` actually writes the file, the mutex rejects combined flags, `--view-native` without pywebview fails with a helpful error
+
+### Changed
+
+- **`examples/teaching_colony/chat.py`** — three new flags (`--view-native`, `--view-file`, plus the existing `--view`), a mutex check that errors cleanly on combined flags, a pre-banner pywebview availability check so `--view-native` fails fast with a clean error when the dep is missing, and dispatch logic that routes each view mode through its correct code path. `--view-native` lives outside `asyncio.run` because pywebview claims the main thread; the other modes run inside the asyncio event loop alongside the REPL.
+- **`examples/teaching_colony/viewer.html`** — ~40 new lines. The `connectSSE()` call at the bottom is replaced with `initViewMode()` which branches on `data-view-mode`. A `META_REFRESH_PLACEHOLDER` comment is added to `<head>`. A `window.pushColonyEvent` global is added as the unified handler entry point. Every existing v1.8.2 test still passes.
+- **`examples/teaching_colony/README.md`** — new "Three ways to view the colony" section covering all three modes with a comparison table, per-mode subsections with pros/cons/install steps, and a "Which mode should I pick?" decision flow.
+- **`CHANGELOG.md`, `CITATION.cff`, repo-root `README.md`** — v1.8.3.
+
+### Test results
+
+```
+113 passed, 3 deselected (live), 2 xfailed in 2.62s
+```
+
+22 more tests than v1.8.2. The full suite still runs in under three seconds.
+
+### Dependency policy
+
+- v1.8.3 keeps v1.8.x's "zero new required dependencies" promise. `--view` and `--view-file` both work with pure stdlib.
+- `--view-native` requires `pywebview`, which is an **optional** runtime dependency. It is NOT added to `requirements.txt`. `chat.py` imports it lazily only when `--view-native` is set, and the import failure produces a one-line `pip install pywebview` hint.
+- On macOS, pywebview pulls in `pyobjc-core`, `pyobjc-framework-WebKit`, and `pyobjc-framework-security`. These come preinstalled with the system Python; stand-alone Pythons need them installed.
+
+### Why this shipped as v1.8.3
+
+v1.8.0 was live dispatch. v1.8.1 was the §7 enforcement hole. v1.8.2 was the browser viewer. v1.8.3 is the fallback viewers for when v1.8.2 can't reach the browser. Each increment is its own commit-test-tag-release cycle. The scope is deliberately narrow — no new colony features, no pattern changes, just alternative data paths between the same running REPL and the same `viewer.html` template.
+
+### Known residual risks
+
+1. **pywebview might still be blocked.** Some EDR products hook process creation and deny apps that dynamically load `pyobjc-framework-WebKit`. Rare but possible. If this happens, `--view-file` is the guaranteed fallback.
+2. **Managed Chrome might disable `file://`.** Some corporate Chrome policies ban `file://` URL loading entirely. If your Chrome does, Safari or Firefox on the same machine usually don't.
+3. **`pywebview`'s macOS Cocoa backend requires the main thread.** The REPL runs in a background thread when `--view-native` is active. Subtle but documented.
+
+---
+
 ## [1.8.2] — 2026-04-14
 
 ### Live browser viewer for the Teaching Colony

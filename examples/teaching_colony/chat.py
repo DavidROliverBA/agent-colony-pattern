@@ -113,18 +113,32 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument(
         "--view",
         action="store_true",
-        help="Start the live browser viewer alongside the REPL (v1.8.2).",
+        help="Start the v1.8.2 HTTP/SSE viewer alongside the REPL. Browser reads from http://127.0.0.1:8765.",
     )
     p.add_argument(
         "--view-port",
         type=int,
         default=8765,
-        help="Port for the viewer (default 8765). Pass 0 for OS-picked.",
+        help="Port for the v1.8.2 viewer (default 8765). Pass 0 for OS-picked.",
     )
     p.add_argument(
         "--no-open",
         action="store_true",
-        help="Don't auto-open the browser when --view is set.",
+        help="Don't auto-open the browser when --view or --view-file is set.",
+    )
+    # v1.8.3 — view fallbacks for environments where the HTTP viewer is blocked
+    p.add_argument(
+        "--view-native",
+        action="store_true",
+        help="v1.8.3: open a pywebview native window. No HTTP, no browser — "
+             "uses the OS WebKit framework directly. Requires 'pip install pywebview'.",
+    )
+    p.add_argument(
+        "--view-file",
+        action="store_true",
+        help="v1.8.3: write state/live-view.html and open via file://. "
+             "Auto-refreshes every 2s. Zero new deps. The fallback when the "
+             "HTTP viewer is blocked by endpoint security.",
     )
     return p.parse_args(argv)
 
@@ -327,8 +341,15 @@ async def _run_with_view(
     budget: Budget,
     args,
 ) -> int:
-    """Run the REPL with an optional viewer attached."""
+    """Run the REPL with the v1.8.2 HTTP/SSE viewer attached (when --view)
+    or the v1.8.3 file-mode viewer attached (when --view-file).
+
+    The v1.8.3 --view-native mode is handled OUTSIDE asyncio in main(),
+    because pywebview.start() requires the main thread on macOS.
+    """
     view_handle = None
+    file_task = None
+
     if args.view:
         try:
             from examples.teaching_colony import viewer  # type: ignore
@@ -360,7 +381,58 @@ async def _run_with_view(
             except Exception:
                 pass
 
-    return await repl_loop(adapter, budget, view_handle=view_handle)
+    if args.view_file:
+        # v1.8.3: write state/live-view.html periodically. No HTTP anywhere.
+        try:
+            from examples.teaching_colony import static_view  # type: ignore
+        except ImportError:
+            try:
+                import static_view  # type: ignore
+            except ImportError as exc:
+                print(f"error: --view-file requested but static_view not importable: {exc}")
+                return 1
+        state_dir = HERE / "state"
+        state_dir.mkdir(parents=True, exist_ok=True)
+        output_path = state_dir / "live-view.html"
+        # Write one snapshot immediately so the file exists before we open it
+        try:
+            events = static_view._read_events(state_dir / "events.jsonl")
+            initial = static_view._current_state(HERE, budget)
+            static_view.write_snapshot(events, initial, output_path, interval_seconds=2)
+        except Exception as exc:
+            print(f"error: failed to write initial snapshot: {exc}")
+            return 1
+        # Start the periodic rewrite task
+        file_task = asyncio.create_task(
+            static_view.periodic_snapshot(
+                repo_root=HERE,
+                budget=budget,
+                output_path=output_path,
+                interval_seconds=0.5,
+                refresh_seconds=2.0,
+            )
+        )
+        file_url = f"file://{output_path.resolve()}"
+        print()
+        print(f"  📺 live viewer (file mode): {file_url}")
+        print(f"       auto-refreshes every 2 seconds — close the tab to stop watching")
+        print()
+        if not args.no_open:
+            try:
+                import webbrowser
+                webbrowser.open(file_url)
+            except Exception:
+                pass
+
+    try:
+        return await repl_loop(adapter, budget, view_handle=view_handle)
+    finally:
+        if file_task is not None:
+            file_task.cancel()
+            try:
+                await file_task
+            except (asyncio.CancelledError, Exception):
+                pass
 
 
 def _read_line(prompt: str) -> str | None:
@@ -375,8 +447,87 @@ def _read_line(prompt: str) -> str | None:
         return None
 
 
+def _check_view_mutex(args) -> int | None:
+    """v1.8.3: the three view modes (--view / --view-file / --view-native)
+    are mutually exclusive. Return an exit code if the user set more than
+    one, otherwise None.
+    """
+    view_flags = [
+        ("--view", args.view),
+        ("--view-file", args.view_file),
+        ("--view-native", args.view_native),
+    ]
+    active = [name for name, on in view_flags if on]
+    if len(active) > 1:
+        print(
+            f"error: view modes are mutually exclusive — got {', '.join(active)}. "
+            f"Pick one.",
+            file=sys.stderr,
+        )
+        return 2
+    return None
+
+
+def _run_native_view(adapter, budget, args) -> int:
+    """v1.8.3 --view-native: pywebview takes the main thread, REPL runs
+    in a background thread. When the window closes the REPL is signalled
+    to stop; when the REPL quits, the window is destroyed.
+    """
+    try:
+        from examples.teaching_colony import viewer_native  # type: ignore
+    except ImportError:
+        try:
+            import viewer_native  # type: ignore
+        except ImportError as exc:
+            print(f"error: --view-native requested but viewer_native not importable: {exc}")
+            return 1
+
+    def repl_target() -> None:
+        # Background thread: run the REPL loop on its own asyncio loop.
+        try:
+            asyncio.run(repl_loop(adapter, budget))
+        except KeyboardInterrupt:
+            pass
+
+    try:
+        viewer_native.start(
+            repo_root=HERE,
+            repl_thread_target=repl_target,
+            title="Teaching Colony — live view",
+        )
+    except viewer_native.NativeViewerError as exc:
+        print(f"\n{exc}\n", file=sys.stderr)
+        return 1
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
+
+    # v1.8.3: reject mutually-exclusive view flags up front
+    mutex_err = _check_view_mutex(args)
+    if mutex_err is not None:
+        return mutex_err
+
+    # v1.8.3: if --view-native is set, fail fast if pywebview is missing
+    # so the user doesn't see the banner before the error.
+    if args.view_native:
+        try:
+            from examples.teaching_colony import viewer_native  # type: ignore
+        except ImportError:
+            try:
+                import viewer_native  # type: ignore
+            except ImportError as exc:
+                print(
+                    f"error: --view-native requested but viewer_native not importable: {exc}",
+                    file=sys.stderr,
+                )
+                return 1
+        try:
+            viewer_native._load_pywebview()
+        except viewer_native.NativeViewerError as exc:
+            print(f"\n{exc}\n", file=sys.stderr)
+            return 1
 
     # Budget: command-line flag > env var > default
     if args.budget is not None:
@@ -396,6 +547,12 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     print_banner(adapter, budget, mock=args.mock)
+
+    # v1.8.3: --view-native lives outside asyncio.run because pywebview
+    # wants the main thread on macOS. The other view modes run inside
+    # the asyncio event loop alongside the REPL.
+    if args.view_native:
+        return _run_native_view(adapter, budget, args)
 
     try:
         return asyncio.run(_run_with_view(adapter, budget, args))

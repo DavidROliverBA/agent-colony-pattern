@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <title>Teaching Colony — live view</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- META_REFRESH_PLACEHOLDER: static_view.py replaces this line with a
+     <meta http-equiv="refresh" content="2"> tag so the static file mode
+     auto-reloads the page every 2 seconds. -->
 <style>
   :root {
     --bg: #0f172a;
@@ -200,7 +203,15 @@
   }
 </style>
 </head>
-<body>
+<body data-view-mode="sse">
+<!-- v1.8.3: data-view-mode is "sse", "native", or "static".
+     - sse    — v1.8.2 HTTP/SSE default; opens EventSource('/events').
+     - native — pywebview mode; Python pushes events via evaluate_js
+                calling window.pushColonyEvent(evt). No network.
+     - static — file-mode; reads window.EMBEDDED_EVENTS on load and
+                dispatches each entry through the same handler. Browser
+                meta-refresh triggers a full reload on the next cycle.
+-->
 
 <div id="status-banner">disconnected — reconnecting…</div>
 
@@ -660,8 +671,74 @@ function appendEventLog(evt) {
   container.scrollTop = container.scrollHeight;
 }
 
-// Start
-connectSSE();
+// -------------------------------------------------------------------------
+// v1.8.3: unified entry point. Three view modes dispatch different init
+// paths, but all three feed their events through the same handleEvent().
+// -------------------------------------------------------------------------
+
+// Expose a global hook that any caller (SSE onmessage, pywebview's
+// evaluate_js, or the static-file loader) can use to push events in.
+window.pushColonyEvent = function(evt) {
+  try {
+    handleEvent(evt);
+  } catch (e) {
+    console.error("pushColonyEvent error", e, evt);
+  }
+};
+
+function initViewMode() {
+  const mode = (document.body.getAttribute("data-view-mode") || "sse").toLowerCase();
+
+  if (mode === "sse") {
+    // v1.8.2 default: connect to the /events SSE endpoint
+    connectSSE();
+    return;
+  }
+
+  if (mode === "native") {
+    // pywebview mode: show a helpful "waiting for Python" placeholder and
+    // wait for Python to start calling window.pushColonyEvent(evt).
+    const banner = document.getElementById("session-name");
+    if (banner) banner.textContent = "Teaching Colony · native view · waiting for first dispatch";
+    return;
+  }
+
+  if (mode === "static") {
+    // static file mode: the HTML has embedded event data. Dispatch each
+    // entry through the same handler the SSE path would. After the loop,
+    // the page does nothing else until the meta-refresh reloads it.
+    const initial = window.EMBEDDED_INITIAL_STATE;
+    if (initial) {
+      try {
+        applyInitialState(initial);
+      } catch (e) {
+        console.error("applyInitialState failed", e);
+      }
+    }
+    const events = window.EMBEDDED_EVENTS || [];
+    for (const evt of events) {
+      try {
+        handleEvent(evt);
+      } catch (e) {
+        console.error("embedded event replay error", e, evt);
+      }
+    }
+    // Visible hint for static mode — the banner tells the reader this is
+    // a reloading snapshot, not a live stream.
+    const banner = document.getElementById("session-name");
+    if (banner) {
+      const ts = new Date().toLocaleTimeString();
+      banner.textContent = `Teaching Colony · static snapshot · rendered at ${ts} · auto-reloads every 2s`;
+    }
+    return;
+  }
+
+  // Unknown mode — fall back to SSE to preserve v1.8.2 behaviour.
+  console.warn("unknown data-view-mode:", mode, "— falling back to sse");
+  connectSSE();
+}
+
+initViewMode();
 </script>
 
 </body>

@@ -104,7 +104,19 @@ python -m examples.teaching_colony.chat --view
 python -m examples.teaching_colony.chat --mock --view --view-port 9000 --no-open
 ```
 
-### The live viewer (v1.8.2)
+### Three ways to view the colony (v1.8.2 + v1.8.3)
+
+v1.8.2 shipped a browser viewer that talks to a local HTTP server. On some machines (locked-down corporate Chrome, managed Zscaler proxies, certain EDR products) that server is unreachable from the browser — you get `ERR_CONNECTION_REFUSED` on `http://127.0.0.1:8765` even though the server is running. v1.8.3 adds two fallback modes so the colony remains visually observable in those environments. Pick whichever works.
+
+| Flag | How it renders | Pros | Cons |
+|---|---|---|---|
+| `--view` (v1.8.2) | Browser ↔ localhost HTTP/SSE | Richest UX, live animation, cache-hit visible, true streaming | Blocked by some endpoint security |
+| `--view-native` (v1.8.3) | Native WebKit window via `pywebview` | No HTTP, no browser, no corporate proxy to worry about; real animations | Requires `pip install pywebview` |
+| `--view-file` (v1.8.3) | Static HTML file auto-refreshed every 2s | Zero new deps, works via `file://` everywhere | No animation between reloads |
+
+All three render the same wireframe from the same `viewer.html`. The event stream is the same `state/events.jsonl`. The difference is only the data-path.
+
+### `--view` — HTTP/SSE browser viewer (v1.8.2, first choice)
 
 Adding `--view` starts a tiny asyncio HTTP server on `127.0.0.1:8765` (or `--view-port N`) alongside the REPL loop. A single-file `viewer.html` renders the colony as:
 
@@ -129,6 +141,40 @@ Adding `--view` starts a tiny asyncio HTTP server on `127.0.0.1:8765` (or `--vie
 - `quit` (or `q`, `exit`) — graceful shutdown, state persists
 - budget display after every dispatch, with warning at 80% and hard stop at 100%
 - prompt caching on repeated dispatches (second call shows `[500 from cache]` in the budget line)
+
+### `--view-native` — pywebview native window (v1.8.3)
+
+```bash
+pip install pywebview
+python -m examples.teaching_colony.chat --view-native
+```
+
+Opens a native macOS WebKit window via `pywebview`. No HTTP server. No browser. Python pushes events directly into the window's JavaScript context via `evaluate_js`. Corporate browser policies target specific browser apps (Chrome, Edge, Firefox) — they don't govern the OS-level WebKit framework that `pywebview` embeds, so this works in environments where `--view` is blocked.
+
+Requires `pip install pywebview`. On macOS that pulls in `pyobjc-core`, `pyobjc-framework-WebKit`, and `pyobjc-framework-security` — the PyObjC bindings that come preinstalled with system Python but need an explicit install for stand-alone Python distributions.
+
+If you run `--view-native` without pywebview installed, you get a helpful one-line install instruction and a clean exit — nothing else is printed, nothing else runs. No banner, no REPL, just the install hint.
+
+**Known limit:** `pywebview.start()` takes over the main thread on macOS (Cocoa requirement), so the REPL runs in a background thread when this mode is active. Closing the window gracefully shuts down the REPL. Ctrl-C in the terminal still quits cleanly.
+
+### `--view-file` — static HTML with auto-refresh (v1.8.3)
+
+```bash
+python -m examples.teaching_colony.chat --view-file
+```
+
+Writes `state/live-view.html` to disk. The file contains the whole event stream embedded as a JavaScript constant, plus a `<meta http-equiv="refresh" content="2">` tag that reloads the page every 2 seconds. Your browser opens it via `file://` — which doesn't go through any proxy because no network request is made — and sees fresh state on every reload. `chat.py` rewrites the file every 500ms in the background, so each refresh catches up to the latest events.
+
+Zero new dependencies. Pure Python stdlib. Works on any machine that can open an HTML file locally.
+
+**Known limit:** it's not truly live. Each page reload is a full re-render. Animations that happen mid-dispatch aren't visible — you see before and after, not the transition. This is the trade-off for `file://` loading; any live-streaming approach needs HTTP which is exactly what we're trying to avoid here.
+
+**Which mode should I pick?**
+
+- Start with `--view` — it gives the best experience when it works.
+- If you see `ERR_CONNECTION_REFUSED` on `127.0.0.1:8765`, your endpoint security is blocking localhost HTTP. Try `--view-native` next if you can install `pywebview`.
+- If you can't install pywebview (corporate Python lockdown), `--view-file` always works. It's uglier but guaranteed.
+- All three modes are mutually exclusive — you can't set more than one. `chat.py` errors out with a clear message if you do.
 
 ### What v1.8.0 does NOT support — coming in v1.9+
 

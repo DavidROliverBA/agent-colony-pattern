@@ -6,7 +6,7 @@ The Agent Colony is an architectural pattern for building self-governing ecosyst
 
 > 📖 **New here? Start with the lay-audience article:** [*It takes a village — the Agent Colony definition*](https://medium.com/@davidroliver/it-takes-a-village-the-agent-colony-definition-32b9bd714bb8) on Medium (16 min read). It explains the pattern using the metaphor of a village, with no jargon. The text is also preserved in [`knowledge-base/writings/`](knowledge-base/writings/2026-04-12-it-takes-a-village.md).
 
-Current version: **v1.8.2** · [What's new](CHANGELOG.md) · [Latest release](https://github.com/DavidROliverBA/agent-colony-pattern/releases/latest)
+Current version: **v1.8.3** · [What's new](CHANGELOG.md) · [Latest release](https://github.com/DavidROliverBA/agent-colony-pattern/releases/latest)
 
 ## What's in this repository
 
@@ -94,6 +94,7 @@ See the [thesis paper](thesis.md) for the full analysis and the literature revie
 | v1.8.0 | ✅ released 2026-04-14 | Teaching Colony runs on real Claude — interactive REPL, live-mode dispatch, prompt caching, model tiering, session budget; first release that costs money to use |
 | v1.8.1 | ✅ released 2026-04-14 | DSL dual-key bypass closed — `_apply_changes` rejects unknown top-level keys; four regression tests provoke the v1.6.x bug key and confirm §7 enforcement no longer has a qualifier |
 | v1.8.2 | ✅ released 2026-04-14 | Live browser viewer — `--view` flag starts a localhost SSE server; single-file `viewer.html` renders agents, event log, KB cells, token budget, streaming answer panel; 15 new tests; pure stdlib, zero new deps |
+| v1.8.3 | ✅ released 2026-04-15 | View fallbacks — `--view-native` (pywebview, opt-in dep) and `--view-file` (static HTML via file://, zero deps) for environments where the HTTP viewer is blocked by corporate endpoint security; 22 new tests; same wireframe, three data paths |
 | v1.9.0 | planned | Research walks — `fetch_url` tool with hop budget, `research` command, background concurrent walks, G3 graduation |
 | v2.0.0 | planned | Full interactive Teaching Colony — remaining commands, session persistence, cost enforcement, v2 reference implementation |
 | v2.1+ | planned | Live-mode Managed Agents substrate completion; Newcomer/Observer companion diagrams; peer feedback incorporation |
@@ -115,7 +116,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide, including how the pap
 
 If you reference this work, please cite:
 
-> Oliver, D. (2026). *The Agent Colony: A Pattern Language for Self-Governing AI Agent Ecosystems* (v1.8.2). https://github.com/DavidROliverBA/agent-colony-pattern
+> Oliver, D. (2026). *The Agent Colony: A Pattern Language for Self-Governing AI Agent Ecosystems* (v1.8.3). https://github.com/DavidROliverBA/agent-colony-pattern
 
 Machine-readable citation metadata is in [`CITATION.cff`](CITATION.cff).
 
