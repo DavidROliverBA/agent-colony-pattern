@@ -17,3 +17,4 @@ package-lock.json
 
 # The failed excalidraw-to-svg experiment — keep the Python exporter, not the JS
 scripts/export-svg.js
+.superpowers/

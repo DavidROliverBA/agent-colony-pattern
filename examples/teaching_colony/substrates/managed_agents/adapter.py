@@ -375,15 +375,35 @@ class ManagedAgentsAdapter(SubstrateContract):
           events on the primary stream. See api-research.md Q3.
         """
         if self.mock:
+            # v1.8.2: emit dispatch.start so the viewer can animate the
+            # arrow's lifecycle. Both substrates emit both edges.
+            self.record_event(Event(
+                type="dispatch.start",
+                actor=agent_id,
+                payload={
+                    "input_keys": sorted(list((input or {}).keys())),
+                    "task": (input or {}).get("task", ""),
+                    "topic": (input or {}).get("topic", ""),
+                    "mock": True,
+                },
+                timestamp=_iso_now(),
+                substrate=self.substrate_name,
+            ))
             result = self._mock_dispatch(agent_id, input)
             # v1.7.0 Fix 4: emit dispatch.complete so both substrates
             # produce the same event sequence for portability parity.
+            answer_text = ""
+            if isinstance(result, dict):
+                answer_text = result.get("answer", "") or ""
             self.record_event(Event(
                 type="dispatch.complete",
                 actor=agent_id,
                 payload={
                     "input_keys": sorted(list((input or {}).keys())),
                     "output_keys": sorted(list((result or {}).keys())),
+                    "answer": answer_text[:2000],
+                    "topic": (input or {}).get("topic", ""),
+                    "usage": {},  # mock mode has no real token usage
                 },
                 timestamp=_iso_now(),
                 substrate=self.substrate_name,
@@ -604,9 +624,21 @@ class ManagedAgentsAdapter(SubstrateContract):
 
         v1.7.0: mock mode scans local files instead of returning empty —
         this makes the portability tests observationally meaningful.
+        v1.8.2: emits kb.read so the viewer can animate the access.
         """
         results: list = []
         if not self.kb_dir.exists():
+            self.record_event(Event(
+                type="kb.read",
+                actor="substrate",
+                payload={
+                    "query": (query or "")[:200],
+                    "matched_topics": [],
+                    "doc_count": 0,
+                },
+                timestamp=_iso_now(),
+                substrate=self.substrate_name,
+            ))
             return results
         q = (query or "").lower()
         for md in sorted(self.kb_dir.glob("*.md")):
@@ -629,6 +661,17 @@ class ManagedAgentsAdapter(SubstrateContract):
                     provenance="",
                     cross_references=[],
                 ))
+        self.record_event(Event(
+            type="kb.read",
+            actor="substrate",
+            payload={
+                "query": (query or "")[:200],
+                "matched_topics": [d.topic for d in results],
+                "doc_count": len(results),
+            },
+            timestamp=_iso_now(),
+            substrate=self.substrate_name,
+        ))
         return results
 
     def write_kb(self, topic: str, content: str, provenance: str) -> None:

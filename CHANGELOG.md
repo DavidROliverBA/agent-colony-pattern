@@ -5,6 +5,57 @@ All notable changes to the Agent Colony Pattern are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Version numbers follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.2] — 2026-04-14
+
+### Live browser viewer for the Teaching Colony
+
+v1.8.2 adds a browser-based live visualisation of a running Teaching Colony session. A new `viewer.py` module embeds a tiny asyncio HTTP server with Server-Sent Events that streams `state/events.jsonl` to a single-file `viewer.html` page. `chat.py` gains a `--view` flag that starts the viewer server alongside the REPL loop — one command, one URL, zero new dependencies.
+
+Running `python -m examples.teaching_colony.chat --view` opens a browser at `http://127.0.0.1:8765`. The page renders the colony as: User node on the left, L1/L2/L3 agent bands with Registry/Chronicler/Equilibrium/Sentinel/Librarian/Teacher, Knowledge Base cells (one seeded with beekeeping), an "INTERNET (v1.9)" placeholder box, a rolling event log on the right, a live token budget gauge at the top, and a streaming answer panel at the bottom. Dispatches animate agent nodes in real time; KB reads pulse the matched topic cells; co-signs flash Sentinel; mirror updates flash the target agent. The viewer is read-only in v1.8.2 — commands are still typed in the terminal; browser input is v1.8.3 or v2.0.
+
+### Added
+
+- **`examples/teaching_colony/viewer.py`** — ~320 lines. Pure-stdlib asyncio HTTP server with two endpoints: `GET /` serves the HTML page, `GET /events` is the Server-Sent Events stream. Binds to `127.0.0.1` only (contract-checked). Tails `state/events.jsonl` via a background polling task (100ms). On SSE connect, sends a `viewer.initial_state` event (current budget, agent roster, KB topics) then replays the last 500 events from the log, then subscribes the connection for live updates. Heartbeats every 15s so proxies don't drop the connection. Shutdown notifies all subscribers with a sentinel so `server.wait_closed()` returns within a second.
+- **`examples/teaching_colony/viewer.html`** — single-file HTML/CSS/JS/SVG page (~500 lines). Renders the merged wireframe from the v1.8.2 brainstorm: User node, L1/L2/L3 bands, six agent nodes with layer-coloured borders, KB cells, Internet placeholder labelled `v1.9`, event log strip, answer panel, token budget gauge. Connects via `EventSource('/events')`. Handles `dispatch.start`, `dispatch.complete`, `kb.read`, `kb.written`, `cosign.granted`, `mirror.updated` events with distinct CSS animations. Auto-reconnect on disconnect with 2s backoff and a "disconnected" banner. **All event-data assignments use `textContent`, never `innerHTML`** — structural XSS hygiene for when v1.9's real web-fetch content starts flowing through.
+- **`examples/teaching_colony/chat.py`** — three new flags: `--view` (start viewer), `--view-port N` (default 8765, 0 for OS-picked), `--no-open` (suppress auto-open). When `--view` is set, the REPL imports viewer, starts it as an asyncio task, prints the URL, and opens the browser unless `--no-open`. Viewer shuts down cleanly on REPL exit.
+- **Two new adapter events:**
+  - `dispatch.start` — emitted at the top of `dispatch_agent` before the API call. The viewer uses this to animate the dispatch arrow's start edge.
+  - `kb.read` — emitted from `read_kb` with the matched topic names. The viewer uses this to pulse the matched KB cells.
+  Both substrates (Claude Code and Managed Agents mock path) emit the same two events.
+- **`dispatch.complete` payload extended** — now carries the Anthropic usage block (`input_tokens`, `output_tokens`, `cache_read_input_tokens`, `cache_creation_input_tokens`, `model`) plus the Teacher answer text (capped at 2000 chars). Lets the viewer update the budget gauge and answer panel purely from the event stream, without peeking at adapter internals.
+- **Tests** — 15 new tests in three modules:
+  - `tests/test_viewer_server.py` — 8 tests covering `/health`, `/` serving the HTML, `/events` initial state, existing-log replay, live tail picking up new writes, 127.0.0.1-only binding, 405 on POST, unknown path returning 404. Uses a raw socket + explicit timeout for SSE reads (urllib's `resp.read()` hangs on bodies with no Content-Length).
+  - `tests/test_viewer_html.py` — 6 structural checks: required SVG ids present, all six agent nodes present, required JS function names present, `.innerHTML` not used anywhere (XSS guard), EventSource connects to `/events`, v1.9 deferrals honestly labelled.
+  - `tests/test_chat_view_flag.py` — subprocess end-to-end smoke: runs `chat.py --mock --view --no-open --view-port 0`, reads the URL from stdout, fetches `/`, asserts 200 + `<svg` in the body.
+
+### Changed
+
+- **`examples/teaching_colony/README.md`** — new "The live viewer (v1.8.2)" subsection with the `--view` command, what the viewer shows, the read-only scope, the localhost-only security note, and the clean shutdown behaviour.
+- **`CHANGELOG.md`, `CITATION.cff`, repo-root `README.md`** — v1.8.2.
+
+### Test results
+
+```
+91 passed, 3 deselected (live), 2 xfailed in 2.24s
+```
+
+15 more tests than v1.8.1. The full suite still runs in under three seconds — adding a live HTTP server to a Python package didn't bloat the test time once the shutdown path was tightened.
+
+### Known gaps after v1.8.2
+
+- **No browser input.** The user still types commands in the terminal. Bidirectional browser-to-REPL control is v1.8.3 or v2.0.
+- **No research walk animation.** The Internet node is a static dashed placeholder. v1.9's `fetch_url` events will animate it without a v1.8.2 layout change.
+- **No past-session replay.** The viewer shows the current live session only. Replay is v2.0.
+- **No mobile layout.** Desktop browser only, wireframe is ~900px wide.
+- **No theme switching.** Dark only.
+- **No mid-stream token counter.** The budget gauge updates on `dispatch.complete`, not as tokens are being spent. True streaming token counts require Anthropic streaming API hooks, which is v2.0.
+
+### Why this shipped as v1.8.2
+
+v1.8.0 was "live Claude dispatch". v1.8.1 was "§7 enforcement hole closed after review". v1.8.2 is "a reader can now see the mechanism work". Each increment is its own commit-test-tag-release cycle. The merged-wireframe brainstorm with the visual companion produced a shape that was approved before a single line of code was written, which is why the implementation was a straight-line sequence of seven files and two adapter edits.
+
+---
+
 ## [1.8.1] — 2026-04-14
 
 ### DSL dual-key bypass closed — §7 enforcement hardened

@@ -109,6 +109,23 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=None,
         help=f"Override session budget (defaults to ${BUDGET_ENV_VAR} or 500000).",
     )
+    # v1.8.2 — live viewer flags
+    p.add_argument(
+        "--view",
+        action="store_true",
+        help="Start the live browser viewer alongside the REPL (v1.8.2).",
+    )
+    p.add_argument(
+        "--view-port",
+        type=int,
+        default=8765,
+        help="Port for the viewer (default 8765). Pass 0 for OS-picked.",
+    )
+    p.add_argument(
+        "--no-open",
+        action="store_true",
+        help="Don't auto-open the browser when --view is set.",
+    )
     return p.parse_args(argv)
 
 
@@ -272,26 +289,78 @@ async def run_command(
     return True
 
 
-async def repl_loop(adapter: ClaudeCodeAdapter, budget: Budget) -> int:
+async def repl_loop(
+    adapter: ClaudeCodeAdapter,
+    budget: Budget,
+    view_handle: object = None,
+) -> int:
     """The main REPL read-eval-print loop."""
     prompt = "colony> "
-    while True:
+    try:
+        while True:
+            try:
+                line = await asyncio.to_thread(_read_line, prompt)
+            except (EOFError, KeyboardInterrupt):
+                print()
+                print("Final budget: " + budget.format_status())
+                print("Goodbye.")
+                return 0
+
+            if line is None:  # EOF from stdin (e.g. piped input exhausted)
+                print()
+                print("Final budget: " + budget.format_status())
+                return 0
+
+            keep_going = await run_command(adapter, budget, line)
+            if not keep_going:
+                return 0
+    finally:
+        if view_handle is not None:
+            try:
+                await view_handle.shutdown()
+            except Exception:
+                pass
+
+
+async def _run_with_view(
+    adapter: ClaudeCodeAdapter,
+    budget: Budget,
+    args,
+) -> int:
+    """Run the REPL with an optional viewer attached."""
+    view_handle = None
+    if args.view:
         try:
-            line = await asyncio.to_thread(_read_line, prompt)
-        except (EOFError, KeyboardInterrupt):
-            print()
-            print("Final budget: " + budget.format_status())
-            print("Goodbye.")
-            return 0
+            from examples.teaching_colony import viewer  # type: ignore
+        except ImportError:
+            try:
+                import viewer  # type: ignore
+            except ImportError as exc:
+                print(f"error: --view requested but viewer module not importable: {exc}")
+                return 1
+        try:
+            port, view_handle = await viewer.start(
+                repo_root=HERE,
+                budget=budget,
+                host="127.0.0.1",
+                port=args.view_port,
+            )
+        except OSError as exc:
+            print(f"error: viewer failed to bind port {args.view_port}: {exc}")
+            print(f"       try --view-port 0 for an OS-picked free port")
+            return 1
+        url = f"http://127.0.0.1:{port}"
+        print()
+        print(f"  📺 live viewer: {url}")
+        print()
+        if not args.no_open:
+            try:
+                import webbrowser
+                webbrowser.open(url)
+            except Exception:
+                pass
 
-        if line is None:  # EOF from stdin (e.g. piped input exhausted)
-            print()
-            print("Final budget: " + budget.format_status())
-            return 0
-
-        keep_going = await run_command(adapter, budget, line)
-        if not keep_going:
-            return 0
+    return await repl_loop(adapter, budget, view_handle=view_handle)
 
 
 def _read_line(prompt: str) -> str | None:
@@ -329,7 +398,7 @@ def main(argv: list[str] | None = None) -> int:
     print_banner(adapter, budget, mock=args.mock)
 
     try:
-        return asyncio.run(repl_loop(adapter, budget))
+        return asyncio.run(_run_with_view(adapter, budget, args))
     except KeyboardInterrupt:
         print()
         print("Final budget: " + budget.format_status())

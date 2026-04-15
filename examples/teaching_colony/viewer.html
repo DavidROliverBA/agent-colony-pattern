@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>Teaching Colony — live view</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #0f172a;
+    --bg-2: #1e293b;
+    --bg-3: #020617;
+    --border: #334155;
+    --fg: #e2e8f0;
+    --fg-dim: #94a3b8;
+    --fg-dimmer: #64748b;
+    --gold: #fbbf24;
+    --gold-fade: #fde68a;
+    --blue: #60a5fa;
+    --red: #ef4444;
+    --red-fade: #fecaca;
+    --purple: #a78bfa;
+    --purple-fade: #ddd6fe;
+    --green: #4ade80;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  #top-strip {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+  #session-name { font-weight: bold; color: var(--fg); }
+  #version-tag { color: var(--fg-dim); }
+  #budget-strip {
+    padding: 8px 16px;
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  #budget-bar-bg {
+    height: 22px;
+    background: var(--bg-3);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    position: relative;
+    overflow: hidden;
+  }
+  #budget-bar-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 0%;
+    background: var(--gold);
+    opacity: 0.45;
+    transition: width 300ms ease-out, background-color 300ms;
+  }
+  #budget-text {
+    position: absolute;
+    left: 8px; top: 3px;
+    font-size: 11px;
+    color: var(--fg);
+    z-index: 2;
+    text-shadow: 0 0 2px var(--bg-3);
+  }
+  #budget-cache-text {
+    position: absolute;
+    right: 8px; top: 3px;
+    font-size: 11px;
+    color: var(--fg-dim);
+    z-index: 2;
+  }
+  .warning #budget-bar-fill { background: #f59e0b; }
+  .exhausted #budget-bar-fill { background: var(--red); }
+
+  #main {
+    display: grid;
+    grid-template-columns: 1fr 200px;
+    gap: 0;
+    min-height: calc(100vh - 120px);
+  }
+  #stage {
+    background: var(--bg);
+    padding: 10px;
+  }
+  #stage svg { width: 100%; height: auto; display: block; }
+
+  #event-log {
+    background: var(--bg-3);
+    border-left: 1px solid var(--border);
+    padding: 10px;
+    overflow-y: auto;
+    max-height: 70vh;
+    font-size: 10px;
+  }
+  #event-log h3 {
+    margin: 0 0 8px 0;
+    font-size: 11px;
+    font-weight: bold;
+    color: var(--fg-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 4px;
+  }
+  .event-entry {
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(51, 65, 85, 0.3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .event-entry .ts { color: var(--fg-dimmer); }
+  .event-entry .type { color: var(--fg); margin-left: 4px; }
+  .event-entry .actor { color: var(--fg-dim); margin-left: 4px; }
+  .event-entry.dispatch-start .type { color: var(--gold-fade); }
+  .event-entry.dispatch-complete .type { color: var(--gold); }
+  .event-entry.kb-read .type { color: var(--blue); }
+  .event-entry.kb-written .type { color: var(--green); }
+  .event-entry.cosign-granted .type { color: var(--red-fade); }
+  .event-entry.mirror-updated .type { color: var(--purple-fade); }
+
+  #answer-panel {
+    background: var(--bg-3);
+    border-top: 1px solid var(--border);
+    padding: 14px 18px;
+    min-height: 120px;
+  }
+  #answer-panel h3 {
+    margin: 0 0 8px 0;
+    font-size: 11px;
+    color: var(--fg-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  #answer-text {
+    color: var(--fg);
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  #answer-meta {
+    color: var(--fg-dimmer);
+    font-size: 10px;
+    margin-top: 8px;
+  }
+
+  #status-banner {
+    display: none;
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    background: var(--red);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 3px;
+    font-size: 11px;
+    z-index: 100;
+  }
+  #status-banner.show { display: block; }
+
+  /* Agent node states */
+  .agent-node { transition: filter 500ms, stroke-width 300ms; }
+  .agent-node.active {
+    filter: drop-shadow(0 0 8px var(--gold));
+    stroke-width: 3;
+  }
+  .agent-node.flashing {
+    animation: flash 800ms ease-out;
+  }
+  @keyframes flash {
+    0%   { filter: drop-shadow(0 0 12px var(--gold)); stroke-width: 4; }
+    100% { filter: none; stroke-width: 1.5; }
+  }
+  .kb-cell.pulsing {
+    animation: kbpulse 1s ease-out;
+  }
+  @keyframes kbpulse {
+    0%   { filter: drop-shadow(0 0 8px var(--blue)); }
+    100% { filter: none; }
+  }
+  .dispatch-arrow {
+    stroke-dasharray: 4 4;
+    animation: dash 1s linear;
+  }
+  @keyframes dash {
+    from { stroke-dashoffset: 100; }
+    to   { stroke-dashoffset: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div id="status-banner">disconnected — reconnecting…</div>
+
+<div id="top-strip">
+  <span id="session-name">Teaching Colony · claude-code · session —</span>
+  <span id="version-tag">v1.8.2 live view</span>
+</div>
+
+<div id="budget-strip">
+  <div id="budget-bar-bg">
+    <div id="budget-bar-fill"></div>
+    <span id="budget-text">budget: 0 / 500,000 (0.0%)</span>
+    <span id="budget-cache-text"></span>
+  </div>
+</div>
+
+<div id="main">
+  <div id="stage">
+    <svg id="svg-stage" viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrow-gold" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+          <path d="M0,0 L10,5 L0,10 Z" fill="#fbbf24"/>
+        </marker>
+        <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+          <path d="M0,0 L10,5 L0,10 Z" fill="#60a5fa"/>
+        </marker>
+        <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+          <path d="M0,0 L10,5 L0,10 Z" fill="#ef4444"/>
+        </marker>
+      </defs>
+
+      <!-- User node -->
+      <g id="user-node">
+        <rect x="20" y="60" width="110" height="70" rx="6" fill="#1e293b" stroke="#e2e8f0" stroke-width="1.5"/>
+        <text x="75" y="82" text-anchor="middle" font-size="10" fill="#e2e8f0" font-weight="bold">USER</text>
+        <text x="75" y="98" text-anchor="middle" font-size="8" fill="#94a3b8">ask command</text>
+        <text id="user-question" x="75" y="115" text-anchor="middle" font-size="7" fill="#64748b">(waiting)</text>
+      </g>
+
+      <!-- L1 Governance band -->
+      <rect x="160" y="48" width="540" height="100" rx="4" fill="none" stroke="#60a5fa" stroke-width="0.5" stroke-dasharray="3"/>
+      <text x="166" y="60" font-size="8" fill="#60a5fa">L1 GOVERNANCE (Bounded, Haiku)</text>
+
+      <g id="agent-registry-agent" class="agent-node" transform="translate(220,100)">
+        <circle cx="0" cy="0" r="22" fill="#1e293b" stroke="#60a5fa" stroke-width="1.5"/>
+        <text x="0" y="0" text-anchor="middle" font-size="8" fill="#e2e8f0" font-weight="bold">Registry</text>
+        <text x="0" y="12" text-anchor="middle" font-size="6" fill="#94a3b8">catalogue</text>
+      </g>
+
+      <g id="agent-chronicler-agent" class="agent-node" transform="translate(340,100)">
+        <circle cx="0" cy="0" r="22" fill="#1e293b" stroke="#60a5fa" stroke-width="1.5"/>
+        <text x="0" y="0" text-anchor="middle" font-size="8" fill="#e2e8f0" font-weight="bold">Chronicler</text>
+        <text x="0" y="12" text-anchor="middle" font-size="6" fill="#94a3b8">event log</text>
+      </g>
+
+      <g id="agent-equilibrium-agent" class="agent-node" transform="translate(460,100)">
+        <circle cx="0" cy="0" r="22" fill="#1e293b" stroke="#60a5fa" stroke-width="1.5"/>
+        <text x="0" y="0" text-anchor="middle" font-size="8" fill="#e2e8f0" font-weight="bold">Equilibrium</text>
+        <text x="0" y="12" text-anchor="middle" font-size="6" fill="#94a3b8">overlap</text>
+      </g>
+
+      <!-- L2 Immune band -->
+      <rect x="580" y="48" width="120" height="100" rx="4" fill="none" stroke="#ef4444" stroke-width="0.5" stroke-dasharray="3"/>
+      <text x="586" y="60" font-size="8" fill="#ef4444">L2 IMMUNE</text>
+
+      <g id="agent-sentinel-agent" class="agent-node" transform="translate(640,100)">
+        <circle cx="0" cy="0" r="24" fill="#1e293b" stroke="#ef4444" stroke-width="2"/>
+        <text x="0" y="0" text-anchor="middle" font-size="8" fill="#fecaca" font-weight="bold">Sentinel</text>
+        <text x="0" y="12" text-anchor="middle" font-size="6" fill="#fca5a5">co-sign</text>
+      </g>
+
+      <!-- L3 Domain band -->
+      <rect x="160" y="170" width="540" height="110" rx="4" fill="none" stroke="#a78bfa" stroke-width="0.5" stroke-dasharray="3"/>
+      <text x="166" y="182" font-size="8" fill="#a78bfa">L3 DOMAIN (Observing, Sonnet)</text>
+
+      <g id="agent-librarian-agent" class="agent-node" transform="translate(300,225)">
+        <circle cx="0" cy="0" r="28" fill="#1e293b" stroke="#a78bfa" stroke-width="1.8"/>
+        <text x="0" y="-3" text-anchor="middle" font-size="9" fill="#ddd6fe" font-weight="bold">Librarian</text>
+        <text x="0" y="11" text-anchor="middle" font-size="6" fill="#c4b5fd">curator</text>
+      </g>
+
+      <g id="agent-teacher-agent" class="agent-node" transform="translate(540,225)">
+        <circle cx="0" cy="0" r="30" fill="#1e293b" stroke="#fbbf24" stroke-width="2"/>
+        <text x="0" y="-3" text-anchor="middle" font-size="10" fill="#fef3c7" font-weight="bold">Teacher</text>
+        <text x="0" y="11" text-anchor="middle" font-size="6" fill="#fde68a">pedagogy</text>
+      </g>
+
+      <!-- KB Box -->
+      <rect x="160" y="310" width="400" height="120" rx="4" fill="#0f172a" stroke="#60a5fa" stroke-width="1.5"/>
+      <text x="168" y="326" font-size="8" fill="#60a5fa">KNOWLEDGE BASE (state/kb/)</text>
+
+      <g id="kb-cells">
+        <!-- Populated dynamically by initial_state and kb.written events -->
+      </g>
+
+      <!-- Internet placeholder (v1.9) -->
+      <rect x="580" y="310" width="140" height="120" rx="4" fill="#0f172a" stroke="#64748b" stroke-width="1" stroke-dasharray="5"/>
+      <text x="588" y="326" font-size="8" fill="#64748b">INTERNET (v1.9)</text>
+      <g opacity="0.55">
+        <circle cx="650" cy="370" r="22" fill="none" stroke="#64748b" stroke-width="1" stroke-dasharray="2"/>
+        <text x="650" y="363" text-anchor="middle" font-size="7" fill="#94a3b8">fetch_url</text>
+        <text x="650" y="373" text-anchor="middle" font-size="6" fill="#64748b">Boundary-</text>
+        <text x="650" y="381" text-anchor="middle" font-size="6" fill="#64748b">crossing</text>
+      </g>
+      <text x="650" y="410" text-anchor="middle" font-size="6" fill="#64748b">not wired in v1.8.2</text>
+
+      <!-- Dispatch arrow overlay (animated) -->
+      <g id="dispatch-arrows"></g>
+
+    </svg>
+  </div>
+
+  <div id="event-log">
+    <h3>Event log</h3>
+    <div id="event-log-entries"></div>
+  </div>
+</div>
+
+<div id="answer-panel">
+  <h3>Current answer (streaming)</h3>
+  <div id="answer-text">(no question yet — type <code>ask &lt;question&gt;</code> in the terminal)</div>
+  <div id="answer-meta"></div>
+</div>
+
+<script>
+"use strict";
+
+const AGENT_COORDS = {
+  "registry-agent":    { x: 220, y: 100 },
+  "chronicler-agent":  { x: 340, y: 100 },
+  "equilibrium-agent": { x: 460, y: 100 },
+  "sentinel-agent":    { x: 640, y: 100 },
+  "librarian-agent":   { x: 300, y: 225 },
+  "teacher-agent":     { x: 540, y: 225 },
+};
+
+const USER_COORDS = { x: 130, y: 95 };
+
+let reconnectTimer = null;
+let eventSource = null;
+
+function connectSSE() {
+  if (eventSource) { try { eventSource.close(); } catch (e) {} }
+  eventSource = new EventSource("/events");
+  eventSource.onopen = () => {
+    document.getElementById("status-banner").classList.remove("show");
+  };
+  eventSource.onmessage = (ev) => {
+    try {
+      const obj = JSON.parse(ev.data);
+      handleEvent(obj);
+    } catch (e) {
+      console.error("bad event", e, ev.data);
+    }
+  };
+  eventSource.onerror = () => {
+    document.getElementById("status-banner").classList.add("show");
+    try { eventSource.close(); } catch (e) {}
+    if (reconnectTimer) return;
+    reconnectTimer = setTimeout(() => {
+      reconnectTimer = null;
+      connectSSE();
+    }, 2000);
+  };
+}
+
+function handleEvent(evt) {
+  const type = evt.type || "";
+  // Initial state from the server
+  if (type === "viewer.initial_state") {
+    applyInitialState(evt);
+    return;
+  }
+  // Append to event log
+  appendEventLog(evt);
+  // Type-specific handling
+  switch (type) {
+    case "dispatch.start":
+      onDispatchStart(evt);
+      break;
+    case "dispatch.complete":
+      onDispatchComplete(evt);
+      break;
+    case "kb.read":
+      onKbRead(evt);
+      break;
+    case "kb.written":
+      onKbWritten(evt);
+      break;
+    case "cosign.granted":
+      onCosignGranted(evt);
+      break;
+    case "mirror.updated":
+      onMirrorUpdated(evt);
+      break;
+    default:
+      break;
+  }
+}
+
+function applyInitialState(evt) {
+  // Budget
+  if (evt.budget) {
+    updateBudget(evt.budget);
+  }
+  // KB topics
+  const topics = evt.kb_topics || [];
+  renderKbCells(topics);
+}
+
+function updateBudget(budget) {
+  const limit = budget.limit || 500000;
+  const used = budget.used || 0;
+  const fraction = Math.min(1.0, used / (limit || 1));
+  const pct = (fraction * 100).toFixed(1);
+  const fill = document.getElementById("budget-bar-fill");
+  const strip = document.getElementById("budget-strip");
+  fill.style.width = (fraction * 100) + "%";
+  strip.classList.remove("warning", "exhausted");
+  if (fraction >= 1.0) strip.classList.add("exhausted");
+  else if (fraction >= 0.8) strip.classList.add("warning");
+  const txt = document.getElementById("budget-text");
+  txt.textContent = `budget: ${used.toLocaleString()} / ${limit.toLocaleString()} (${pct}%)`;
+  const cacheTxt = document.getElementById("budget-cache-text");
+  const cacheRead = budget.cache_read_input_tokens || 0;
+  if (cacheRead > 0) {
+    cacheTxt.textContent = `[${cacheRead.toLocaleString()} from cache]`;
+  } else {
+    cacheTxt.textContent = "";
+  }
+}
+
+function renderKbCells(topics) {
+  const g = document.getElementById("kb-cells");
+  while (g.firstChild) g.removeChild(g.firstChild);
+  const startX = 170;
+  const startY = 340;
+  const cellW = 85;
+  const cellH = 72;
+  const gap = 10;
+  let i = 0;
+  // Always render 4 slots; fill first N with actual topics
+  for (let slot = 0; slot < 4; slot++) {
+    const topic = topics[slot];
+    const x = startX + slot * (cellW + gap);
+    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    rect.setAttribute("x", x);
+    rect.setAttribute("y", startY);
+    rect.setAttribute("width", cellW);
+    rect.setAttribute("height", cellH);
+    rect.setAttribute("rx", 2);
+    rect.classList.add("kb-cell");
+    if (topic) {
+      rect.setAttribute("fill", "#1e293b");
+      rect.setAttribute("stroke", "#60a5fa");
+      rect.setAttribute("stroke-width", "1");
+      rect.setAttribute("data-topic", topic);
+      rect.setAttribute("id", "kb-cell-" + slugForId(topic));
+    } else {
+      rect.setAttribute("fill", "#0f172a");
+      rect.setAttribute("stroke", "#334155");
+      rect.setAttribute("stroke-width", "1");
+      rect.setAttribute("stroke-dasharray", "3");
+    }
+    g.appendChild(rect);
+
+    const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    label.setAttribute("x", x + cellW / 2);
+    label.setAttribute("y", startY + 20);
+    label.setAttribute("text-anchor", "middle");
+    label.setAttribute("font-size", "8");
+    if (topic) {
+      label.setAttribute("fill", "#bfdbfe");
+      label.setAttribute("font-weight", "bold");
+      label.textContent = topic;
+    } else {
+      label.setAttribute("fill", "#475569");
+      label.textContent = "(empty)";
+    }
+    g.appendChild(label);
+
+    if (topic) {
+      const subLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      subLabel.setAttribute("x", x + cellW / 2);
+      subLabel.setAttribute("y", startY + 38);
+      subLabel.setAttribute("text-anchor", "middle");
+      subLabel.setAttribute("font-size", "6");
+      subLabel.setAttribute("fill", "#94a3b8");
+      subLabel.textContent = "seeded";
+      g.appendChild(subLabel);
+    } else {
+      const hint = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      hint.setAttribute("x", x + cellW / 2);
+      hint.setAttribute("y", startY + 38);
+      hint.setAttribute("text-anchor", "middle");
+      hint.setAttribute("font-size", "6");
+      hint.setAttribute("fill", "#475569");
+      hint.textContent = "via research (v1.9)";
+      g.appendChild(hint);
+    }
+    i++;
+  }
+}
+
+function slugForId(topic) {
+  return String(topic).replace(/[^a-zA-Z0-9]+/g, "-").toLowerCase();
+}
+
+function onDispatchStart(evt) {
+  const agentId = evt.actor;
+  const node = document.getElementById("agent-" + agentId);
+  if (node) node.classList.add("active");
+  // Show the user's question on the User node if topic=beekeeping-ish
+  const topic = (evt.payload && evt.payload.topic) || "";
+  if (topic) {
+    const q = document.getElementById("user-question");
+    if (q) q.textContent = "\"" + String(topic).slice(0, 14) + "\"";
+  }
+  // Animate dispatch arrow: User → actor (roughly)
+  drawDispatchArrow(USER_COORDS, AGENT_COORDS[agentId] || null);
+}
+
+function onDispatchComplete(evt) {
+  const agentId = evt.actor;
+  const node = document.getElementById("agent-" + agentId);
+  if (node) {
+    node.classList.remove("active");
+    node.classList.add("flashing");
+    setTimeout(() => { if (node) node.classList.remove("flashing"); }, 850);
+  }
+  // Budget update from the event's usage payload
+  const payload = evt.payload || {};
+  const usage = payload.usage || {};
+  if (Object.keys(usage).length > 0) {
+    // We don't have the running total; accumulate on the client
+    accumulateBudget(usage);
+  }
+  // Teacher answer → answer panel
+  if (agentId === "teacher-agent" && payload.answer) {
+    const at = document.getElementById("answer-text");
+    if (at) at.textContent = payload.answer;
+    const meta = document.getElementById("answer-meta");
+    if (meta) {
+      const topic = payload.topic || "(auto)";
+      const model = (usage && usage.model) || "claude-sonnet-4-6";
+      const tokens = (usage.input_tokens || 0) + (usage.output_tokens || 0);
+      meta.textContent = `source: state/kb/${topic}.md  ·  teacher-agent  ·  ${model}  ·  ${tokens.toLocaleString()} tokens`;
+    }
+  }
+}
+
+let _runningBudget = {
+  limit: 500000,
+  used: 0,
+  cache_read_input_tokens: 0,
+};
+
+function accumulateBudget(usage) {
+  _runningBudget.used +=
+    (usage.input_tokens || 0) +
+    (usage.output_tokens || 0) +
+    (usage.cache_creation_input_tokens || 0) +
+    (usage.cache_read_input_tokens || 0);
+  _runningBudget.cache_read_input_tokens += (usage.cache_read_input_tokens || 0);
+  updateBudget(_runningBudget);
+}
+
+function onKbRead(evt) {
+  const matched = (evt.payload && evt.payload.matched_topics) || [];
+  for (const t of matched) {
+    const cell = document.getElementById("kb-cell-" + slugForId(t));
+    if (cell) {
+      cell.classList.add("pulsing");
+      setTimeout(() => { if (cell) cell.classList.remove("pulsing"); }, 1100);
+    }
+  }
+}
+
+function onKbWritten(evt) {
+  const topic = evt.payload && evt.payload.topic;
+  if (!topic) return;
+  // Re-render the KB to pick up a new topic.
+  // A smarter version would slide it in; v1.8.2 re-renders the row.
+  const existingCells = Array.from(document.querySelectorAll("#kb-cells rect[data-topic]"))
+    .map(el => el.getAttribute("data-topic"));
+  if (!existingCells.includes(topic)) existingCells.push(topic);
+  renderKbCells(existingCells);
+  // Pulse the just-added one
+  setTimeout(() => {
+    const cell = document.getElementById("kb-cell-" + slugForId(topic));
+    if (cell) {
+      cell.classList.add("pulsing");
+      setTimeout(() => { if (cell) cell.classList.remove("pulsing"); }, 1100);
+    }
+  }, 50);
+}
+
+function onCosignGranted(evt) {
+  // Flash sentinel briefly
+  const sentinel = document.getElementById("agent-sentinel-agent");
+  if (sentinel) {
+    sentinel.classList.add("flashing");
+    setTimeout(() => { if (sentinel) sentinel.classList.remove("flashing"); }, 850);
+  }
+}
+
+function onMirrorUpdated(evt) {
+  const agentId = evt.actor;
+  const node = document.getElementById("agent-" + agentId);
+  if (node) {
+    node.classList.add("flashing");
+    setTimeout(() => { if (node) node.classList.remove("flashing"); }, 850);
+  }
+}
+
+function drawDispatchArrow(from, to) {
+  if (!from || !to) return;
+  const svg = document.getElementById("dispatch-arrows");
+  // clear previous arrows
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+  line.setAttribute("x1", from.x);
+  line.setAttribute("y1", from.y);
+  line.setAttribute("x2", to.x);
+  line.setAttribute("y2", to.y);
+  line.setAttribute("stroke", "#fbbf24");
+  line.setAttribute("stroke-width", "2");
+  line.setAttribute("marker-end", "url(#arrow-gold)");
+  line.classList.add("dispatch-arrow");
+  svg.appendChild(line);
+  // Remove after the animation
+  setTimeout(() => { try { svg.removeChild(line); } catch (e) {} }, 1100);
+}
+
+function appendEventLog(evt) {
+  const container = document.getElementById("event-log-entries");
+  const div = document.createElement("div");
+  div.className = "event-entry " + (evt.type || "").replace(/\./g, "-");
+  const ts = document.createElement("span");
+  ts.className = "ts";
+  const t = (evt.timestamp || "").split("T")[1] || "";
+  ts.textContent = t.slice(0, 8);
+  const ty = document.createElement("span");
+  ty.className = "type";
+  ty.textContent = evt.type || "";
+  const ac = document.createElement("span");
+  ac.className = "actor";
+  ac.textContent = evt.actor || "";
+  div.appendChild(ts);
+  div.appendChild(ty);
+  div.appendChild(ac);
+  container.appendChild(div);
+  // Trim to last 100 entries
+  while (container.children.length > 100) {
+    container.removeChild(container.firstChild);
+  }
+  container.scrollTop = container.scrollHeight;
+}
+
+// Start
+connectSSE();
+</script>
+
+</body>
+</html>

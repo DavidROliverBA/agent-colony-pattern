@@ -75,7 +75,7 @@ pip install -r requirements.txt
 
 That installs `anthropic`, `pyyaml`, `jsonschema`, and `pytest`. No network or build step for the scripted walkthrough. For the live REPL, set `ANTHROPIC_API_KEY` in your environment too.
 
-## Interactive REPL — v1.8.0
+## Interactive REPL — v1.8.0 (+ v1.8.2 live viewer)
 
 **This is the first release that costs money to use.** Running `chat.py` in live mode makes real Claude API calls. Each `ask` question costs roughly 1,000–3,000 tokens (~1-3 pennies at Sonnet pricing, less with caching on repeat calls). A full afternoon of exploration against the default 500,000 token budget costs around $5. The scripted walkthrough remains free.
 
@@ -93,7 +93,34 @@ TEACHING_COLONY_TOKEN_BUDGET=50000 python -m examples.teaching_colony.chat
 
 # Reset state and start fresh.
 python -m examples.teaching_colony.chat --reset
+
+# v1.8.2: start the live browser viewer alongside the REPL.
+# Opens http://127.0.0.1:8765 in your default browser. Watch agent
+# dispatches animate, see the KB pulse on reads, watch the budget
+# gauge tick up in real time. Zero new dependencies, localhost only.
+python -m examples.teaching_colony.chat --view
+
+# --view with all the knobs:
+python -m examples.teaching_colony.chat --mock --view --view-port 9000 --no-open
 ```
+
+### The live viewer (v1.8.2)
+
+Adding `--view` starts a tiny asyncio HTTP server on `127.0.0.1:8765` (or `--view-port N`) alongside the REPL loop. A single-file `viewer.html` renders the colony as:
+
+- **User node** on the left — where the question enters
+- **L1 Governance band** (Registry, Chronicler, Equilibrium), **L2 Immune band** (Sentinel), **L3 Domain band** (Librarian, Teacher) — agents laid out by architectural layer
+- **Knowledge Base cells** at the bottom left — filled cells are real topics, dashed cells are slots that v1.9 research walks will fill
+- **Internet node** — a dashed placeholder explicitly labelled "v1.9" so you can see where `fetch_url` will plug in later
+- **Event log** on the right — every `state/events.jsonl` entry as it's written
+- **Current answer panel** at the bottom — streamed into place when Teacher responds
+- **Token budget gauge** at the top — live updates after every dispatch, with cache-hit breakdown
+
+**It's read-only in v1.8.2.** You still type commands in the terminal. The browser is a passive observer. Bidirectional input (typing questions from the browser) is v1.8.3 or v2.0.
+
+**It's localhost only.** The server binds to `127.0.0.1` — unreachable from other machines, even on the same LAN. No XSS risk: the viewer uses `textContent` (never `innerHTML`) for every field from the event stream.
+
+**Shut it down cleanly** by quitting the REPL (`quit`, `q`, `exit`, or Ctrl-C). The viewer server is shut down as part of REPL exit.
 
 ### What the REPL can do in v1.8.0
 

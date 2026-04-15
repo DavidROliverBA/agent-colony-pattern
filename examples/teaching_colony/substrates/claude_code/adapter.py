@@ -276,6 +276,24 @@ class ClaudeCodeAdapter(SubstrateContract):
     def dispatch_agent(self, agent_id: str, input: dict) -> dict:
         mirror = self.read_mirror(agent_id)
 
+        # v1.8.2: emit dispatch.start so the viewer can animate the
+        # arrow's lifecycle. Paired with dispatch.complete below.
+        input_keys = sorted(list((input or {}).keys()))
+        self.record_event(
+            Event(
+                type="dispatch.start",
+                actor=agent_id,
+                payload={
+                    "input_keys": input_keys,
+                    "task": (input or {}).get("task", ""),
+                    "topic": (input or {}).get("topic", ""),
+                    "mock": self.mock,
+                },
+                timestamp=_iso_now(),
+                substrate=self.substrate_name,
+            )
+        )
+
         if self.mock:
             output = self._mock_response(agent_id, input)
         else:  # pragma: no cover - network path not exercised in tests
@@ -284,11 +302,38 @@ class ClaudeCodeAdapter(SubstrateContract):
         payload_hash = hashlib.sha256(
             json.dumps({"in": input, "out": output}, sort_keys=True, default=str).encode()
         ).hexdigest()[:16]
+        # v1.8.2: dispatch.complete payload now includes token usage so
+        # the viewer's budget gauge can update from the event stream
+        # alone, without peeking at the adapter's internal state.
+        usage_payload = {}
+        if self.last_response_usage:
+            usage_payload = {
+                "input_tokens": self.last_response_usage.get("input_tokens", 0),
+                "output_tokens": self.last_response_usage.get("output_tokens", 0),
+                "cache_read_input_tokens": self.last_response_usage.get(
+                    "cache_read_input_tokens", 0
+                ),
+                "cache_creation_input_tokens": self.last_response_usage.get(
+                    "cache_creation_input_tokens", 0
+                ),
+                "model": self.last_response_usage.get("model", ""),
+            }
+        # The Teacher answer is included in the event so the viewer can
+        # render it in the answer panel without needing a separate hook.
+        answer_text = ""
+        if isinstance(output, dict):
+            answer_text = output.get("answer", "") or ""
         self.record_event(
             Event(
                 type="dispatch.complete",
                 actor=agent_id,
-                payload={"hash": payload_hash, "mock": self.mock},
+                payload={
+                    "hash": payload_hash,
+                    "mock": self.mock,
+                    "usage": usage_payload,
+                    "answer": answer_text[:2000],  # cap for log sanity
+                    "topic": (input or {}).get("topic", ""),
+                },
                 timestamp=_iso_now(),
                 substrate=self.substrate_name,
             )
@@ -914,6 +959,21 @@ class ClaudeCodeAdapter(SubstrateContract):
     def read_kb(self, query: str) -> list:
         results: list = []
         if not self.kb_dir.exists():
+            # v1.8.2: still emit the kb.read event even on empty — the
+            # viewer can use it to render "Teacher attempted to read KB".
+            self.record_event(
+                Event(
+                    type="kb.read",
+                    actor="substrate",
+                    payload={
+                        "query": (query or "")[:200],
+                        "matched_topics": [],
+                        "doc_count": 0,
+                    },
+                    timestamp=_iso_now(),
+                    substrate=self.substrate_name,
+                )
+            )
             return results
         terms = [t for t in re.split(r"\W+", (query or "").lower()) if t]
         for md in sorted(self.kb_dir.glob("*.md")):
@@ -930,6 +990,22 @@ class ClaudeCodeAdapter(SubstrateContract):
                         cross_references=xrefs,
                     )
                 )
+        # v1.8.2: emit kb.read so the viewer can draw the Teacher→KB
+        # arrow and pulse the matched topic cell(s).
+        matched = [d.topic for d in results]
+        self.record_event(
+            Event(
+                type="kb.read",
+                actor="substrate",
+                payload={
+                    "query": (query or "")[:200],
+                    "matched_topics": matched,
+                    "doc_count": len(results),
+                },
+                timestamp=_iso_now(),
+                substrate=self.substrate_name,
+            )
+        )
         return results
 
     def write_kb(self, topic: str, content: str, provenance: str) -> None:
