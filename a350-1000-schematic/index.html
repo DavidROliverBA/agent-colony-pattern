@@ -39,7 +39,7 @@
 <body>
 <canvas id="scene"></canvas>
 <div id="vignette"></div>
-<div id="title" class="hud"><h1>AIRBUS <span>A350-1000</span></h1><p>3D assembly schematic &middot; fly-through</p></div>
+<div id="title" class="hud"><h1>AIRBUS <span>A350-1000</span></h1><p>British Airways &middot; 3D assembly schematic &middot; fly-through</p></div>
 <div id="stage" class="hud">
   <div id="stageLabel"></div>
   <div id="stageCount"></div>
@@ -127,12 +127,14 @@ grid.position.y = GROUND_Y + 0.02;
 scene.add(grid);
 
 // ---------- materials ----------
+const BA_BLUE = '#0b2d6b', BA_RED = '#e0252a';
 const MAT = {
-  skin:    new THREE.MeshStandardMaterial({ color: 0xe9edf0, roughness: 0.4, metalness: 0.1, side: THREE.DoubleSide }),
+  skin:    new THREE.MeshStandardMaterial({ color: 0xf2f4f6, roughness: 0.4, metalness: 0.1, side: THREE.DoubleSide }),
+  navy:    new THREE.MeshStandardMaterial({ color: 0x12306e, roughness: 0.45, metalness: 0.15, side: THREE.DoubleSide }),
   belly:   new THREE.MeshStandardMaterial({ color: 0xb9c2ca, roughness: 0.5, metalness: 0.1 }),
   wing:    new THREE.MeshStandardMaterial({ color: 0xdfe5ea, roughness: 0.45, metalness: 0.12, side: THREE.DoubleSide }),
   mask:    new THREE.MeshStandardMaterial({ color: 0x14181d, roughness: 0.15, metalness: 0.5, side: THREE.DoubleSide }),
-  nacelle: new THREE.MeshStandardMaterial({ color: 0xeef1f3, roughness: 0.3, metalness: 0.35, side: THREE.DoubleSide }),
+  nacelle: new THREE.MeshStandardMaterial({ color: 0x122f6b, roughness: 0.4, metalness: 0.2, side: THREE.DoubleSide }),
   lip:     new THREE.MeshStandardMaterial({ color: 0xb8bec4, roughness: 0.2, metalness: 0.9, side: THREE.DoubleSide }),
   metal:   new THREE.MeshStandardMaterial({ color: 0x8f969d, roughness: 0.3, metalness: 0.95, side: THREE.DoubleSide }),
   dark:    new THREE.MeshStandardMaterial({ color: 0x1c2127, roughness: 0.6, metalness: 0.3 }),
@@ -151,8 +153,8 @@ const MAT = {
   panel:   new THREE.MeshStandardMaterial({ color: 0x23282e, roughness: 0.5 }),
 };
 const xrayTargets = [
-  { m: MAT.skin, op: 0.13 }, { m: MAT.belly, op: 0.13 }, { m: MAT.wing, op: 0.2 },
-  { m: MAT.nacelle, op: 0.25 }, { m: MAT.mask, op: 0.3 },
+  { m: MAT.skin, op: 0.13 }, { m: MAT.navy, op: 0.13 }, { m: MAT.belly, op: 0.13 },
+  { m: MAT.wing, op: 0.2 }, { m: MAT.nacelle, op: 0.25 }, { m: MAT.mask, op: 0.3 },
 ];
 
 // ---------- shared helpers ----------
@@ -252,13 +254,15 @@ const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
 // PART REGISTRY — every part flies in from `from` offset
 // ============================================================
 const parts = [];
-function part(name, group, from) {
+const P = {};   // parts by key — assembly stages reference these in build order
+function part(key, group, from) {
   group.userData.home = group.position.clone();
   group.userData.from = from.clone();
   group.userData.spin = (Math.random() - 0.5) * 0.5;
   group.visible = false;
   aircraft.add(group);
   parts.push(group);
+  P[key] = group;
   return group;
 }
 
@@ -279,7 +283,7 @@ const structure = new THREE.Group();
     const r = new THREE.Mesh(rail, MAT.frame); r.position.set(x, -0.62, 36); structure.add(r);
   }
 }
-part('Keel beam & floor grid', shadows(structure), V3(0, -26, 0));
+part('structure', shadows(structure), V3(0, -26, 0));
 
 // ------------------------------------------------------------
 // 2. Fuselage frames (the schematic rib cage)
@@ -295,38 +299,49 @@ for (let z = 4; z <= 70; z += 3.3) {
 // crown stringer
 const stringer = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 62), MAT.frame);
 stringer.position.set(0, R - 0.12, 36); frames.add(stringer);
-part('Fuselage frames & stringers', shadows(frames), V3(0, 30, 0));
+part('frames', shadows(frames), V3(0, 30, 0));
 
 // ------------------------------------------------------------
-// 3–7. Fuselage skin in five barrel sections
+// 3–7. Fuselage skin: five barrels, each split into a white upper
+// shell and a BA dark-blue lower shell so the skin visibly wraps
+// (clamshells closing) around the structure and interior.
 // ------------------------------------------------------------
-function barrel(z0, z1) { const g = new THREE.Group(); g.add(fuselageSection(z0, z1, MAT.skin)); return shadows(g); }
+// After the lathe's rotateX, a vertex sits at (r sinφ, -r cosφ, z):
+// φ=0 is the belly, φ=π the crown. The seam angle puts the white/navy
+// split ~1 m below the centreline.
+const SEAM = Math.acos(1.0 / R);
+function barrelHalves(key, z0, z1, fromAbove = 16, fromBelow = 11) {
+  const upper = new THREE.Group();
+  upper.add(fuselageSection(z0, z1, MAT.skin, { phiStart: SEAM, phiLength: 2 * Math.PI - 2 * SEAM }));
+  const lower = new THREE.Group();
+  lower.add(fuselageSection(z0, z1, MAT.navy, { phiStart: -SEAM, phiLength: 2 * SEAM }));
+  part(key + 'U', shadows(upper), V3(0, fromAbove, 0));
+  part(key + 'L', shadows(lower), V3(0, -fromBelow, 0));
+  return { upper, lower };
+}
 
-const nose = barrel(0.001, 7);
+const nose = barrelHalves('nose', 0.001, 7);
 { // cockpit windscreen "mask" — the A350 signature
-  const mask = fuselageSection(4.35, 6.05, MAT.mask, { rOff: 0.035, phiStart: Math.PI * 1.22, phiLength: Math.PI * 0.56, steps: 10 });
-  nose.add(mask);
+  const mask = fuselageSection(4.35, 6.05, MAT.mask, { rOff: 0.035, phiStart: Math.PI * 0.72, phiLength: Math.PI * 0.56, steps: 10 });
+  nose.upper.add(mask);
   const radome = fuselageSection(0.001, 1.6, MAT.belly, { rOff: 0.02, steps: 10 });
-  nose.add(radome);
+  nose.upper.add(radome);
 }
-part('Nose section & cockpit mask', nose, V3(0, 6, -30));
-part('Forward fuselage', barrel(7, 26), V3(-34, 10, 0));
-const centerBarrel = barrel(26, 44);
-{ // belly fairing
-  const bf = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 24), MAT.belly);
+barrelHalves('fwd', 7, 26);
+const center = barrelHalves('ctr', 26, 44);
+{ // belly fairing rises with the lower shell
+  const bf = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 24), MAT.navy);
   bf.scale.set(3.35, 2.45, 11.6); bf.position.set(0, -1.55, 36.5);
-  bf.castShadow = true; centerBarrel.add(bf);
+  bf.castShadow = true; center.lower.add(bf);
 }
-part('Centre fuselage & belly fairing', centerBarrel, V3(0, 34, 0));
-part('Aft fuselage', barrel(44, 58), V3(34, 10, 0));
-const tailcone = barrel(58, LEN - 0.05);
+barrelHalves('aft', 44, 58);
+const tail = barrelHalves('tail', 58, LEN - 0.05);
 { // APU exhaust
   const apu = new THREE.Mesh(new THREE.ConeGeometry(0.26, 1.4, 20), MAT.metal);
   apu.rotation.x = Math.PI / 2;
   apu.position.set(0, fuseDY(LEN) + 0.05, LEN + 0.45);
-  tailcone.add(apu);
+  tail.upper.add(apu);
 }
-part('Tail cone & APU', tailcone, V3(0, 8, 32));
 
 // ------------------------------------------------------------
 // 8. Wing spars (schematic structure, per side)
@@ -363,7 +378,7 @@ for (const s of [1, -1]) {
 // centre wing box
 const cwb = new THREE.Mesh(new THREE.BoxGeometry(5.6, 1.3, 6.4), MAT.spar);
 cwb.position.set(0, -1.15, 34.2); spars.add(cwb);
-part('Wing spars, ribs & centre wing box', shadows(spars), V3(0, -22, 0));
+part('spars', shadows(spars), V3(0, -22, 0));
 
 // ------------------------------------------------------------
 // 9. Wings (with blended winglets) — lofted
@@ -401,8 +416,8 @@ function buildWing(s) {
   grp.add(nav);
   return shadows(grp);
 }
-part('Left wing & winglet', buildWing(-1), V3(-42, 14, 0));
-part('Right wing & winglet', buildWing(1), V3(42, 14, 0));
+part('wingL', buildWing(-1), V3(-42, 14, 0));
+part('wingR', buildWing(1), V3(42, 14, 0));
 
 // ------------------------------------------------------------
 // 10. Vertical stabiliser
@@ -415,14 +430,15 @@ const fin = new THREE.Group();
     { pos: V3(0, 8.5, 68.3),  chord: 4.3, thick: 0.095, bank: Math.PI / 2 },
     { pos: V3(0, 11.3, 70.0), chord: 2.7, thick: 0.09, bank: Math.PI / 2 },
   ];
-  fin.add(new THREE.Mesh(loftWing(stations, FOIL_SYM), MAT.wing));
-  // tail logo planes (canvas swoosh) both sides
+  fin.add(new THREE.Mesh(loftWing(stations, FOIL_SYM), MAT.navy));
+  // Chatham Dockyard Union Flag ribbons, both sides
   const tex = makeTailTexture();
   for (const s of [1, -1]) {
-    const p = new THREE.Mesh(new THREE.PlaneGeometry(5.4, 6.2),
-      new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.FrontSide }));
+    const p = new THREE.Mesh(new THREE.PlaneGeometry(5.6, 6.4),
+      new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide }));
     p.rotation.y = s * Math.PI / 2;
     p.rotation.z = s * -0.12;
+    if (s < 0) p.scale.x = -1;  // keep the ribbons sweeping up-and-aft on both sides
     p.position.set(0.34 * s, 6.9, 66.9);
     fin.add(p);
   }
@@ -432,7 +448,7 @@ const fin = new THREE.Group();
   strobe.position.set(0, 11.6, 70.4); strobe.name = 'strobe';
   fin.add(strobe);
 }
-part('Vertical stabiliser', shadows(fin), V3(0, 26, 16));
+part('fin', shadows(fin), V3(0, 26, 16));
 
 // ------------------------------------------------------------
 // 11. Horizontal stabilisers
@@ -446,7 +462,7 @@ for (const s of [1, -1]) {
   ];
   hstab.add(new THREE.Mesh(loftWing(stations, FOIL_SYM, s < 0), MAT.wing));
 }
-part('Horizontal stabilisers', shadows(hstab), V3(0, -16, 26));
+part('hstab', shadows(hstab), V3(0, -16, 26));
 
 // ------------------------------------------------------------
 // 12–13. Engines (Trent XWB-97) + pylons
@@ -506,9 +522,9 @@ function buildPylon(s) {
   py.add(m);
   return shadows(py);
 }
-part('Engine pylons', (() => { const g = new THREE.Group(); g.add(buildPylon(1), buildPylon(-1)); return g; })(), V3(0, -18, -10));
-part('Left engine — Trent XWB-97', buildEngine(-1), V3(-26, -12, -18));
-part('Right engine — Trent XWB-97', buildEngine(1), V3(26, -12, -18));
+part('pylons', (() => { const g = new THREE.Group(); g.add(buildPylon(1), buildPylon(-1)); return g; })(), V3(0, -18, -10));
+part('engL', buildEngine(-1), V3(-26, -12, -18));
+part('engR', buildEngine(1), V3(26, -12, -18));
 
 // ------------------------------------------------------------
 // 14. Landing gear (A350-1000 signature 6-wheel main bogies)
@@ -549,7 +565,7 @@ const gear = new THREE.Group();
     gear.add(mg);
   }
 }
-part('Landing gear — 6-wheel main bogies', shadows(gear), V3(0, -16, 0));
+part('gear', shadows(gear), V3(0, -16, 0));
 
 // ------------------------------------------------------------
 // 15. Cockpit interior
@@ -594,7 +610,7 @@ const cockpit = new THREE.Group();
   const bh = new THREE.Mesh(new THREE.BoxGeometry(5.2, 3.4, 0.16), MAT.cabin);
   bh.position.set(0, 0.6, 7.2); cockpit.add(bh);
 }
-part('Cockpit & flight deck', shadows(cockpit), V3(0, 10, -22));
+part('cockpit', shadows(cockpit), V3(0, 10, -22));
 
 // ------------------------------------------------------------
 // 16. Cabin interior — floor, seats, bins
@@ -662,7 +678,7 @@ const cabin = new THREE.Group();
     lav.position.set(1.7 * s, TOP + 1.1, 65.2); cabin.add(lav);
   }
 }
-part('Cabin — 369-seat interior', shadows(cabin), V3(0, 22, 0));
+part('cabin', shadows(cabin), V3(0, 22, 0));
 
 // ------------------------------------------------------------
 // 17. Windows, doors, decals & lights
@@ -702,14 +718,20 @@ const details = new THREE.Group();
     details.add(dw);
   }
 
-  // titles decal both sides
+  // BRITISH AIRWAYS titles + speedmarque, registration aft, both sides
   const titleTex = makeTitleTexture();
+  const regTex = makeRegTexture();
   for (const s of [1, -1]) {
-    const p = new THREE.Mesh(new THREE.PlaneGeometry(9.5, 1.2),
+    const p = new THREE.Mesh(new THREE.PlaneGeometry(10, 1.5),
       new THREE.MeshBasicMaterial({ map: titleTex, transparent: true }));
     p.rotation.y = s * Math.PI / 2;
-    p.position.set(s * (R + 0.03), 1.35, 15.5);
+    p.position.set(s * (R + 0.03), 1.25, 15.5);
     details.add(p);
+    const reg = new THREE.Mesh(new THREE.PlaneGeometry(2.3, 0.58),
+      new THREE.MeshBasicMaterial({ map: regTex, transparent: true }));
+    reg.rotation.y = s * Math.PI / 2;
+    reg.position.set(s * (R + 0.03), 1.1, 55.5);
+    details.add(reg);
   }
 
   // beacons & strobes
@@ -720,56 +742,85 @@ const details = new THREE.Group();
   details.add(b1, b2);
   details.userData.beaconM = beaconM;
 }
-part('Windows, doors & livery', details, V3(0, 16, -16));
+part('details', details, V3(0, 16, -16));
 
-// ---------- canvas textures ----------
+// ---------- canvas textures (British Airways livery art) ----------
 function makeTitleTexture() {
-  const c = document.createElement('canvas'); c.width = 1024; c.height = 128;
+  const c = document.createElement('canvas'); c.width = 1280; c.height = 192;
   const x = c.getContext('2d');
-  x.font = '600 86px "Segoe UI", Arial, sans-serif';
-  x.fillStyle = '#23304a';
+  x.font = '600 92px "Segoe UI", Arial, sans-serif';
+  x.fillStyle = BA_BLUE;
   x.textBaseline = 'middle';
-  x.fillText('AIRBUS A350-1000', 18, 68);
+  x.fillText('BRITISH AIRWAYS', 16, 70);
+  // speedmarque — tapered red ribbon beneath the titles
+  x.fillStyle = BA_RED;
+  x.beginPath();
+  x.moveTo(10, 178);
+  x.quadraticCurveTo(210, 188, 470, 132);
+  x.quadraticCurveTo(300, 152, 30, 148);
+  x.closePath();
+  x.fill();
   const t = new THREE.CanvasTexture(c); t.anisotropy = 8;
   return t;
 }
 function makeTailTexture() {
+  // Chatham Dockyard Union Flag: red ribbon with white borders sweeping
+  // up and aft across the navy fin
   const c = document.createElement('canvas'); c.width = 512; c.height = 512;
   const x = c.getContext('2d');
-  const g = x.createLinearGradient(80, 470, 420, 60);
-  g.addColorStop(0, '#0e6e9e'); g.addColorStop(0.55, '#19b5c8'); g.addColorStop(1, '#7fe3ef');
-  x.strokeStyle = g; x.lineCap = 'round';
-  x.lineWidth = 56; x.beginPath(); x.moveTo(110, 470); x.quadraticCurveTo(190, 240, 410, 100); x.stroke();
-  x.lineWidth = 30; x.beginPath(); x.moveTo(210, 480); x.quadraticCurveTo(290, 300, 450, 190); x.stroke();
+  x.lineCap = 'round';
+  // canvas u=1 maps toward the nose on the starboard side (port side is
+  // re-mirrored with scale.x), so bottom-right -> top-left sweeps up-and-aft
+  const ribbon = (w, color) => {
+    x.strokeStyle = color; x.lineWidth = w;
+    x.beginPath();
+    x.moveTo(482, 460);
+    x.quadraticCurveTo(272, 380, 42, 70);
+    x.stroke();
+  };
+  ribbon(150, '#f4f6f8');
+  ribbon(78, BA_RED);
+  // thin white accent ribbon below
+  x.strokeStyle = '#f4f6f8'; x.lineWidth = 16;
+  x.beginPath(); x.moveTo(452, 510); x.quadraticCurveTo(232, 440, 12, 150); x.stroke();
+  const t = new THREE.CanvasTexture(c); t.anisotropy = 8;
+  return t;
+}
+function makeRegTexture() {
+  const c = document.createElement('canvas'); c.width = 512; c.height = 128;
+  const x = c.getContext('2d');
+  x.font = '600 84px "Segoe UI", Arial, sans-serif';
+  x.fillStyle = BA_BLUE;
+  x.textBaseline = 'middle';
+  x.fillText('G-XWBA', 20, 64);
   const t = new THREE.CanvasTexture(c); t.anisotropy = 8;
   return t;
 }
 
 // ============================================================
 // ASSEMBLY TIMELINE
+// Structure and contents first, then the fuselage skin wraps
+// around them, then wings, tail, engines, gear and livery.
 // ============================================================
-// stages: consecutive groups of parts (indices into `parts`)
 const STAGES = [
-  { label: 'Keel beam & cabin floor grid', n: 1, dur: 2.4 },
-  { label: 'Fuselage frames & stringers', n: 1, dur: 2.6 },
-  { label: 'Nose section & flight-deck mask', n: 1, dur: 2.4 },
-  { label: 'Forward fuselage barrel', n: 1, dur: 2.2 },
-  { label: 'Centre fuselage & belly fairing', n: 1, dur: 2.2 },
-  { label: 'Aft fuselage barrel', n: 1, dur: 2.0 },
-  { label: 'Tail cone & APU', n: 1, dur: 2.0 },
-  { label: 'Wing spars, ribs & centre wing box', n: 1, dur: 2.6 },
-  { label: 'Wings & blended winglets', n: 2, dur: 3.0 },
-  { label: 'Vertical stabiliser', n: 1, dur: 2.2 },
-  { label: 'Horizontal stabilisers', n: 1, dur: 2.0 },
-  { label: 'Engine pylons', n: 1, dur: 1.8 },
-  { label: 'Trent XWB-97 engines', n: 2, dur: 2.8 },
-  { label: 'Landing gear — 6-wheel bogies', n: 1, dur: 2.4 },
-  { label: 'Cockpit & flight deck', n: 1, dur: 2.2 },
-  { label: 'Cabin interior — 369 seats', n: 1, dur: 2.6 },
-  { label: 'Windows, doors & livery', n: 1, dur: 2.4 },
+  { label: 'Keel beam & cabin floor grid', parts: [P.structure], dur: 2.4 },
+  { label: 'Fuselage frames & stringers', parts: [P.frames], dur: 2.6 },
+  { label: 'Wing spars, ribs & centre wing box', parts: [P.spars], dur: 2.6 },
+  { label: 'Cockpit & flight deck', parts: [P.cockpit], dur: 2.2 },
+  { label: 'Cabin interior — 369 seats', parts: [P.cabin], dur: 2.6 },
+  { label: 'Nose skin wraps the flight deck', parts: [P.noseU, P.noseL], dur: 2.4 },
+  { label: 'Forward fuselage skin', parts: [P.fwdU, P.fwdL], dur: 2.2 },
+  { label: 'Centre fuselage & belly fairing', parts: [P.ctrU, P.ctrL], dur: 2.2 },
+  { label: 'Aft fuselage skin', parts: [P.aftU, P.aftL], dur: 2.0 },
+  { label: 'Tail cone & APU', parts: [P.tailU, P.tailL], dur: 2.0 },
+  { label: 'Wings & blended winglets', parts: [P.wingL, P.wingR], dur: 3.0 },
+  { label: 'Vertical stabiliser', parts: [P.fin], dur: 2.2 },
+  { label: 'Horizontal stabilisers', parts: [P.hstab], dur: 2.0 },
+  { label: 'Engine pylons', parts: [P.pylons], dur: 1.8 },
+  { label: 'Trent XWB-97 engines', parts: [P.engL, P.engR], dur: 2.8 },
+  { label: 'Landing gear — 6-wheel bogies', parts: [P.gear], dur: 2.4 },
+  { label: 'Windows, doors & livery', parts: [P.details], dur: 2.4 },
 ];
-// map stages to part index ranges
-{ let i = 0; for (const st of STAGES) { st.start = i; i += st.n; } }
 const TOTAL_STAGES = STAGES.length;
 
 const ui = {
@@ -799,8 +850,8 @@ function finishAssembly() {
   for (const p of parts) setPartProgress(p, 1);
   stageIdx = TOTAL_STAGES;
   mode = 'done';
-  ui.label.textContent = 'A350-1000 — ASSEMBLY COMPLETE';
-  ui.count.textContent = 'WINGSPAN 64.75 M · LENGTH 73.79 M · MTOW 322 T';
+  ui.label.textContent = 'A350-1000 G-XWBA — ASSEMBLY COMPLETE';
+  ui.count.textContent = 'BRITISH AIRWAYS · WINGSPAN 64.75 M · LENGTH 73.79 M · MTOW 322 T';
   ui.bar.style.width = '100%';
   ui.fly.style.opacity = 1;
   setTimeout(() => { ui.fly.style.opacity = 0; }, 6000);
@@ -819,12 +870,9 @@ function tickAssembly(dt) {
   ui.label.textContent = st.label.toUpperCase();
   ui.count.textContent = `STAGE ${stageIdx + 1} / ${TOTAL_STAGES}`;
   ui.bar.style.width = `${((stageIdx + Math.min(stageT / st.dur, 1)) / TOTAL_STAGES) * 100}%`;
-  for (let i = 0; i < st.n; i++) {
-    const stagger = i * 0.25;
-    setPartProgress(parts[st.start + i], (stageT - stagger) / st.dur);
-  }
+  st.parts.forEach((p, i) => setPartProgress(p, (stageT - i * 0.25) / st.dur));
   if (stageT >= st.dur + GAP) {
-    for (let i = 0; i < st.n; i++) setPartProgress(parts[st.start + i], 1);
+    for (const p of st.parts) setPartProgress(p, 1);
     stageIdx++; stageT = 0;
     if (stageIdx >= TOTAL_STAGES) finishAssembly();
   }
@@ -845,8 +893,8 @@ function stageFocus() {
   if (mode !== 'assembling' || stageIdx >= TOTAL_STAGES) return new THREE.Vector3(0, 0, 0);
   const st = STAGES[stageIdx];
   const f = new THREE.Vector3();
-  for (let i = 0; i < st.n; i++) f.add(parts[st.start + i].userData.home);
-  f.divideScalar(st.n).add(aircraft.position);
+  for (const p of st.parts) f.add(p.userData.home);
+  f.divideScalar(st.parts.length).add(aircraft.position);
   f.multiplyScalar(0.45); // bias toward model centre so framing stays wide
   return f;
 }
