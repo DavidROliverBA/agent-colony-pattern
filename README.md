@@ -1,11 +1,14 @@
 # Airbus A350-1000 — 3D Assembly Schematic
 
-An interactive, fully procedural 3D schematic of the Airbus A350-1000 built with
-[Three.js](https://threejs.org/). The aircraft assembles itself from its
-constituent parts in 17 stages — keel beam, fuselage frames, barrel sections,
-wing spars and ribs, lofted wings with blended winglets, Trent XWB-97 engines,
-the type's signature 6-wheel main bogies, flight deck and a 369-seat cabin —
-and then you can fly through it with a free camera.
+An interactive, fully procedural 3D schematic of the Airbus A350-1000 in
+British Airways' Chatham Dockyard livery, built with
+[Three.js](https://threejs.org/). The aircraft assembles itself inside-out in
+17 stages: first the structure (keel beam, floor grid, fuselage frames, wing
+spars) and the contents (flight deck, 369-seat cabin), then the fuselage skin
+wraps around them as upper/lower clamshells, followed by the lofted wings with
+blended winglets, tail, Trent XWB-97 engines, the type's signature 6-wheel
+main bogies and finally the livery details. Then you can fly through it with a
+free camera.
 
 Everything is generated in code at true scale (metres): no model files,
 no build step, a single `index.html`.
@@ -43,7 +46,9 @@ watched from inside — click to fly at any time.
 
 ## How it's built
 
-- **Fuselage** — five lathe-generated barrel sections sharing one
+- **Fuselage** — five lathe-generated barrel sections, each split at the
+  livery seam into a white upper shell and a navy lower shell (so the skin
+  visibly closes around the interior during assembly), sharing one
   radius-vs-station function, with nose droop and tail upsweep applied as a
   vertex-level shear. Frames, crown stringer, keel beam and floor grid carry
   the schematic look.
@@ -56,8 +61,9 @@ watched from inside — click to fly at any time.
   bins, emissive ceiling light strips, galleys, lavatories, and a flight deck
   with displays, pedestal and pilot seats.
 - **Details** — instanced cabin windows, four door pairs per side, canvas-drawn
-  fuselage titles and tail livery, pulsing beacons, wingtip navigation lights
-  and a double-flash tail strobe.
+  BRITISH AIRWAYS titles with the red speedmarque, G-XWBA registration, Union
+  Flag ribbon tailfin, pulsing beacons, wingtip navigation lights and a
+  double-flash tail strobe.
 
 Key dimensions match the real aircraft: length 73.79 m, wingspan 64.75 m,
 fuselage diameter 5.96 m, tail height ≈ 17.1 m.
