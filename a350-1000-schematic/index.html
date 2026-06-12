@@ -314,7 +314,7 @@ function barrelHalves(key, z0, z1, fromAbove = 16, fromBelow = 11) {
   const upper = new THREE.Group();
   upper.add(fuselageSection(z0, z1, MAT.skin, { phiStart: SEAM, phiLength: 2 * Math.PI - 2 * SEAM }));
   const lower = new THREE.Group();
-  lower.add(fuselageSection(z0, z1, MAT.navy, { phiStart: -SEAM, phiLength: 2 * SEAM }));
+  lower.add(fuselageSection(z0, z1, MAT.skin, { phiStart: -SEAM, phiLength: 2 * SEAM }));
   part(key + 'U', shadows(upper), V3(0, fromAbove, 0));
   part(key + 'L', shadows(lower), V3(0, -fromBelow, 0));
   return { upper, lower };
@@ -510,6 +510,17 @@ function buildEngine(s) {
   disk.position.z = 1.45;
   fans.push(fan);
 
+  // Union flag ribbons on the cowl, like the real BA nacelles
+  const flagTex = makeTailTexture();
+  for (const sd of [1, -1]) {
+    const fp = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 1.3),
+      new THREE.MeshBasicMaterial({ map: flagTex, transparent: true, side: THREE.DoubleSide }));
+    fp.rotation.y = sd * Math.PI / 2;
+    if (sd < 0) fp.scale.x = -1;
+    fp.position.set(sd * 1.79, 0.1, 2.5);
+    eng.add(fp);
+  }
+
   eng.add(cowl, lipRing, core, cone, fan, disk);
   eng.position.set(EX, EY, EZ);
   return shadows(eng);
@@ -683,8 +694,41 @@ part('cabin', shadows(cabin), V3(0, 22, 0));
 // ------------------------------------------------------------
 // 17. Windows, doors, decals & lights
 // ------------------------------------------------------------
+// navy belly paint: white under the nose, full-depth from the wing aft,
+// sweeping up the rear fuselage like the real Chatham Dockyard scheme
+function bellyHalfWidth(z) {
+  if (z < 10) return 0;
+  if (z < 26) { const t = (z - 10) / 16; return SEAM * t * t * (3 - 2 * t); }
+  if (z < 52) return SEAM;
+  return SEAM + (1.9 - SEAM) * Math.pow((z - 52) / 21.5, 1.2);
+}
+function bellyBand() {
+  const Z0 = 10, Z1 = 73.4, NZ = 64, NP = 26;
+  const verts = [], idx = [];
+  for (let i = 0; i <= NZ; i++) {
+    const z = Z0 + (Z1 - Z0) * i / NZ;
+    const w = Math.max(bellyHalfWidth(z), 0.02);
+    const r = fuseR(z) + 0.018, dy = fuseDY(z);
+    for (let j = 0; j <= NP; j++) {
+      const phi = -w + 2 * w * j / NP;
+      verts.push(r * Math.sin(phi), -r * Math.cos(phi) + dy, z);
+    }
+  }
+  for (let i = 0; i < NZ; i++)
+    for (let j = 0; j < NP; j++) {
+      const a = i * (NP + 1) + j, b = a + NP + 1;
+      idx.push(a, b, b + 1, a, b + 1, a + 1);
+    }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  return new THREE.Mesh(g, MAT.navy);
+}
+
 const details = new THREE.Group();
 {
+  details.add(bellyBand());
   // passenger windows (instanced)
   const doorZ = [9.4, 25.0, 45.4, 60.6];
   const winList = [];
@@ -718,15 +762,25 @@ const details = new THREE.Group();
     details.add(dw);
   }
 
-  // BRITISH AIRWAYS titles + speedmarque, registration aft, both sides
+  // BRITISH AIRWAYS titles, nose-crown Union flag, registration — both sides
   const titleTex = makeTitleTexture();
   const regTex = makeRegTexture();
+  const noseFlagTex = makeNoseFlagTexture();
+  const ZAXIS = V3(0, 0, 1), YAXIS = V3(0, 1, 0);
   for (const s of [1, -1]) {
-    const p = new THREE.Mesh(new THREE.PlaneGeometry(10, 1.5),
+    const p = new THREE.Mesh(new THREE.PlaneGeometry(10, 1.25),
       new THREE.MeshBasicMaterial({ map: titleTex, transparent: true }));
     p.rotation.y = s * Math.PI / 2;
-    p.position.set(s * (R + 0.03), 1.25, 15.5);
+    p.position.set(s * (R + 0.03), 1.25, 16.5);
     details.add(p);
+    const flag = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 2.0),
+      new THREE.MeshBasicMaterial({ map: noseFlagTex, transparent: true, side: THREE.DoubleSide }));
+    flag.quaternion.multiplyQuaternions(
+      new THREE.Quaternion().setFromAxisAngle(ZAXIS, s * 0.55),
+      new THREE.Quaternion().setFromAxisAngle(YAXIS, s * Math.PI / 2));
+    if (s < 0) flag.scale.x = -1;
+    flag.position.set(s * 2.50, 1.74, 9.2);
+    details.add(flag);
     const reg = new THREE.Mesh(new THREE.PlaneGeometry(2.3, 0.58),
       new THREE.MeshBasicMaterial({ map: regTex, transparent: true }));
     reg.rotation.y = s * Math.PI / 2;
@@ -746,20 +800,30 @@ part('details', details, V3(0, 16, -16));
 
 // ---------- canvas textures (British Airways livery art) ----------
 function makeTitleTexture() {
-  const c = document.createElement('canvas'); c.width = 1280; c.height = 192;
+  const c = document.createElement('canvas'); c.width = 1280; c.height = 160;
   const x = c.getContext('2d');
-  x.font = '600 92px "Segoe UI", Arial, sans-serif';
+  x.font = '600 96px "Segoe UI", Arial, sans-serif';
   x.fillStyle = BA_BLUE;
   x.textBaseline = 'middle';
-  x.fillText('BRITISH AIRWAYS', 16, 70);
-  // speedmarque — tapered red ribbon beneath the titles
-  x.fillStyle = BA_RED;
-  x.beginPath();
-  x.moveTo(10, 178);
-  x.quadraticCurveTo(210, 188, 470, 132);
-  x.quadraticCurveTo(300, 152, 30, 148);
-  x.closePath();
-  x.fill();
+  x.fillText('BRITISH AIRWAYS', 16, 80);
+  const t = new THREE.CanvasTexture(c); t.anisotropy = 8;
+  return t;
+}
+function makeNoseFlagTexture() {
+  // red-over-navy Union flag ribbon worn on the nose crown behind the cockpit
+  const c = document.createElement('canvas'); c.width = 512; c.height = 320;
+  const x = c.getContext('2d');
+  x.lineCap = 'round';
+  const ribbon = (w, color, dy) => {
+    x.strokeStyle = color; x.lineWidth = w;
+    x.beginPath();
+    x.moveTo(488, 250 + dy);
+    x.quadraticCurveTo(260, 230 + dy, 30, 90 + dy);
+    x.stroke();
+  };
+  ribbon(96, BA_BLUE, 52);
+  ribbon(26, '#f4f6f8', 18);
+  ribbon(60, BA_RED, -28);
   const t = new THREE.CanvasTexture(c); t.anisotropy = 8;
   return t;
 }
