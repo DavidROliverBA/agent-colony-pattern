@@ -1,0 +1,38 @@
+name: Deploy ArchModeller to GitHub Pages
+
+# Publishes the static modelling tool in modeller/ to GitHub Pages.
+# The app is a build-free static site (ES modules + plain CSS), so there is no
+# compile step — we upload the folder as-is. All asset paths are relative and
+# routing is hash-based, so it works regardless of the Pages base path.
+
+on:
+  push:
+    branches: [main]
+    paths: ['modeller/**', '.github/workflows/pages.yml']
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment; don't cancel an in-progress run.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - name: Upload modeller/ as Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: modeller
+      - id: deployment
+        uses: actions/deploy-pages@v4
